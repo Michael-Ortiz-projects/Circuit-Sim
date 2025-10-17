@@ -1,0 +1,9 @@
+bin/
+obj/
+.vs/
+*.exe
+*.dll
+*.pdb
+*.lib
+*.ilk
+*.log
