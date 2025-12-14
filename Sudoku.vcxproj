@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -142,31 +142,45 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AssetManager.cpp" />
-    <ClCompile Include="Button.cpp" />
-    <ClCompile Include="Circuit.cpp" />
-    <ClCompile Include="CircuitManager.cpp" />
-    <ClCompile Include="Component.cpp" />
-    <ClCompile Include="Entity.cpp" />
-    <ClCompile Include="global_variables.cpp" />
-    <ClCompile Include="HelperFunctions.cpp" />
-    <ClCompile Include="Oscilloscope.cpp" />
+    <ClCompile Include="UI\DropdownMenu.cpp" />
+    <ClCompile Include="UI\Button.cpp" />
+    <ClCompile Include="Controller\CameraHandler.cpp" />
+    <ClCompile Include="Controller\DragHandler.cpp" />
+    <ClCompile Include="UI\AssetManager.cpp" />
+    <ClCompile Include="UI\SchematicComponent.cpp" />
+    <ClCompile Include="UI\ComponentRenderer.cpp" />
+    <ClCompile Include="UI\Camera.cpp" />
+    <ClCompile Include="Controller\Controller.cpp" />
+    <ClCompile Include="Core\Circuit.cpp" />
+    <ClCompile Include="Core\CircuitSolver.cpp" />
+    <ClCompile Include="Core\Component.cpp" />
     <ClCompile Include="CircuitSim.cpp" />
-    <ClCompile Include="TextBox.cpp" />
-    <ClCompile Include="Wire.cpp" />
+    <ClCompile Include="UI\Grid.cpp" />
+    <ClCompile Include="UI\UI_Manager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AssetManager.h" />
-    <ClInclude Include="Button.h" />
-    <ClInclude Include="Circuit.h" />
-    <ClInclude Include="CircuitManager.h" />
-    <ClInclude Include="Component.h" />
-    <ClInclude Include="Entity.h" />
-    <ClInclude Include="global_variables.h" />
-    <ClInclude Include="HelperFunctions.h" />
-    <ClInclude Include="Oscilloscope.h" />
-    <ClInclude Include="TextBox.h" />
-    <ClInclude Include="Wire.h" />
+    <ClInclude Include="UI\DropdownMenu.h" />
+    <ClInclude Include="UI\Button.h" />
+    <ClInclude Include="Controller\CameraHandler.h" />
+    <ClInclude Include="Controller\DragHandler.h" />
+    <ClInclude Include="Controller\InputHandler.h" />
+    <ClInclude Include="UI\AssetManager.h" />
+    <ClInclude Include="UI\SchematicComponent.h" />
+    <ClInclude Include="UI\ComponentRenderer.h" />
+    <ClInclude Include="UI\Camera.h" />
+    <ClInclude Include="Config.h" />
+    <ClInclude Include="Controller\Controller.h" />
+    <ClInclude Include="Core\Circuit.h" />
+    <ClInclude Include="Core\CircuitSolver.h" />
+    <ClInclude Include="Core\Component.h" />
+    <ClInclude Include="UI\Grid.h" />
+    <ClInclude Include="UI\UI_Manager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="UI\Fonts\AnonymousPro-Regular.ttf" />
+    <Font Include="UI\Fonts\ARIAL.TTF" />
+    <Font Include="UI\Fonts\Kreon-Medium.ttf" />
+    <Font Include="UI\Fonts\NotoSans-Regular.ttf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

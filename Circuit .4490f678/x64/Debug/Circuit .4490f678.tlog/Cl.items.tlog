@@ -1,12 +1,15 @@
-C:\Users\Mike\source\repos\Sudoku\AssetManager.cpp;C:\Users\Mike\source\repos\Sudoku\Circuit .4490f678\x64\Debug\AssetManager.obj
-C:\Users\Mike\source\repos\Sudoku\Button.cpp;C:\Users\Mike\source\repos\Sudoku\Circuit .4490f678\x64\Debug\Button.obj
-C:\Users\Mike\source\repos\Sudoku\Circuit.cpp;C:\Users\Mike\source\repos\Sudoku\Circuit .4490f678\x64\Debug\Circuit.obj
-C:\Users\Mike\source\repos\Sudoku\CircuitManager.cpp;C:\Users\Mike\source\repos\Sudoku\Circuit .4490f678\x64\Debug\CircuitManager.obj
-C:\Users\Mike\source\repos\Sudoku\Component.cpp;C:\Users\Mike\source\repos\Sudoku\Circuit .4490f678\x64\Debug\Component.obj
-C:\Users\Mike\source\repos\Sudoku\Entity.cpp;C:\Users\Mike\source\repos\Sudoku\Circuit .4490f678\x64\Debug\Entity.obj
-C:\Users\Mike\source\repos\Sudoku\global_variables.cpp;C:\Users\Mike\source\repos\Sudoku\Circuit .4490f678\x64\Debug\global_variables.obj
-C:\Users\Mike\source\repos\Sudoku\HelperFunctions.cpp;C:\Users\Mike\source\repos\Sudoku\Circuit .4490f678\x64\Debug\HelperFunctions.obj
-C:\Users\Mike\source\repos\Sudoku\Oscilloscope.cpp;C:\Users\Mike\source\repos\Sudoku\Circuit .4490f678\x64\Debug\Oscilloscope.obj
-C:\Users\Mike\source\repos\Sudoku\CircuitSim.cpp;C:\Users\Mike\source\repos\Sudoku\Circuit .4490f678\x64\Debug\CircuitSim.obj
-C:\Users\Mike\source\repos\Sudoku\TextBox.cpp;C:\Users\Mike\source\repos\Sudoku\Circuit .4490f678\x64\Debug\TextBox.obj
-C:\Users\Mike\source\repos\Sudoku\Wire.cpp;C:\Users\Mike\source\repos\Sudoku\Circuit .4490f678\x64\Debug\Wire.obj
+C:\Users\Mike\source\repos\Circuit Sim - Copy\UI\DropdownMenu.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\DropdownMenu.obj
+C:\Users\Mike\source\repos\Circuit Sim - Copy\UI\Button.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\Button.obj
+C:\Users\Mike\source\repos\Circuit Sim - Copy\Controller\CameraHandler.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\CameraHandler.obj
+C:\Users\Mike\source\repos\Circuit Sim - Copy\Controller\DragHandler.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\DragHandler.obj
+C:\Users\Mike\source\repos\Circuit Sim - Copy\UI\AssetManager.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\AssetManager.obj
+C:\Users\Mike\source\repos\Circuit Sim - Copy\UI\SchematicComponent.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\SchematicComponent.obj
+C:\Users\Mike\source\repos\Circuit Sim - Copy\UI\ComponentRenderer.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\ComponentRenderer.obj
+C:\Users\Mike\source\repos\Circuit Sim - Copy\UI\Camera.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\Camera.obj
+C:\Users\Mike\source\repos\Circuit Sim - Copy\Controller\Controller.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\Controller.obj
+C:\Users\Mike\source\repos\Circuit Sim - Copy\Core\Circuit.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\Circuit.obj
+C:\Users\Mike\source\repos\Circuit Sim - Copy\Core\CircuitSolver.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\CircuitSolver.obj
+C:\Users\Mike\source\repos\Circuit Sim - Copy\Core\Component.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\Component.obj
+C:\Users\Mike\source\repos\Circuit Sim - Copy\CircuitSim.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\CircuitSim.obj
+C:\Users\Mike\source\repos\Circuit Sim - Copy\UI\Grid.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\Grid.obj
+C:\Users\Mike\source\repos\Circuit Sim - Copy\UI\UI_Manager.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\UI_Manager.obj
