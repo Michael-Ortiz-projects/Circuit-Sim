@@ -1,6 +1,6 @@
 #include "Circuit.h"
 
-void Circuit::AddComponent(const ComponentType& type) {
+int Circuit::AddComponent(const ComponentType& type) {
     Component temp_component;
     
     switch (type) {
@@ -29,12 +29,21 @@ void Circuit::AddComponent(const ComponentType& type) {
         break;
 
     default:
-        return;
+        return -1;
     }
 
     temp_component.identification_number = nextComponentID;
-    components.push_back(temp_component);
-    nextComponentID++;
+    components.emplace_back(temp_component);
+    return nextComponentID++;
+
+}
+
+Component* Circuit::GetComponentByID(int id) {
+    for (auto& comp : components) {
+        if (comp.identification_number == id)
+            return &comp;
+    }
+    return nullptr;
 }
 
 void Circuit::RemoveComponent(int id) {

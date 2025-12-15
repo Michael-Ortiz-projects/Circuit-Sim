@@ -13,16 +13,60 @@ void DropdownMenu::addOption(const std::string& label, UICommand cmd) {
 	updateMenuLayout();
 }
 
+bool DropdownMenu::onMousePress(const sf::Vector2f& point) {
+	parentButton.onMousePress(point);
+
+	if (open) {
+		for (auto& option : options)
+			option.onMousePress(point);
+	}
+
+	return contains(point);
+}
+
+bool DropdownMenu::onMouseMove(const sf::Vector2f& point) {
+	parentButton.onMouseMove(point);
+
+	if (open) {
+		for (auto& option : options)
+			option.onMouseMove(point);
+	}
+
+	return contains(point);
+}
+
+bool DropdownMenu::onMouseRelease(const sf::Vector2f& point) {
+	parentButton.onMouseRelease(point);
+
+	if (open) {
+		for (auto& opt : options)
+			opt.onMouseRelease(point);
+	}
+
+	return contains(point);
+}
+
 bool DropdownMenu::poll(UICommand& outputCommand) {
+	if (parentButton.consumed(outputCommand)) {
+		if (outputCommand == UICommand::ToggleMenu) {
+			open = !open;
+			std::cout << "Menu ";
+			open ? std::cout << "Open\n\n" : std::cout << "Closed\n\n";
+			return false; // toggle is UI-only, not a controller command
+		}
+	}
+
 	if (!open) return false;
 
 	for (auto& option : options) {
-		if (option.consumed(outputCommand))
+		if (option.consumed(outputCommand)) {
+			open = false;
 			return true;
+		}
 	}
+
 	return false;
 }
-
 
 void DropdownMenu::updateMenuLayout() {
 	float buttonHeight = parentButton.box.getSize().y;
@@ -32,12 +76,12 @@ void DropdownMenu::updateMenuLayout() {
 	float y = y_initial + panelMargin;
 
 	for (auto& opt : options) {
-        opt.box.setSize({ maxWidth, buttonHeight });
-        opt.box.setPosition(x, y );
-        opt.alignTextOnLeft(margin);
+		opt.box.setSize({ maxWidth, buttonHeight });
+		opt.box.setPosition(x, y);
+		opt.alignTextOnLeft(margin);
 
-        y += buttonHeight + rowGap;
-    }
+		y += buttonHeight + rowGap;
+	}
 
 	float panelHeight = options.size() * buttonHeight + (options.size() - 1) * rowGap + panelMargin * 2;
 	panel.setPosition(x - panelMargin, y_initial);
@@ -55,69 +99,6 @@ void DropdownMenu::draw(sf::RenderWindow& window) {
 		for (auto& opt : options)
 			opt.draw(window);
 	}
-}
-
-bool DropdownMenu::onMousePress(const sf::Vector2f& point) {
-	bool consumed = false;
-
-	parentButton.onMousePress(point);
-	UICommand cmd;
-	if (parentButton.consumed(cmd)) {
-		consumed = true;
-	}
-
-	if (open) {
-		for (auto& option : options) {
-			option.onMousePress(point);
-			if (option.consumed(cmd)) {
-				consumed = true;
-			}
-		}
-	}
-	return consumed;
-}
-
-bool DropdownMenu::onMouseMove(const sf::Vector2f& point) {
-	bool consumed = false;
-
-	UICommand cmd;
-	if (parentButton.consumed(cmd)) consumed = true;
-
-	if (open) {
-		for (auto& option : options) {
-			option.onMouseMove(point);
-			if (option.consumed(cmd)) consumed = true;
-		}
-	}
-
-	return consumed;
-}
-
-bool DropdownMenu::onMouseRelease(const sf::Vector2f& point) {
-	bool consumed = false;
-
-	parentButton.onMouseRelease(point);
-
-	UICommand cmd;
-
-	if (parentButton.consumed(cmd)) {
-		if (cmd == UICommand::ToggleMenu) {
-			open = !open;
-
-			consumed = true;
-		}
-	}
-
-	if (open) {
-		for (auto& option : options) {
-			option.onMouseRelease(point);
-			if (option.consumed(cmd)) {
-				consumed = true;
-			}
-		}
-	}
-
-	return consumed;
 }
 
 bool DropdownMenu::contains(const sf::Vector2f& p) {

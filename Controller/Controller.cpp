@@ -1,26 +1,32 @@
 #include "Controller.h"
 #include "InputHandler.h"
 
-Controller::Controller(Circuit& Circuit, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, UI_Manager& UI)
-	: circuit(Circuit), components(Components), dragHandler(Components), cameraHandler(Window), currentHandler(nullptr), window(Window), ui(UI)
+Controller::Controller(Circuit& Circuit, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, UI_Manager& UI, AssetManager& Assets)
+	: circuit(Circuit), components(Components), dragHandler(Components), cameraHandler(Window), placeHandler(Components, Circuit, Assets), currentHandler(nullptr),
+	command(UICommand::None), window(Window), ui(UI)
 	{ }
 
 
 void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y });
 
-	
-
 	if (event.button == sf::Mouse::Button::Left) {
-		SchematicComponent* clickedComponent = findComponentAt(worldMousePosition);
-		if (clickedComponent) {
-			currentHandler = &dragHandler;
-			dragHandler.setDraggedComponent(*clickedComponent);
+		if (!currentHandler) {
+			SchematicComponent* clickedComponent = findComponentAt(worldMousePosition);
+			if (clickedComponent) {
+				currentHandler = &dragHandler;
+				Debug::setHandler("Drag Handler");
+				dragHandler.setDraggedComponent(*clickedComponent);
+			}
+			else std::cout << "No clicked component\n";
 		}
 	}
 
 	if (event.button == sf::Mouse::Button::Right) {
-		currentHandler = &cameraHandler;
+		if (!currentHandler) {
+			currentHandler = &cameraHandler;
+			Debug::setHandler("Camera Handler");
+		}
 	}
 
 
@@ -33,12 +39,14 @@ void Controller::onMouseMove(const sf::Event::MouseMoveEvent& event) {
 }
 
 void Controller::onScroll(const sf::Event::MouseWheelScrollEvent& event) {
-	currentHandler = &cameraHandler;
-	if (currentHandler) currentHandler->onScroll(event);
-	if (currentHandler) {
-		if (currentHandler->shouldRelease()) {
-			currentHandler = nullptr;
-		}
+	if (!currentHandler) {
+		currentHandler = &cameraHandler;
+		Debug::setHandler("Camera Handler");
+	}
+	currentHandler->onScroll(event);
+
+	if (currentHandler->shouldRelease()) {
+		currentHandler = nullptr;
 	}
 }
 
@@ -51,6 +59,7 @@ void Controller::onMouseRelease(const sf::Event::MouseButtonEvent& event) {
 	if (currentHandler) {
 		if (currentHandler->shouldRelease()) {
 			currentHandler = nullptr;
+			Debug::setHandler("None");
 		}
 	}
 }
@@ -63,10 +72,28 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 	}
 }
 
-void Controller::setHandler(InputHandler* handler) {
+void Controller::setHandler(InputHandler* handler, UICommand cmd) {
+	command = cmd;
+	if (command != UICommand::None) {
+		switch (command) {
+			case UICommand::PlaceVoltageSource:
+				placeHandler.setComponentType(ComponentType::VoltageSource);
+				break;
+
+			case UICommand::PlaceResistor:
+				placeHandler.setComponentType(ComponentType::Resistor);
+				break;
+
+			case UICommand::ToggleMenu:
+				break;
+		}
+	}
 	currentHandler = handler;
 }
 
+InputHandler* Controller::getHandler() {
+	return currentHandler;
+}
 SchematicComponent* Controller::findComponentAt(const sf::Vector2f point) {
 	for (auto& comp : components) {
 		if (comp.spriteContainsPoint(point)) {

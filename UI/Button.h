@@ -36,12 +36,15 @@ public:
 
 	void alignTextOnLeft(float margin);
 
+	std::string getName();
 private:
 	bool clicked;
 	bool triggered;
 	UICommand command = UICommand::None;
+	std::string name;
 
-	sf::Color hoverColor = sf::Color(50, 50, 65);
+
+	sf::Color hoverColor = sf::Color(70, 70, 85);
 	sf::Color hoverOutline = sf::Color(172, 172, 172);
 	sf::Color normalColor = sf::Color(45, 45, 55);
 };

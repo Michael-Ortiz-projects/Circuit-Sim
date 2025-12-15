@@ -3,7 +3,7 @@
 
 
 Button::Button(sf::Font& fnt, const std::string& label, const sf::Vector2f& pos, const sf::Vector2f& size, UICommand cmd)
-	: font(fnt), textResolutionFactor(fontFactor), characterSize(fontSize), command(cmd), clicked(false), triggered(false)
+	: font(fnt), textResolutionFactor(fontFactor), characterSize(fontSize), command(cmd), clicked(false), triggered(false), name(label)
 {
 	box.setPosition(pos);
 	box.setSize(size);
@@ -46,7 +46,6 @@ void Button::onMouseMove(const sf::Vector2f& point) {
 void Button::onMouseRelease(const sf::Vector2f& point) {
 	if (clicked && contains(point)) {
 		triggered = true;
-		std::cout << triggered << std::endl;
 	}
 
 	clicked = false;
@@ -56,6 +55,7 @@ bool Button::consumed(UICommand& outputCommand) {
 	if (triggered) {
 		outputCommand = command;
 		triggered = false;
+		std::cout << name + " Button Triggered\n\n";
 		return true;
 	}
 	return false;
@@ -69,4 +69,8 @@ void Button::alignTextOnLeft(float margin) {
 	text.setOrigin(0, 0);
 	text.setPosition(box.getPosition().x + margin / 2,
 		box.getPosition().y + (box.getSize().y - text.getLocalBounds().height) * 0.5f + margin / 2);
+}
+
+std::string Button::getName() {
+	return name;
 }

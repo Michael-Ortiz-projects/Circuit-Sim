@@ -9,7 +9,6 @@ class ComponentRenderer {
 public:
     ComponentRenderer(AssetManager& assets);
 
-    // Draw all components
     void drawComponents(sf::RenderWindow& window, std::vector<SchematicComponent>& components);
 
 private:

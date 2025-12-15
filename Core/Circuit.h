@@ -9,11 +9,13 @@ class Circuit
 {
 public:
 	std::unordered_map<int, std::vector<std::pair<int, int>>> adjacencyList; // key = node ID, vector = list of (neighborNode, componentID)
-	bool isSimulating;
+	bool isSimulating = false;
 	std::vector<Component> components;
 
 
-	void AddComponent(const ComponentType& type);
+	int AddComponent(const ComponentType& type);
+
+	Component* GetComponentByID(int id);
 
 	void RemoveComponent(int id);
 

@@ -25,6 +25,7 @@ public:
     Eigen::VectorXd x;
     std::vector<std::string> variables;
 
+    CircuitSolver();
 
     void AddComponent(Component& component);
 

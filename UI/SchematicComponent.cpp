@@ -1,9 +1,8 @@
 #include "SchematicComponent.h"
 
-SchematicComponent::SchematicComponent(Component* component, sf::Vector2f pos, float rot) {
-	real_component = component;
-	position = pos;
-	rotation = rot;
+SchematicComponent::SchematicComponent(int id, sf::Vector2f pos, int rot, ComponentType t)
+	: componentID(id), position(pos), rotation(rot), type(t)
+{
 	sprite.setPosition(position);
 	sprite.setRotation(rotation);
 }
@@ -36,6 +35,10 @@ void SchematicComponent::stopDrag() {
 	dragging = false;
 }
 
+void SchematicComponent::setTexture(const sf::Texture& texture) {
+	sprite.setTexture(texture, true);
+}
+
 bool SchematicComponent::spriteContainsPoint(const sf::Vector2f point) {
 	//std::cout << "Sprite Global Bounds: (" << sprite.getGlobalBounds().getPosition().x << ", " <<  sprite.getGlobalBounds().getPosition().y << ") to "
 	//		  << "(" << sprite.getGlobalBounds().getPosition().x + sprite.getGlobalBounds().width << ", " << sprite.getGlobalBounds().getPosition().y + sprite.getGlobalBounds().height << ")\n";
@@ -51,6 +54,8 @@ float SchematicComponent::getRotation() const { return rotation; }
 
 sf::Sprite& SchematicComponent::getSprite()  { return sprite; }
 
-Component* SchematicComponent::getRealComponent() const { return real_component; }
+ComponentType SchematicComponent::getType() {
+	return type;
+}
 
-ComponentType SchematicComponent::getType() const { return real_component->type; }
+	

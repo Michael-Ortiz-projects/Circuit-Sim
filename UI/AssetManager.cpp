@@ -23,7 +23,7 @@ AssetManager::AssetManager() {
 
 	loadTexture("normal_SC", "UI/Assets/normal_SC.png");
 	loadTexture("highlighted_SC", "UI/Assets/highlighted_SC.png");
-
+	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
 	mainFont.loadFromFile("UI/Fonts/RobotoSlab-Regular.ttf");
 }
 

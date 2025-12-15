@@ -5,9 +5,11 @@
 class SchematicComponent {
 
 public:
+	sf::Vector2f position;
+	float rotation;
+	int componentID;
 
-
-	SchematicComponent(Component* component, sf::Vector2f position, float rotation);
+	SchematicComponent(int id, sf::Vector2f pos, int rot, ComponentType t);
 	
 	void setPosition(const sf::Vector2f& pos);
 
@@ -18,6 +20,8 @@ public:
 	void dragTo(const sf::Vector2f& mouseWorldPos);
 
 	void stopDrag();
+	
+	void setTexture(const sf::Texture& texture);
 
 	bool spriteContainsPoint(const sf::Vector2f point);
 
@@ -25,22 +29,17 @@ public:
 
 	float getRotation() const;
 
-	sf::Sprite& getSprite() ;
+	sf::Sprite& getSprite();	
 
-	Component* getRealComponent() const;
-
-	ComponentType getType() const;
-	
+	ComponentType getType();
 
 private:
 	std::string label;
-	sf::Vector2f position;
-	float rotation;
+	ComponentType type;
 
 	bool dragging;
 	sf::Vector2f dragOffset;
 
-	Component* real_component;
 	sf::Sprite sprite;
 
 };

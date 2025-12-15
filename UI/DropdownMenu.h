@@ -17,17 +17,17 @@ public:
 
 	void addOption(const std::string& label, UICommand cmd);
 
-	bool poll(UICommand& outputCommand);
-
-	void updateMenuLayout();
-
-	void draw(sf::RenderWindow& window);
-
 	bool onMousePress(const sf::Vector2f& point);
 
 	bool onMouseMove(const sf::Vector2f& point);
 
 	bool onMouseRelease(const sf::Vector2f& point);	
+
+	bool poll(UICommand& outputCommand);
+
+	void updateMenuLayout();
+
+	void draw(sf::RenderWindow& window);
 
 	bool contains(const sf::Vector2f& point);
 };

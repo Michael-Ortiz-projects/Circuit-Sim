@@ -1,7 +1,7 @@
 ﻿#include <iostream>
 #include <cmath>
 #include <functional>
-
+#include <format>
 #include "SFML/Graphics.hpp"
 #include "Core/Component.h"
 #include "Core/Circuit.h"
@@ -13,6 +13,8 @@
 #include "UI/ComponentRenderer.h"
 #include "UI/AssetManager.h"
 #include "UI/DropdownMenu.h"
+#include "Debug.h"
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Circuit Sim", sf::Style::None);
@@ -24,19 +26,17 @@ int main()
     ComponentRenderer renderer(assets);
 
     Component VoltageSource(1, 0, ComponentType::VoltageSource, 9);
-    std::vector<SchematicComponent> schematic_components = { SchematicComponent(&VoltageSource, sf::Vector2f(20, 200), 0), SchematicComponent(&VoltageSource, sf::Vector2f(30, 600), 0) };
+    std::vector<SchematicComponent> schematic_components;
 
     Circuit circuit;
 	CircuitSolver solver;
-    Controller controller(circuit, schematic_components, window, UI);
+    Controller controller(circuit, schematic_components, window, UI, assets);
 
     Grid grid(30.0f);
+    
+    
 
     
-   
-
-    
-    //put this into a UI manager that the controller queries for events.
 
     while (window.isOpen()) {
         sf::Event event;
@@ -67,7 +67,7 @@ int main()
                 if (UI.onMouseRelease(mousePos)) continue;
                 controller.onMouseRelease(event.mouseButton);
                 
-            }
+            }   
 
             if (event.type == sf::Event::MouseWheelScrolled) {
                 controller.onScroll(event.mouseWheelScroll);
@@ -76,9 +76,12 @@ int main()
 
         UICommand cmd;
         if (UI.pollCommand(cmd)) {
-            if (cmd == UICommand::PlaceVoltageSource || cmd == UICommand::PlaceResistor)
-                std::cout << "place handler set\n";
-                //controller.setHandler() make handler for placing components
+            Debug::UICommand(cmd);
+            if (cmd == UICommand::PlaceVoltageSource || cmd == UICommand::PlaceResistor){
+                controller.setHandler(&controller.placeHandler, cmd);
+                Debug::setHandler("PlaceHandler");
+            }
+
         }
         grid.draw(window, controller.getView());
 
@@ -90,3 +93,18 @@ int main()
     }
     return 0;
 }
+
+
+/*
+    To do (not in any particular order)
+
+    Make debugging for circuit topography, just details of everything
+    Maybe clean up component placement, right now when you place a component
+     -  The origin isnt set when you put it down and it isnt grid snapped until you move it
+
+    Start working on wires, I want a separate wire class that I can put a lot of the merging/creation logic in
+        decide whether the wires are UI or controller logic, I feel like its both the visual parts, and the core components connected to it
+
+
+
+*/

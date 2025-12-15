@@ -1,5 +1,7 @@
 #include "CircuitSolver.h"
 
+CircuitSolver::CircuitSolver() {}
+
 void CircuitSolver::AddComponent(Component& component) {
     int index = components.size();
     components.push_back(&component);
