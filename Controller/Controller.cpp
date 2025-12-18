@@ -1,15 +1,14 @@
 #include "Controller.h"
 #include "InputHandler.h"
 
-Controller::Controller(Circuit& Circuit, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, UI_Manager& UI, AssetManager& Assets)
-	: circuit(Circuit), components(Components), dragHandler(Components), cameraHandler(Window), placeHandler(Components, Circuit, Assets), currentHandler(nullptr),
-	command(UICommand::None), window(Window), ui(UI)
-	{ }
+Controller::Controller(Circuit& Circuit, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, UI_Manager& UI, AssetManager& Assets, Renderer& Renderer)
+	: circuit(Circuit), components(Components), dragHandler(Components), cameraHandler(Window, Renderer.getCanvasView()), placeHandler(Components, Circuit, Assets), currentHandler(nullptr),
+	command(UICommand::None), window(Window), ui(UI), renderer(Renderer) { }
 
 
 void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
-	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y });
-
+	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y }, renderer.getCanvasView());
+	std::cout << worldMousePosition.x << worldMousePosition.y;
 	if (event.button == sf::Mouse::Button::Left) {
 		if (!currentHandler) {
 			SchematicComponent* clickedComponent = findComponentAt(worldMousePosition);
@@ -34,7 +33,7 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 }
 
 void Controller::onMouseMove(const sf::Event::MouseMoveEvent& event) {
-	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y });
+	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y }, renderer.getCanvasView());
 	if (currentHandler) currentHandler->onMouseMove(worldMousePosition);
 }
 
@@ -76,16 +75,35 @@ void Controller::setHandler(InputHandler* handler, UICommand cmd) {
 	command = cmd;
 	if (command != UICommand::None) {
 		switch (command) {
-			case UICommand::PlaceVoltageSource:
-				placeHandler.setComponentType(ComponentType::VoltageSource);
-				break;
+		case UICommand::PlaceVoltageSource:
+			placeHandler.setComponentType(ComponentType::VoltageSource);
+			break;
 
-			case UICommand::PlaceResistor:
-				placeHandler.setComponentType(ComponentType::Resistor);
-				break;
+		case UICommand::PlaceResistor:
+			placeHandler.setComponentType(ComponentType::Resistor);
+			break;
 
-			case UICommand::ToggleMenu:
-				break;
+		case UICommand::PlaceCurrentSource:
+			placeHandler.setComponentType(ComponentType::CurrentSource);
+			break;
+
+		case UICommand::PlaceCapacitor:
+			placeHandler.setComponentType(ComponentType::Capacitor);
+			break;
+
+		case UICommand::PlaceInductor:
+			placeHandler.setComponentType(ComponentType::Inductor);
+			break;
+
+		case UICommand::PlaceSwitch:
+			placeHandler.setComponentType(ComponentType::Switch);
+			break;
+
+		case UICommand::ToggleMenu:
+			break;
+
+		case UICommand::None:
+			break;
 		}
 	}
 	currentHandler = handler;
@@ -101,8 +119,4 @@ SchematicComponent* Controller::findComponentAt(const sf::Vector2f point) {
 		}
 	}
 	return nullptr;
-}
-
-sf::View Controller::getView() {
-	return cameraHandler.GetView();
 }

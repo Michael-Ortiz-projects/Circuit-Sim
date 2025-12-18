@@ -5,6 +5,7 @@ SchematicComponent::SchematicComponent(int id, sf::Vector2f pos, int rot, Compon
 {
 	sprite.setPosition(position);
 	sprite.setRotation(rotation);
+
 }
 
 void SchematicComponent::setPosition(const sf::Vector2f& pos) {
@@ -25,8 +26,8 @@ void SchematicComponent::startDrag(const sf::Vector2f& mouseWorldPos) {
 
 void SchematicComponent::dragTo(const sf::Vector2f& mouseWorldPos) { //needs to be updated for rotation	
 	if (dragging) {
-		sf::Vector2f gridSnappedPostion(std::round(mouseWorldPos.x / 30.0f) * 30.0f, std::round(mouseWorldPos.y / 30.0f) * 30.0f); //30 is grid size
-		sf::Vector2f halfSpriteSize(sprite.getTexture()->getSize().x / 2, sprite.getTexture()->getSize().y / 2);
+		sf::Vector2f gridSnappedPostion(std::round(mouseWorldPos.x / gridSize) * gridSize, std::round(mouseWorldPos.y / gridSize) * gridSize); //30 is grid size
+		sf::Vector2f halfSpriteSize(sprite.getTexture()->getSize().x / 12, sprite.getTexture()->getSize().y / 12);
 		sprite.setPosition(gridSnappedPostion - halfSpriteSize);
 	}
 }
@@ -37,6 +38,8 @@ void SchematicComponent::stopDrag() {
 
 void SchematicComponent::setTexture(const sf::Texture& texture) {
 	sprite.setTexture(texture, true);
+	
+	sprite.setScale(.166f, .166f);
 }
 
 bool SchematicComponent::spriteContainsPoint(const sf::Vector2f point) {

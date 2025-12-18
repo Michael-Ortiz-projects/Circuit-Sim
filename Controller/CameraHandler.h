@@ -6,7 +6,7 @@
 
 class CameraHandler : public InputHandler {
 public:
-	CameraHandler(sf::RenderWindow& Window);
+	CameraHandler(sf::RenderWindow& Window, sf::View& CanvasView);
 
 	void onMousePress(const sf::Vector2f& worldPos) override;
 
@@ -18,14 +18,12 @@ public:
 
 	bool shouldRelease() const override;
 
-	const sf::View& GetView() const { return view; }
-
 private:
-	sf::View view;
+	sf::View& canvasView;
 	sf::RenderWindow& window;
 	sf::Vector2f lastMousePosition;
 	sf::Vector2i lastMousePixel;
-
+	float CameraZoom = 1.0f;
 	bool dragging;
 
 	void zoomAt(float factor, const sf::Vector2i& pixel);

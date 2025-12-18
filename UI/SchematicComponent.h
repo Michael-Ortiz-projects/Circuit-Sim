@@ -1,6 +1,7 @@
 #pragma once
 #include "SFML/Graphics.hpp"
 #include "../Core/Component.h"
+#include "../Config.h"
 
 class SchematicComponent {
 

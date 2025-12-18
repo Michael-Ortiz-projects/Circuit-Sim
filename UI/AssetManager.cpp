@@ -7,7 +7,7 @@ AssetManager::AssetManager() {
 	loadTexture("normal_VS", "UI/Assets/normalVS.png");
 
 	loadTexture("highlight_R", "UI/Assets/highlighted_R.png");
-	loadTexture("normal_R", "UI/Assets/normal_R.png");
+	loadTexture("normal_R", "UI/Assets/Schematic_Resistor.png");
 
 	loadTexture("normalCS", "UI/Assets/normalCS.png");
 	loadTexture("highlightedCS", "UI/Assets/highlightedCS.png");
@@ -32,7 +32,9 @@ AssetManager::~AssetManager() {}
 bool AssetManager::loadTexture(const std::string& textureName, const std::string& filePath) {
 	sf::Texture texture;
 	if (texture.loadFromFile(filePath)) {
+		texture.setSmooth(true);
 		m_textures.emplace(textureName, std::move(texture));
+
 		std::cout << "Loaded " << textureName << " successfully\n";
 		return true;
 	}

@@ -7,7 +7,6 @@
     <ClCompile Include="Controller\DragHandler.cpp" />
     <ClCompile Include="UI\AssetManager.cpp" />
     <ClCompile Include="UI\SchematicComponent.cpp" />
-    <ClCompile Include="UI\ComponentRenderer.cpp" />
     <ClCompile Include="UI\Camera.cpp" />
     <ClCompile Include="Controller\Controller.cpp" />
     <ClCompile Include="Core\Circuit.cpp" />
@@ -18,6 +17,7 @@
     <ClCompile Include="UI\UI_Manager.cpp" />
     <ClCompile Include="Controller\PlaceHandler.cpp" />
     <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="UI\Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UI\DropdownMenu.h" />
@@ -27,7 +27,6 @@
     <ClInclude Include="Controller\InputHandler.h" />
     <ClInclude Include="UI\AssetManager.h" />
     <ClInclude Include="UI\SchematicComponent.h" />
-    <ClInclude Include="UI\ComponentRenderer.h" />
     <ClInclude Include="UI\Camera.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Controller\Controller.h" />
@@ -38,6 +37,7 @@
     <ClInclude Include="UI\UI_Manager.h" />
     <ClInclude Include="Controller\PlaceHandler.h" />
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="UI\Renderer.h" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="UI\Fonts\AnonymousPro-Regular.ttf" />

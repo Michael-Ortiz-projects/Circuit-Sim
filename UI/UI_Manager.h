@@ -5,9 +5,16 @@
 #include "AssetManager.h"
 #include <optional>
 
+enum class MenuID {
+	Place
+};
+
 class UI_Manager
 {
 public:
+
+	std::unordered_map<MenuID, DropdownMenu> menu_map;
+
 	UI_Manager();
 
 	void initialize(AssetManager& assets);
@@ -22,6 +29,5 @@ public:
 
 	void draw(sf::RenderWindow& window);
 private:
-	std::optional<DropdownMenu> placeMenu;
 };
 

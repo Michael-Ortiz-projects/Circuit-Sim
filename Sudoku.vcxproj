@@ -149,8 +149,8 @@
     <ClCompile Include="Controller\CameraHandler.cpp" />
     <ClCompile Include="Controller\DragHandler.cpp" />
     <ClCompile Include="UI\AssetManager.cpp" />
+    <ClCompile Include="UI\Renderer.cpp" />
     <ClCompile Include="UI\SchematicComponent.cpp" />
-    <ClCompile Include="UI\ComponentRenderer.cpp" />
     <ClCompile Include="UI\Camera.cpp" />
     <ClCompile Include="Controller\Controller.cpp" />
     <ClCompile Include="Core\Circuit.cpp" />
@@ -169,8 +169,8 @@
     <ClInclude Include="Controller\DragHandler.h" />
     <ClInclude Include="Controller\InputHandler.h" />
     <ClInclude Include="UI\AssetManager.h" />
+    <ClInclude Include="UI\Renderer.h" />
     <ClInclude Include="UI\SchematicComponent.h" />
-    <ClInclude Include="UI\ComponentRenderer.h" />
     <ClInclude Include="UI\Camera.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Controller\Controller.h" />

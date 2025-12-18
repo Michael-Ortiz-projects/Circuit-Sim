@@ -17,6 +17,8 @@ public:
 
 	void onMousePress(const sf::Vector2f& worldPos) override;
 
+	void onMouseMove(const sf::Vector2f& worldPos) override;
+
 	bool shouldRelease() const override;
 
 	void setComponentType(ComponentType comp_type);

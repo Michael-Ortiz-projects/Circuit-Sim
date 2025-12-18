@@ -8,6 +8,10 @@ enum class UICommand {
 	ToggleMenu,
 	PlaceVoltageSource,
 	PlaceResistor,
+	PlaceCurrentSource,
+	PlaceCapacitor,
+	PlaceInductor,
+	PlaceSwitch
 };
 
 class Button {

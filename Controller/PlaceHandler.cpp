@@ -9,9 +9,13 @@ void PlaceHandler::onMousePress(const sf::Vector2f& worldPos) {
 	if (newID != -1) {
 		components.emplace_back(newID, worldPos, 0.f, type);
 		components.back().setTexture(assets.getTexture(type));
+		components.back().dragTo(worldPos);
 	}
 }
 
+void PlaceHandler::onMouseMove(const sf::Vector2f& worldPos) {
+
+}
 
 
 bool PlaceHandler::shouldRelease() const {
