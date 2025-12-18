@@ -4,7 +4,7 @@ AssetManager::AssetManager() {
 
 
 	loadTexture("highlight_VS", "UI/Assets/highlightedVS.png");
-	loadTexture("normal_VS", "UI/Assets/normalVS.png");
+	loadTexture("normal_VS", "UI/Assets/Schematic_Voltage_Source.png");
 
 	loadTexture("highlight_R", "UI/Assets/highlighted_R.png");
 	loadTexture("normal_R", "UI/Assets/Schematic_Resistor.png");
@@ -12,7 +12,7 @@ AssetManager::AssetManager() {
 	loadTexture("normalCS", "UI/Assets/normalCS.png");
 	loadTexture("highlightedCS", "UI/Assets/highlightedCS.png");
 
-	loadTexture("normal_CAP", "UI/Assets/normalCAP.png");
+	loadTexture("normal_CAP", "UI/Assets/Schematic_Capacitor.png");
 	loadTexture("highlighted_CAP", "UI/Assets/highlighted_CAP.png");
 
 	loadTexture("normal_L", "UI/Assets/normalL.png");
