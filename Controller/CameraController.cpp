@@ -39,6 +39,12 @@ void CameraController::onScroll(const sf::Event::MouseWheelScrollEvent& event) {
     canvasView.move(beforeZoom - afterZoom);
 }
 
+void CameraController::onKeyPress(const sf::Event::KeyEvent& event) {
+    if (event.code == sf::Keyboard::Escape)
+        window.close();
+}
+
+
 void CameraController::setSensitivity(float s) {
     //sensitivity = s;
 }

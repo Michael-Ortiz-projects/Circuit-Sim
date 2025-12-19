@@ -50,9 +50,10 @@ void Controller::handleEvent(const sf::Event& event) {
 	}
 
 	case sf::Event::KeyPressed:
+		cameraController.onKeyPress(event.key);
+
 		if (currentHandler) currentHandler->onKeyPress(event.key);
-		else if (event.key.code == sf::Keyboard::Escape)
-			window.close();
+		
 		break;
 
 	default:
@@ -71,6 +72,9 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 				dragHandler.setDraggedComponent(*clickedComponent);
 			}
 			else std::cout << "No clicked component\n";
+			for (auto& c : components) {
+				c.selected = false;
+			}
 		}
 	}
 
@@ -159,7 +163,7 @@ InputHandler* Controller::getHandler() {
 }
 SchematicComponent* Controller::findComponentAt(const sf::Vector2f point) {
 	for (auto& comp : components) {
-		if (comp.spriteContainsPoint(point)) {
+		if (comp.hitBoxContainsPoint(point)) {
 			return &comp;
 		}
 	}

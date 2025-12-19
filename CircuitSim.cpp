@@ -91,5 +91,6 @@ int main()
 }
 
 /*
-add a cursor and make wires
+maybe add a cursor, not totally necessary|| make wires: i already made the selection hitbox, next i need to detect clicking the leads (use node selection radius in config)
+                                            make a wire class i think, definitely make a wire handler 
 */

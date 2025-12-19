@@ -20,6 +20,8 @@ void Renderer::drawCanvas(std::vector<SchematicComponent>& components) {
 
     for (auto& c : components) {
         window.draw(c.getSprite());
+        if (c.selected)
+            window.draw(c.getHitBox());
     }
 }
 
