@@ -9,11 +9,11 @@
 #include "Controller/Controller.h"
 #include "UI/Grid.h"
 #include "Config.h"
-#include "UI/Camera.h"
 #include "UI/AssetManager.h"
 #include "UI/DropdownMenu.h"
 #include "Debug.h"
 #include "UI/Renderer.h"
+#include "UI/UI_Manager.h"
 
 int main()
 {
@@ -21,20 +21,16 @@ int main()
     Grid grid(gridSize);
 
     AssetManager assets;
-
-    UI_Manager UI;
-    UI.initialize(assets);
-    Renderer renderer(window, assets, grid, UI);
-
+    Circuit circuit;
     std::vector<SchematicComponent> schematic_components;
 
-    Circuit circuit;
-	CircuitSolver solver;
-    Controller controller(circuit, schematic_components, window, UI, assets, renderer);
+    Renderer renderer(window, assets, grid);
 
-   
+    Controller controller(circuit, schematic_components, window, assets, renderer);
 
+    UI_Manager UI(controller);
 
+    UI.initialize(assets);
 
     while (window.isOpen()) {
         sf::Event event;
@@ -42,47 +38,52 @@ int main()
             if (event.type == sf::Event::Closed)
                 window.close();
 
-            if (event.type == sf::Event::KeyPressed) {
-                controller.onKeyPress(event.key);
+
+            if (!UI.handleEvent(event)) {  // only pass to controller if UI ignores it
+                controller.handleEvent(event);
             }
 
-            sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-
-
-            if (event.type == sf::Event::MouseButtonPressed) {
-                if (UI.onMousePress(mousePos)) continue;
-                controller.onMousePress(event.mouseButton);
-
-            }
-            
-            if (event.type == sf::Event::MouseMoved) {
-                if (UI.onMouseMove(mousePos)) continue;
-                controller.onMouseMove(event.mouseMove);
-            }
-
-            if (event.type == sf::Event::MouseButtonReleased) {
-
-                if (UI.onMouseRelease(mousePos)) continue;
-                controller.onMouseRelease(event.mouseButton);
-                
-            }   
-
-            if (event.type == sf::Event::MouseWheelScrolled) {
-                controller.onScroll(event.mouseWheelScroll);
-            }
         }
 
         UICommand cmd;
-        if (UI.pollCommand(cmd)) {
-            Debug::UICommand(cmd);
-            if (cmd != UICommand::ToggleMenu && cmd != UICommand::None) {
-                controller.setHandler(&controller.placeHandler, cmd);
+
+        while (UI.pollCommand(cmd)) {
+            
+            switch (cmd) {
+            case UICommand::PlaceVoltageSource:
                 Debug::setHandler("PlaceHandler");
+                controller.setHandler(&controller.placeHandler, cmd);
+                break;
+            case UICommand::PlaceResistor:
+                Debug::setHandler("PlaceHandler");
+                controller.setHandler(&controller.placeHandler, cmd);
+                break;
+            case UICommand::PlaceCurrentSource:
+                Debug::setHandler("PlaceHandler");
+                controller.setHandler(&controller.placeHandler, cmd);
+                break;
+            case UICommand::PlaceCapacitor:
+                Debug::setHandler("PlaceHandler");
+                controller.setHandler(&controller.placeHandler, cmd);
+                break;
+            case UICommand::PlaceInductor:
+                Debug::setHandler("PlaceHandler");
+                controller.setHandler(&controller.placeHandler, cmd);
+                break;
+            case UICommand::PlaceSwitch:
+                Debug::setHandler("PlaceHandler");
+                controller.setHandler(&controller.placeHandler, cmd);
+                break;
+            case UICommand::ToggleMenu:
+                break;
+            case UICommand::None:
+                break;
             }
         }
+        
 
         renderer.drawCanvas(schematic_components);
-        renderer.drawUI();
+        renderer.drawUI(UI.menu_map);
 
         window.display();
     }

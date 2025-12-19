@@ -1,6 +1,11 @@
 #pragma once
 #include <iostream>
 #include "Button.h"
+
+enum class MenuID {
+	Place
+};
+
 class DropdownMenu {
 public:
 	Button parentButton;

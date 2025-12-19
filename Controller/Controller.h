@@ -2,20 +2,20 @@
 #include "SFML/Graphics.hpp"
 #include "../Core/circuit.h"
 #include "DragHandler.h"
-#include "CameraHandler.h"
 #include "PlaceHandler.h"
-#include "../UI/UI_Manager.h"
 #include "../Debug.h"
 #include "../UI/Renderer.h"
+#include "CameraController.h"
 class InputHandler;
 
 class Controller {
 public:
     DragHandler dragHandler;
-    CameraHandler cameraHandler;
     PlaceHandler placeHandler;
 
-    Controller(Circuit& circ, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, UI_Manager& UI, AssetManager& Assets, Renderer& Renderer);
+    Controller(Circuit& circ, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer);
+
+    void handleEvent(const sf::Event& event);
 
     void onMousePress(const sf::Event::MouseButtonEvent& event);
 
@@ -42,8 +42,7 @@ private:
     Circuit& circuit;
     std::vector<SchematicComponent>& components;
     sf::RenderWindow& window;
-    UI_Manager& ui;
     Renderer& renderer;
-
+    CameraController cameraController;
 };
 

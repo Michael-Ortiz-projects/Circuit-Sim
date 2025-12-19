@@ -1,6 +1,6 @@
 #pragma once
 #include "UI/Button.h"
-#include "Controller/Controller.h"
+#include "Core/Component.h"
 #include "iomanip"
 class Debug
 {
@@ -49,6 +49,21 @@ public:
         case ComponentType::Switch:
             return "Switch";
         }
+    }
+    static std::string printVector2f(sf::Vector2f vector) {
+        return "(" + std::to_string(vector.x) + ", " + std::to_string(vector.y) + ")\n";
+    }
+
+    static void debugPrintView(const sf::View& view) {
+        auto c = view.getCenter();
+        auto s = view.getSize();
+        auto vp = view.getViewport();
+
+        std::cout
+            << "View center: (" << c.x << ", " << c.y << ")\n"
+            << "View size:   (" << s.x << ", " << s.y << ")\n"
+            << "Viewport:   (" << vp.left << ", " << vp.top
+            << ", " << vp.width << ", " << vp.height << ")\n\n";
     }
 private:
     static inline bool enabled = true; // default on

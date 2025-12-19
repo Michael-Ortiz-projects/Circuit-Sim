@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
-Renderer::Renderer(sf::RenderWindow& Window, AssetManager& Assets, Grid& Grid, UI_Manager& Manager)
-    : assets(Assets), window(Window), grid(Grid), uiManager(Manager) {
+Renderer::Renderer(sf::RenderWindow& Window, AssetManager& Assets, Grid& Grid)
+    : assets(Assets), window(Window), grid(Grid) {
     sf::Vector2f windowSize(window.getSize());
 
     canvasView.setSize(windowSize);
@@ -23,9 +23,9 @@ void Renderer::drawCanvas(std::vector<SchematicComponent>& components) {
     }
 }
 
-void Renderer::drawUI() {
+void Renderer::drawUI(std::unordered_map<MenuID, DropdownMenu> menu_map) {
     window.setView(UIView);
-    for (auto& m : uiManager.menu_map) {
+    for (auto& m : menu_map) {
         m.second.draw(window);
     }
 }

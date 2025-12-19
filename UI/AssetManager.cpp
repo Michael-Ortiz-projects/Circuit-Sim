@@ -3,26 +3,19 @@
 AssetManager::AssetManager() {
 
 
-	loadTexture("highlight_VS", "UI/Assets/highlightedVS.png");
 	loadTexture("normal_VS", "UI/Assets/Schematic_Voltage_Source.png");
 
-	loadTexture("highlight_R", "UI/Assets/highlighted_R.png");
 	loadTexture("normal_R", "UI/Assets/Schematic_Resistor.png");
 
-	loadTexture("normalCS", "UI/Assets/normalCS.png");
-	loadTexture("highlightedCS", "UI/Assets/highlightedCS.png");
+	loadTexture("normalCS", "UI/Assets/Schematic_Current_Source.png");
 
 	loadTexture("normal_CAP", "UI/Assets/Schematic_Capacitor.png");
-	loadTexture("highlighted_CAP", "UI/Assets/highlighted_CAP.png");
 
-	loadTexture("normal_L", "UI/Assets/normalL.png");
-	loadTexture("highlighted_L", "UI/Assets/highlightedL.png");
+	loadTexture("normal_L", "UI/Assets/Schematic_Inductor.png");
 
-	loadTexture("normal_SO", "UI/Assets/normal_SO.png");
-	loadTexture("highlighted_SO", "UI/Assets/highlighted_SO.png");
+	loadTexture("normal_SO", "UI/Assets/Schematic_Open_Switch.png");
 
-	loadTexture("normal_SC", "UI/Assets/normal_SC.png");
-	loadTexture("highlighted_SC", "UI/Assets/highlighted_SC.png");
+	loadTexture("normal_SC", "UI/Assets/Schematic_Closed_Switch.png");
 	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
 	mainFont.loadFromFile("UI/Fonts/RobotoSlab-Regular.ttf");
 }

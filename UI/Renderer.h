@@ -5,15 +5,16 @@
 #include <string>
 #include "SchematicComponent.h"
 #include "AssetManager.h"
-#include "UI_Manager.h"
+#include <unordered_map>
+#include "DropdownMenu.h"
 
 class Renderer {
 public:
-    Renderer(sf::RenderWindow& Window, AssetManager& Assets, Grid& Grid, UI_Manager& Manager);
+    Renderer(sf::RenderWindow& Window, AssetManager& Assets, Grid& Grid);
 
     void drawCanvas(std::vector<SchematicComponent>& components);
 
-    void drawUI();
+    void drawUI(std::unordered_map<MenuID, DropdownMenu> menu_map);
 
     sf::View& getCanvasView();
 
@@ -22,7 +23,6 @@ private:
     AssetManager& assets;
     sf::RenderWindow& window;
     Grid& grid;
-    UI_Manager& uiManager;
     sf::View canvasView;
     sf::View UIView;
 };

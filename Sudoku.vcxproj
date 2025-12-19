@@ -142,16 +142,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Controller\CameraController.cpp" />
     <ClCompile Include="Controller\PlaceHandler.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="UI\DropdownMenu.cpp" />
     <ClCompile Include="UI\Button.cpp" />
-    <ClCompile Include="Controller\CameraHandler.cpp" />
     <ClCompile Include="Controller\DragHandler.cpp" />
     <ClCompile Include="UI\AssetManager.cpp" />
     <ClCompile Include="UI\Renderer.cpp" />
     <ClCompile Include="UI\SchematicComponent.cpp" />
-    <ClCompile Include="UI\Camera.cpp" />
     <ClCompile Include="Controller\Controller.cpp" />
     <ClCompile Include="Core\Circuit.cpp" />
     <ClCompile Include="Core\CircuitSolver.cpp" />
@@ -161,17 +160,16 @@
     <ClCompile Include="UI\UI_Manager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Controller\CameraController.h" />
     <ClInclude Include="Controller\PlaceHandler.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="UI\DropdownMenu.h" />
     <ClInclude Include="UI\Button.h" />
-    <ClInclude Include="Controller\CameraHandler.h" />
     <ClInclude Include="Controller\DragHandler.h" />
     <ClInclude Include="Controller\InputHandler.h" />
     <ClInclude Include="UI\AssetManager.h" />
     <ClInclude Include="UI\Renderer.h" />
     <ClInclude Include="UI\SchematicComponent.h" />
-    <ClInclude Include="UI\Camera.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Controller\Controller.h" />
     <ClInclude Include="Core\Circuit.h" />
