@@ -41,6 +41,7 @@ int main()
 
             if (!UI.handleEvent(event)) {  // only pass to controller if UI ignores it
                 controller.handleEvent(event);
+                controller.rebuildSchematicComponents();
             }
 
         }
@@ -92,5 +93,9 @@ int main()
 
 /*
 maybe add a cursor, not totally necessary|| make wires: i already made the selection hitbox, next i need to detect clicking the leads (use node selection radius in config)
-                                            make a wire class i think, definitely make a wire handler 
+                                            make a wire class i think, definitely make a wire handler
+
+I want to add area component selection where i can highlight a region and all components in that region are selected and a bounding box around those components are created
+but to do that with the right click i need to move canvas drag logic to the middle mouse button
+
 */

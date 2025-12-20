@@ -5,22 +5,19 @@
 #include "SFML/Graphics.hpp"
 
 #include "Component.h"
-class Circuit
-{
+class Circuit {
 public:
-	std::unordered_map<int, std::vector<std::pair<int, int>>> adjacencyList; // key = node ID, vector = list of (neighborNode, componentID)
-	bool isSimulating = false;
-	std::vector<Component> components;
+    Circuit() = default;
 
+    int addComponent(const Component& comp, const sf::Vector2f& canvasPos);
+    bool removeComponent(int compID);
 
-	int AddComponent(const ComponentType& type);
+    Component* getComponent(int compID);
+    std::vector<Component>& getComponents();
 
-	Component* GetComponentByID(int id);
-
-	void RemoveComponent(int id);
-
-	void ComputeTopology();
 private:
-	int nextComponentID = 0;
+    int nextComponentID = 0;
+    std::vector<Component> components;
+    bool isSimulating = false;
+    std::unordered_map<int, int> componentIDToIndex; // componentID -> vector index
 };
-

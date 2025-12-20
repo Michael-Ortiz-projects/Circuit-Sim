@@ -3,7 +3,7 @@
 
 Controller::Controller(Circuit& Circuit, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer)
 	: circuit(Circuit), components(Components), cameraController(Window, Renderer.getCanvasView()), dragHandler(Components), placeHandler(Components, Circuit, Assets), currentHandler(nullptr),
-	command(UICommand::None), window(Window), renderer(Renderer) { }
+	command(UICommand::None), window(Window), renderer(Renderer), assets(Assets) { }
 
 void Controller::handleEvent(const sf::Event& event) {
 	switch (event.type) {
@@ -65,22 +65,20 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y }, renderer.getCanvasView());
 	if (event.button == sf::Mouse::Button::Left) {
 		if (!currentHandler) {
-			SchematicComponent* clickedComponent = findComponentAt(worldMousePosition);
+			Component* clickedComponent = findComponentAt(worldMousePosition);
 			if (clickedComponent) {
 				currentHandler = &dragHandler;
 				Debug::setHandler("Drag Handler");
 				dragHandler.setDraggedComponent(*clickedComponent);
 			}
-			else std::cout << "No clicked component\n";
-			for (auto& c : components) {
-				c.selected = false;
+			else {
+				std::cout << "No clicked component\n";
+				for (auto& c : circuit.getComponents()) {
+					c.selected = false;
+				}
 			}
 		}
 	}
-
-	
-
-
 	if (currentHandler) currentHandler->onMousePress(worldMousePosition);
 }
 
@@ -113,10 +111,16 @@ void Controller::onMouseRelease(const sf::Event::MouseButtonEvent& event) {
 }
 
 void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
-	if (currentHandler) currentHandler->onKeyPress(event);
+	cameraController.onKeyPress(event);
 
-	else if (event.code == sf::Keyboard::Escape) {
-		window.close();
+	for (auto& comp : components)
+		if (comp.selected) currentHandler = &placeHandler;
+
+	if (currentHandler) {
+		currentHandler->onKeyPress(event);
+		if (currentHandler->shouldRelease()) {
+			currentHandler = nullptr;
+		}
 	}
 }
 
@@ -158,13 +162,23 @@ void Controller::setHandler(InputHandler* handler, UICommand cmd) {
 	currentHandler = handler;
 }
 
+void Controller::rebuildSchematicComponents() {
+	components.clear();
+
+	for (const auto& comp : circuit.getComponents()) {
+		SchematicComponent c(comp);
+		c.setTexture(assets.getTexture(comp.type));
+		components.push_back(c);
+	}
+}
+
 InputHandler* Controller::getHandler() {
 	return currentHandler;
 }
-SchematicComponent* Controller::findComponentAt(const sf::Vector2f point) {
+Component* Controller::findComponentAt(const sf::Vector2f point) {
 	for (auto& comp : components) {
 		if (comp.hitBoxContainsPoint(point)) {
-			return &comp;
+			return circuit.getComponent(comp.componentID);
 		}
 	}
 	return nullptr;

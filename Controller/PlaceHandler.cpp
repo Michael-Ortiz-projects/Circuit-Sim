@@ -24,13 +24,7 @@ void PlaceHandler::onKeyPress(const sf::Event::KeyEvent& event) {
 
 
 void PlaceHandler::placeComponent(const sf::Vector2f& worldPos) {
-	int newID = circuit.AddComponent(type);
-
-	if (newID != -1) {
-		components.emplace_back(newID, worldPos, 0.f, type);
-		components.back().setTexture(assets.getTexture(type));
-		components.back().dragTo(worldPos);
-	}
+	int newID = circuit.addComponent(Component(-1, -1, type), worldPos);
 }
 
 void PlaceHandler::deleteComponents() {
@@ -41,6 +35,9 @@ void PlaceHandler::deleteComponents() {
 			toDelete.push_back(c.componentID);
 		}
 	}
+
+	for (const auto& id : toDelete)
+		circuit.removeComponent(id);
 }
 void PlaceHandler::setComponentType(ComponentType comp_type) {
 	type = comp_type;

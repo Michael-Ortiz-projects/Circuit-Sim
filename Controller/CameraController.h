@@ -16,8 +16,6 @@ public:
 
 	void onKeyPress(const sf::Event::KeyEvent& event);
 
-
-	void setSensitivity(float s);
 private:
 	sf::RenderWindow& window;
 	sf::View& canvasView;

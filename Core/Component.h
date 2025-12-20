@@ -3,7 +3,7 @@
 #include <string>
 #include <iostream>
 #include "SFML/Graphics.hpp"
-
+#include "../Config.h"
 
 enum class ComponentType {
     Resistor,
@@ -14,22 +14,33 @@ enum class ComponentType {
     Switch,
 };
 
-
 class Component {
 public:
-    ComponentType type;
-    double value;
+    int id;
     int nodeA;
     int nodeB;
-    int identification_number;
-    float current;
-    float voltage;
+    ComponentType type;
+    double value;
 
-    bool isClosed = false;
+    sf::Vector2f position;
+    float rotation;
 
-    Component(int A, int B, const ComponentType& ty, double val);
+    double current;
+    double voltage;
+    bool isClosed = true;
 
-    Component();
+    bool selected;
 
+    Component(int A, int B, const ComponentType& ty, double val = 0);
+    Component() = default;
+
+    void setPosition(const sf::Vector2f& pos);
+
+    void setRotation(float rot);
+
+    void startDrag(const sf::Vector2f& worldPos);
+
+    void dragTo(const sf::Vector2f& worldPos);
+
+    void stopDrag();
 };
-

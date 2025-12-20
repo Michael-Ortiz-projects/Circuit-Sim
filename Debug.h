@@ -24,7 +24,7 @@ public:
     static void componentData(Component component) {
         std::cout
             << "Component {\n"
-            << "  ID:        " << component.identification_number << '\n'
+            << "  ID:        " << '\n'
             << "  Type:      " << ComponentType_to_String(component.type) << '\n'
             << "  Nodes:     " << component.nodeA << " -> " << component.nodeB << '\n'
             << "  Value:     " << component.value << '\n'

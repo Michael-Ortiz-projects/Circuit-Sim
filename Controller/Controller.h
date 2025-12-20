@@ -29,20 +29,24 @@ public:
 
     void setHandler(InputHandler* handler, UICommand cmd);
 
+    void rebuildSchematicComponents();
+
     InputHandler* getHandler();
 
-    SchematicComponent* findComponentAt(const sf::Vector2f point);
+    Component* findComponentAt(const sf::Vector2f point);
 
 
 private:
     InputHandler* currentHandler;
 
-    UICommand command;
+    CameraController cameraController;
 
+    UICommand command;
     Circuit& circuit;
     std::vector<SchematicComponent>& components;
+    
     sf::RenderWindow& window;
     Renderer& renderer;
-    CameraController cameraController;
+    AssetManager& assets;
 };
 

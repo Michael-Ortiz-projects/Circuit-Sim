@@ -3,14 +3,16 @@
 DragHandler::DragHandler(std::vector<SchematicComponent>& comps) 
 	: components(comps), dragging(false), active(nullptr) {}
 
-void DragHandler::setDraggedComponent(SchematicComponent& component) {
+void DragHandler::setDraggedComponent(Component& component) {
 	active = &component;
+	std::cout << "Component Set\n";
 }
 
 void DragHandler::onMousePress(const sf::Vector2f& worldPos)  {
 	if (active) {
 		active->startDrag(worldPos);
 		dragging = true;
+		std::cout << "Starting drag\n";
 	}
 }
 
