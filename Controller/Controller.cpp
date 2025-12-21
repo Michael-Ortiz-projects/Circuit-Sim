@@ -10,7 +10,7 @@ void Controller::handleEvent(const sf::Event& event) {
 
 	case sf::Event::MouseButtonPressed: {
 
-		if (event.mouseButton.button == sf::Mouse::Right) {
+		if (event.mouseButton.button == sf::Mouse::Middle) {
 			cameraController.onMousePress({ event.mouseButton.x, event.mouseButton.y });
 		}
 
@@ -25,7 +25,7 @@ void Controller::handleEvent(const sf::Event& event) {
 
 		cameraController.onMouseMove({ event.mouseMove.x, event.mouseMove.y });
 
-		if (currentHandler) currentHandler->onMouseMove(worldPos);
+		onMouseMove(event.mouseMove);
 		break;
 	}
 
@@ -38,22 +38,18 @@ void Controller::handleEvent(const sf::Event& event) {
 	case sf::Event::MouseButtonReleased: {
 		sf::Vector2f worldPos = window.mapPixelToCoords({ event.mouseButton.x, event.mouseButton.y }, renderer.getCanvasView());
 
-		if (event.mouseButton.button == sf::Mouse::Right) {
+		if (event.mouseButton.button == sf::Mouse::Middle) {
 			cameraController.onMouseRelease();
 		}
 
-		if (currentHandler) {
-			currentHandler->onMouseRelease(worldPos);
-			if (currentHandler->shouldRelease()) currentHandler = nullptr;
-		}
+		onMouseRelease(event.mouseButton);
 		break;
 	}
 
 	case sf::Event::KeyPressed:
 		cameraController.onKeyPress(event.key);
 
-		if (currentHandler) currentHandler->onKeyPress(event.key);
-		
+		onKeyPress(event.key);
 		break;
 
 	default:
@@ -114,7 +110,10 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 	cameraController.onKeyPress(event);
 
 	for (auto& comp : components)
-		if (comp.selected) currentHandler = &placeHandler;
+		if (comp.selected) {
+			currentHandler = &placeHandler;
+			Debug::setHandler("PlaceHandler");
+		}
 
 	if (currentHandler) {
 		currentHandler->onKeyPress(event);
