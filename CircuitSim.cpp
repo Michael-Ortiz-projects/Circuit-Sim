@@ -1,7 +1,6 @@
 ﻿#include <iostream>
 #include <cmath>
 #include <functional>
-#include <format>
 #include "SFML/Graphics.hpp"
 #include "Core/Component.h"
 #include "Core/Circuit.h"
