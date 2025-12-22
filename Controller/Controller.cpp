@@ -2,8 +2,8 @@
 #include "InputHandler.h"
 
 Controller::Controller(Circuit& Circuit, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer)
-	: circuit(Circuit), components(Components), cameraController(Window, Renderer.getCanvasView()), dragHandler(Components), placeHandler(Components, Circuit, Assets), currentHandler(nullptr),
-	command(UICommand::None), window(Window), renderer(Renderer), assets(Assets) { }
+	: circuit(Circuit), components(Components), cameraController(Window, Renderer.getCanvasView()), dragHandler(Components), placeHandler(Components, Circuit, Assets),
+	wireHandler(Circuit, Components), currentHandler(nullptr), command(UICommand::None), window(Window), renderer(Renderer), assets(Assets) { }
 
 void Controller::handleEvent(const sf::Event& event) {
 	switch (event.type) {
@@ -59,6 +59,7 @@ void Controller::handleEvent(const sf::Event& event) {
 
 void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y }, renderer.getCanvasView());
+
 	if (event.button == sf::Mouse::Button::Left) {
 		if (!currentHandler) {
 			Component* clickedComponent = findComponentAt(worldMousePosition);
@@ -66,12 +67,20 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 				currentHandler = &dragHandler;
 				Debug::setHandler("Drag Handler");
 				dragHandler.setDraggedComponent(*clickedComponent);
+			
 			}
 			else {
 				std::cout << "No clicked component\n";
 				for (auto& c : circuit.getComponents()) {
 					c.selected = false;
 				}
+			}
+
+			ElectricalConnection clickedLead = findClickedLead({ event.x, event.y });
+			if (clickedLead.componentID != -1) {
+				currentHandler = &wireHandler;
+				Debug::setHandler("Drag Handler");
+				wireHandler.attemptedConnection = clickedLead;
 			}
 		}
 	}
@@ -182,3 +191,23 @@ Component* Controller::findComponentAt(const sf::Vector2f point) {
 	}
 	return nullptr;
 }
+
+ElectricalConnection Controller::findClickedLead(const sf::Vector2f point) { // parameter is in pixel space, converts lead position to pixel space
+	for (const auto c : components) {
+		sf::Vector2i pixelPosA = window.mapCoordsToPixel(c.getLeadPositionA(), renderer.getCanvasView());
+
+		sf::Vector2f distanceA = sf::Vector2f(pixelPosA) - point;
+		if (distanceA.x * distanceA.x + distanceA.y * distanceA.y <= nodeSelectionRadius * nodeSelectionRadius) {
+			return { c.componentID, Lead::A };
+		}
+
+		sf::Vector2i pixelPosB = window.mapCoordsToPixel(c.getLeadPositionB(), renderer.getCanvasView());
+
+		sf::Vector2f distanceB = sf::Vector2f(pixelPosB) - point;
+		if (distanceB.x * distanceB.x + distanceB.y * distanceB.y <= nodeSelectionRadius * nodeSelectionRadius) {
+			return { c.componentID, Lead::B };
+		}
+	}
+	return { -1, Lead::Null };
+}
+

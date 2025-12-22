@@ -3,6 +3,7 @@
 #include "../Core/circuit.h"
 #include "DragHandler.h"
 #include "PlaceHandler.h"
+#include "WireHandler.h"
 #include "../Debug.h"
 #include "../UI/Renderer.h"
 #include "CameraController.h"
@@ -12,6 +13,7 @@ class Controller {
 public:
     DragHandler dragHandler;
     PlaceHandler placeHandler;
+    WireHandler wireHandler;
 
     Controller(Circuit& circ, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer);
 
@@ -34,6 +36,8 @@ public:
     InputHandler* getHandler();
 
     Component* findComponentAt(const sf::Vector2f point);
+
+    ElectricalConnection findClickedLead(const sf::Vector2f point);
 
 
 private:

@@ -3,7 +3,8 @@
 
 enum class Lead {
 	A,
-	B
+	B,
+	Null
 };
 
 struct ElectricalConnection {
@@ -11,8 +12,9 @@ struct ElectricalConnection {
 	Lead lead;
 };
 
-struct ElectricalNode {
-	int id;  // stable, unique
-
+class ElectricalNode {
+public:
+	ElectricalNode(int ID);
+	int id;  
 	std::vector<ElectricalConnection> connections;
 };

@@ -41,27 +41,55 @@ std::vector<Component>& Circuit::getComponents() {
     return components;
 }
 
+Wire* Circuit::getWire(int wireID) {
+    auto it = std::find_if(wires.begin(), wires.end(),
+        [wireID](const Wire& w) {
+            return w.ID == wireID;
+        }
+    );
+
+    /* I want to do 
+    auto it = wireIDToIndex.find(wireID);
+    if (it == wireIDToIndex.end()) return nullptr;
+    return &wires[it->second];
+    but I need to implement the wireIDToIndex map
+    */
+
+    //PICKUP HERE:
+    /* NEED to continue on wirehandler, work with wire ID maps to finish getWire function so that
+       WireHandler can set the active wire along with the future when syncing ElectricalNode vector to the Wire vector*/
+}
+
+std::vector<Wire>& Circuit::getWires() {
+    return wires;
+}
+
 int Circuit::createElectricalNode() {
-    nodes.push_back({ nextNodeID++, {} });
+    nodes.push_back(ElectricalNode(nextNodeID++));
     return nodes.back().id;
 }
 
 void Circuit::removeElectricalNode(int nodeID) {
-    auto it = std::find(nodes.begin(), nodes.end(), nodeID);
+    auto it = std::find_if(nodes.begin(), nodes.end(),
+        [nodeID](const ElectricalNode& node) {
+            return node.id == nodeID;
+        });
     nodes.erase(it);
 }
 
-void Circuit::connectComponentToNodes(int nodeID, int componentID, Lead lead) {
-    ElectricalNode* node = getElectricalNode(nodeID);
-    if (!node) return;
+void Circuit::addConnectionToNode(int nodeID, int componentID, Lead lead) {
+    auto it = std::find_if(nodes.begin(), nodes.end(),
+        [nodeID](const ElectricalNode& n) { return n.id == nodeID; });
 
-    node->connections.push_back({ componentID, lead });
+    if (it != nodes.end()) {
+        it->connections.push_back({ componentID, lead });
+    }
 }
 
-void Circuit::disconnectComponentFromNodes(int nodeID, int componentID, Lead lead) {
+void Circuit::removeConnectionFromNode(int nodeID, int componentID, Lead lead) {
     for (auto& node : nodes) {
         node.connections.erase(std::remove_if(node.connections.begin(), node.connections.end(),
-                [&](const ElectricalConnection& c) {
+                [componentID](const ElectricalConnection& c) {
                     return c.componentID == componentID;
                 }
             ),
@@ -70,29 +98,25 @@ void Circuit::disconnectComponentFromNodes(int nodeID, int componentID, Lead lea
     }
 }
 
-int Circuit::addWireSegment(int nodeID, std::vector<sf::Vector2f> points) {
-    wires.push_back({ nextWireID++, nodeID, std::move(points) });
-    return wires.back().id;
+int Circuit::createWire(sf::Vector2f& position) {
+    wires.push_back(Wire(position, nextWireID));
+    wireIDToIndex[nextWireID] = wires.size(); // check if this is right. It technically is but i need to see where im going to ultimately use this and if i need to change it
+    return nextWireID++;
 }
 
-void Circuit::removeWireSegment(int wireID) {
-    auto it = std::find_if(wires.begin(), wires.end(),
-        [wireID](const WireSegment& w) { return w.id == wireID; });
-    if (it != wires.end()) {
-        wires.erase(it);
-    }
-}
+bool Circuit::leadIsEmpty(ElectricalConnection& connection) { // returns false if connection is not valid
+    switch (connection.lead) {
+    case Lead::A:
+        if (getComponent(connection.componentID)->nodeA == -1) return true;
+        else return false;
+        break;
 
-ElectricalNode* Circuit::getElectricalNode(int nodeID) {
-    for (auto& node : nodes) {
-        if (node.id == nodeID) return &node;
+    case Lead::B:
+        if (getComponent(connection.componentID)->nodeB == -1) return true;
+        else return false;
+        break;
+    case Lead::Null:
+        return false;
+        break;
     }
-    return nullptr;
-}
-
-WireSegment* Circuit::getWireSegment(int wireID) {
-    for (auto& wire : wires) {
-        if (wire.id == wireID) return &wire;
-    }
-    return nullptr;
 }

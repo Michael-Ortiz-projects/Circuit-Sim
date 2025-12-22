@@ -7,12 +7,16 @@
 #include "AssetManager.h"
 #include <unordered_map>
 #include "DropdownMenu.h"
+#include "../Core/Wire.h"
 
 class Renderer {
 public:
     Renderer(sf::RenderWindow& Window, AssetManager& Assets, Grid& Grid);
 
-    void drawCanvas(std::vector<SchematicComponent>& components);
+    void drawCanvas(std::vector<SchematicComponent>& components, std::vector<Wire>& wires);
+
+    void drawWireGraph(int nodeID, std::map<int, Node>& graph, std::map<int, bool>& visited);
+
 
     void drawUI(std::unordered_map<MenuID, DropdownMenu> menu_map);
 
@@ -20,6 +24,8 @@ public:
 
     sf::View& getUIView();
 private:
+
+
     AssetManager& assets;
     sf::RenderWindow& window;
     Grid& grid;

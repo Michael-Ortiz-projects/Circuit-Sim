@@ -92,3 +92,15 @@ sf::Vector2f SchematicComponent::getLeadPositionB() const {
         leadOffsetB.x * sin(rad) + leadOffsetB.y * cos(rad)
     );
 }
+
+bool SchematicComponent::nearLeadA(sf::Vector2f& point) {
+    sf::Vector2f distance = point - getLeadPositionA();
+    float r = nodeSelectionRadius;
+    return (distance.x * distance.x + distance.y * distance.y) <= r * r;
+}
+
+bool SchematicComponent::nearLeadB(sf::Vector2f& point) {
+    sf::Vector2f distance = point - getLeadPositionB();
+    float r = nodeSelectionRadius;
+    return (distance.x * distance.x + distance.y * distance.y) <= r * r;
+}

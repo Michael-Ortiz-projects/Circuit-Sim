@@ -51,6 +51,7 @@ public:
         }
     }
     static std::string printVector2f(sf::Vector2f vector) {
+        std::cout << "(" + std::to_string(vector.x) + ", " + std::to_string(vector.y) + ")\n";
         return "(" + std::to_string(vector.x) + ", " + std::to_string(vector.y) + ")\n";
     }
 

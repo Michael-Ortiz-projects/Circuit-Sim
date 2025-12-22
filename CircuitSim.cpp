@@ -21,6 +21,15 @@ int main()
 
     AssetManager assets;
     Circuit circuit;
+    Wire wire1({ 400, 400 });
+    /*wire1.graph[1].position = sf::Vector2f(520, 400);
+    wire1.graph[0].neighbors.push_back(1);
+    wire1.graph[1].neighbors.push_back(0);
+    circuit.getWires().push_back(wire1);
+    sample code for a simple wire graphic
+    
+    now work on adding wire by clicking on leads using the controller and a wireHandler to do so
+    */
     std::vector<SchematicComponent> schematic_components;
 
     Renderer renderer(window, assets, grid);
@@ -37,6 +46,7 @@ int main()
             if (event.type == sf::Event::Closed)
                 window.close();
 
+            
 
             if (!UI.handleEvent(event)) {  // only pass to controller if UI ignores it
                 controller.handleEvent(event);
@@ -82,7 +92,7 @@ int main()
         }
         
 
-        renderer.drawCanvas(schematic_components);
+        renderer.drawCanvas(schematic_components, circuit.getWires());
         renderer.drawUI(UI.menu_map);
 
         window.display();

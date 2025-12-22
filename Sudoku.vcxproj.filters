@@ -17,6 +17,9 @@
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="UI\Renderer.cpp" />
     <ClCompile Include="Controller\CameraController.cpp" />
+    <ClCompile Include="Core\ElectricalNode.cpp" />
+    <ClCompile Include="Core\Wire.cpp" />
+    <ClCompile Include="Controller\WireHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UI\DropdownMenu.h" />
@@ -36,6 +39,9 @@
     <ClInclude Include="Debug.h" />
     <ClInclude Include="UI\Renderer.h" />
     <ClInclude Include="Controller\CameraController.h" />
+    <ClInclude Include="Core\ElectricalNode.h" />
+    <ClInclude Include="Core\Wire.h" />
+    <ClInclude Include="Controller\WireHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="UI\Fonts\AnonymousPro-Regular.ttf" />

@@ -28,6 +28,9 @@ public:
     sf::Vector2f getLeadPositionA() const;
     sf::Vector2f getLeadPositionB() const;
 
+    bool nearLeadA(sf::Vector2f& point);
+    bool nearLeadB(sf::Vector2f& point);
+
     int componentID;
     bool selected = false;
 
@@ -42,7 +45,7 @@ private:
     bool dragging = false;
     sf::Vector2f dragOffset;
 
-    sf::Vector2f leadOffsetA = { -120.f, 0.f };
-    sf::Vector2f leadOffsetB = { 120.f, 0.f };
+    sf::Vector2f leadOffsetA = { -60.f, 0.f };
+    sf::Vector2f leadOffsetB = { 60.f, 0.f };
 };
 

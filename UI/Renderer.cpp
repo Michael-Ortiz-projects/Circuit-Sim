@@ -12,16 +12,18 @@ Renderer::Renderer(sf::RenderWindow& Window, AssetManager& Assets, Grid& Grid)
     UIView.setCenter(windowSize * 0.5f);
 }
 
-void Renderer::drawCanvas(std::vector<SchematicComponent>& components) {
+void Renderer::drawCanvas(std::vector<SchematicComponent>& components, std::vector<Wire>& wires) {
     window.setView(canvasView);
     grid.draw(window, canvasView);
-
-    
-
     for (auto& c : components) {
         window.draw(c.getSprite());
         if (c.selected)
             window.draw(c.getHitBox());
+    }
+
+    for (auto& wire : wires) {
+        std::map<int, bool> visited;
+        drawWireGraph(wire.graph.begin()->first, wire.graph, visited);
     }
 }
 
@@ -38,4 +40,20 @@ sf::View& Renderer::getCanvasView() {
 
 sf::View& Renderer::getUIView() {
     return UIView;
+}
+
+void Renderer::drawWireGraph(int nodeID, std::map<int, Node>& graph, std::map<int, bool>& visited) {
+    visited[nodeID] = true;
+
+    for (int neighborID : graph[nodeID].neighbors) {
+        if (!visited[neighborID]) {
+            sf::Vertex line[] = {
+                            sf::Vertex(graph[nodeID].position, sf::Color::White),
+                            sf::Vertex(graph[neighborID].position, sf::Color::White)
+            };
+            window.draw(line, 2, sf::Lines);
+
+            drawWireGraph(neighborID, graph, visited);
+        }
+    }
 }
