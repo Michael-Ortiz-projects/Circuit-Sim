@@ -4,54 +4,51 @@ WireHandler::WireHandler(Circuit& Circuit, std::vector<SchematicComponent>& comp
 	: circuit(Circuit), schematicComponents(components) { }
 
 void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
+    if (attemptedConnection.lead == Lead::Null)
+    {
+        if (wireState == WireState::Creating)
+        {
+            if (activeWire)
+                activeWire->commitPreview();
+        }
+    }
 
-	if (attemptedConnection.lead == Lead::Null) { //adds new node to wire
-		std::cout << "This Ran 1\n";
-		if (wireState == WireState::Creating) {
-			std::cout << "This Ran 2\n";
+    if (circuit.leadIsEmpty(attemptedConnection))
+    {
+        if (wireState == WireState::Null)
+        {
+            int newNodeID = circuit.createElectricalNode();
+            circuit.addConnectionToNode(newNodeID, attemptedConnection);
 
-			Debug::printVector2f(snapPositionToGrid(worldPos));
-			activeWire->addNewNodeToWire(snapPositionToGrid(worldPos));
-		}
-	}
-	if (circuit.leadIsEmpty(attemptedConnection)) { // checks if a connection to a component was attempted
-		std::cout << "This Ran 3\n";
+            sf::Vector2f position = positionOfConnection(attemptedConnection);
+            int newWireID = circuit.createWire(snapPositionToGrid(position));
 
-		if (wireState == WireState::Null) { //creates a new wire at the connection point
-			std::cout << "This Ran 4\n";
+            activeWire = circuit.getWire(newWireID);
+            wireState = WireState::Creating;
+            activeWire->selected = true;
 
-			int newNodeID = circuit.createElectricalNode();
+            activeWire->updatePreview(snapPositionToGrid(worldPos), false);
+            attemptedConnection = { -1, Lead::Null };
+        }
+        else if (wireState == WireState::Creating)
+        {
+            if (activeWire)
+            {
+                circuit.addConnectionToNode(activeWire->ID, attemptedConnection);
 
-			circuit.addConnectionToNode(newNodeID, attemptedConnection);
+                activeWire->commitPreview();
 
-			sf::Vector2f position = positionOfConnection(attemptedConnection);
-			Debug::printVector2f(position);
-
-			int newWireID = circuit.createWire(snapPositionToGrid(position));
-
-			activeWire = circuit.getWire(newWireID);
-			wireState = WireState::Creating;
-			attemptedConnection = { -1, Lead::Null };
-		}
-		else if (wireState == WireState::Creating) { // ends wire creation 
-			std::cout << "This Ran 5\n";
-
-
-			circuit.addConnectionToNode(activeWire->ID, attemptedConnection);
-
-			activeWire->addNewNodeToWire(snapPositionToGrid(worldPos));
-
-			wireState = WireState::Null;
-			std::cout << "wirestate = Null\n";
-		}
-	}	
-
-	
-	Debug::debugPrintWire(*activeWire);
+                wireState = WireState::Null;
+                activeWire->selected = false;
+                activeWire = nullptr;
+            }
+        }
+    }
+    if (activeWire) Debug::debugPrintWire(*activeWire);
 }
 
 void WireHandler::onMouseMove(const sf::Vector2f& worldPos) {
-
+	if (activeWire) activeWire->updatePreview(snapPositionToGrid(worldPos), false);
 }
 
 void WireHandler::onMouseRelease(const sf::Vector2f& worldPos) {

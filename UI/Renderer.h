@@ -15,7 +15,7 @@ public:
 
     void drawCanvas(std::vector<SchematicComponent>& components, std::unordered_map<int, Wire>& wires);
 
-    void drawWireGraph(int nodeID, std::map<int, Node>& graph, std::map<int, bool>& visited);
+    void drawWireGraph(int nodeID, const std::map<int, Node>& graph, std::map<int, bool>& visited);
 
 
     void drawUI(std::unordered_map<MenuID, DropdownMenu> menu_map);

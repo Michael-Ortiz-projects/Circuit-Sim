@@ -85,11 +85,11 @@ public:
 
     static void debugPrintWire(const Wire& wire) {
         std::cout << "Wire ID: " << wire.ID << "\n";
-        std::cout << "Next Node ID: " << wire.nextNodeID << "\n";
-        std::cout << "Current Stem Node: " << wire.currentStemNode << "\n";
+        std::cout << "Next Node ID: " << wire.getNextNodeID() << "\n";
+        std::cout << "Current Stem Node: " << wire.getStemNode() << "\n";
         std::cout << "Graph nodes:\n";
 
-        for (const auto& [nodeID, node] : wire.graph) {
+        for (const auto& [nodeID, node] : wire.getGraph()) {
             std::cout << "  Node " << nodeID
                 << " at (" << node.position.x << ", " << node.position.y << ")";
 

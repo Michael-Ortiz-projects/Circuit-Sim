@@ -23,8 +23,14 @@ void Renderer::drawCanvas(std::vector<SchematicComponent>& components, std::unor
 
     for (auto& wire : wires) {
         std::map<int, bool> visited;
-        if (!wire.second.graph.empty()) {
-            drawWireGraph(wire.second.graph.begin()->first, wire.second.graph, visited);
+        const auto& graph = wire.second.getGraph();
+
+        if (!graph.empty()) {
+            drawWireGraph(graph.begin()->first, graph, visited);
+        }
+
+        if (wire.second.selected) {
+            window.draw(wire.second.getPreviewLine());
         }
     }
 }
@@ -44,14 +50,14 @@ sf::View& Renderer::getUIView() {
     return UIView;
 }
 
-void Renderer::drawWireGraph(int nodeID, std::map<int, Node>& graph, std::map<int, bool>& visited) {
+void Renderer::drawWireGraph(int nodeID, const std::map<int, Node>& graph, std::map<int, bool>& visited) {
     visited[nodeID] = true;
 
-    for (int neighborID : graph[nodeID].neighbors) {
+    for (int neighborID : graph.at(nodeID).neighbors) {
         if (!visited[neighborID]) {
             sf::Vertex line[] = {
-                            sf::Vertex(graph[nodeID].position, sf::Color::White),
-                            sf::Vertex(graph[neighborID].position, sf::Color::White)
+                            sf::Vertex(graph.at(nodeID).position, sf::Color(154, 159, 166, 255)),
+                            sf::Vertex(graph.at(neighborID).position, sf::Color(154, 159, 166, 255))
             };
             window.draw(line, 2, sf::Lines);
 
