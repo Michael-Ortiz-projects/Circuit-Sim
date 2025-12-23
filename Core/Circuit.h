@@ -18,13 +18,13 @@ public:
     std::vector<Component>& getComponents();
 
     Wire* getWire(int wireID);
-    std::vector<Wire>& getWires();
+    std::unordered_map<int, Wire>& getWires();
 
     int createElectricalNode();
     void removeElectricalNode(int nodeID);
 
-    void addConnectionToNode(int nodeID, int componentID, Lead lead);
-    void removeConnectionFromNode(int nodeID, int componentID, Lead lead);
+    void addConnectionToNode(int nodeID, ElectricalConnection& connection);
+    void removeConnectionFromNode(int nodeID, ElectricalConnection& connection);
 
 
     int createWire(sf::Vector2f& position);
@@ -40,12 +40,11 @@ private:
     bool isSimulating = false;
 
     std::vector<Component> components;
-    std::vector<ElectricalNode> nodes;
-    std::vector<Wire> wires;
+    std::unordered_map<int, ElectricalNode> nodes;
+    std::unordered_map<int, Wire> wires;
 
     std::unordered_map<int, int> componentIDToIndex; // maps ID's to Component Vector
-    std::unordered_map<int, int> wireIDToIndex; // maps wireID to Wire Vector (not started)
-    std::unordered_map<int, int> electricalNodeIDToIndex; // maps ID to ElectricalNode Vector (not started)
+    
     /*
   
     reuse old wire system in a sense because working with a graph of nodes is the superior way to think about a wire.

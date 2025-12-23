@@ -76,10 +76,12 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 				}
 			}
 
-			ElectricalConnection clickedLead = findClickedLead({ event.x, event.y });
-			if (clickedLead.componentID != -1) {
+			ElectricalConnection clickedLead = findClickedLead(sf::Vector2f(event.x, event.y));
+			if (clickedLead.lead != Lead::Null) {
+				std::cout << "Clicked Component " + clickedLead.componentID << ", Lead " 
+					<< Debug::lead_to_string(clickedLead.lead) << std::endl;
 				currentHandler = &wireHandler;
-				Debug::setHandler("Drag Handler");
+				Debug::setHandler("Wire Handler");
 				wireHandler.attemptedConnection = clickedLead;
 			}
 		}
@@ -176,7 +178,7 @@ void Controller::rebuildSchematicComponents() {
 	for (const auto& comp : circuit.getComponents()) {
 		SchematicComponent c(comp);
 		c.setTexture(assets.getTexture(comp.type));
-		components.push_back(c);
+		components.emplace_back(c);
 	}
 }
 

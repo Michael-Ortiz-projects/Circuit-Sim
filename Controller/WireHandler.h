@@ -9,14 +9,15 @@
 enum class WireState {
 	Creating,
 	Editing,
-	Deleting//for now
+	Deleting,//for now
+	Null
 };
 
 class WireHandler : public InputHandler {
 public:
 	ElectricalConnection attemptedConnection;
 
-	WireHandler(Circuit& Circuit, std::vector<SchematicComponent> components);
+	WireHandler(Circuit& Circuit, std::vector<SchematicComponent>& components);
 
 	void onMousePress(const sf::Vector2f& worldPos) override;
 
@@ -30,10 +31,11 @@ public:
 
 private:
 
-	sf::Vector2f& snapPositionToGrid(sf::Vector2f& position);
+	sf::Vector2f& snapPositionToGrid(const sf::Vector2f& position);
 	sf::Vector2f positionOfConnection(ElectricalConnection& connection);
 	Circuit& circuit;
-	std::vector<SchematicComponent> schematicComponents;
+	std::vector<SchematicComponent>& schematicComponents;
 	Wire* activeWire;
+	WireState wireState = WireState::Null;
 
 };

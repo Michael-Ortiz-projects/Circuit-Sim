@@ -21,7 +21,7 @@ int main()
 
     AssetManager assets;
     Circuit circuit;
-    Wire wire1({ 400, 400 });
+    Wire wire(sf::Vector2f(520, 520), 0);
     /*wire1.graph[1].position = sf::Vector2f(520, 400);
     wire1.graph[0].neighbors.push_back(1);
     wire1.graph[1].neighbors.push_back(0);

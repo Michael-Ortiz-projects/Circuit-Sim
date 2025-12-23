@@ -1,22 +1,45 @@
 #include "WireHandler.h"
 
-WireHandler::WireHandler(Circuit& Circuit, std::vector<SchematicComponent> components)
+WireHandler::WireHandler(Circuit& Circuit, std::vector<SchematicComponent>& components)
 	: circuit(Circuit), schematicComponents(components) { }
 
 void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
 	if (circuit.leadIsEmpty(attemptedConnection)) { // checks if a connection to a component was attempted
-		int newNodeID = circuit.createElectricalNode();
+		std::cout << "\nLead is empty\n";
+		if (wireState == WireState::Null) {
+			std::cout << "Wirestate = Null\n";
+			int newNodeID = circuit.createElectricalNode();
+			std::cout << "Adding connection to node\n";
+			circuit.addConnectionToNode(newNodeID, attemptedConnection);
+			std::cout << "getting connection Position\n";
+			sf::Vector2f position = positionOfConnection(attemptedConnection);
+			Debug::printVector2f(position);
+			std::cout << "Creating Wire\n";
+			int newWireID = circuit.createWire(snapPositionToGrid(position));
+			std::cout << "setting activeWire\n";
+			activeWire = circuit.getWire(newWireID);
+			wireState = WireState::Creating;
+			attemptedConnection = { -1, Lead::Null };
+		}
+		else if (wireState == WireState::Creating) {
+			std::cout << "WireState = Creating\n Adding connection to node\n";
+			circuit.addConnectionToNode(activeWire->ID, attemptedConnection);
+			std::cout << "Adding new node to wire\n";
+			activeWire->addNewNodeToWire(snapPositionToGrid(worldPos));
+		}
+	}	
 
-		circuit.addConnectionToNode(newNodeID, attemptedConnection.componentID, attemptedConnection.lead);
-
-		sf::Vector2f position = positionOfConnection(attemptedConnection);
-		int newWireID = circuit.createWire(snapPositionToGrid(position));
-		activeWire = circuit.getWire(newWireID);
+	else {
+		std::cout << "\nLead is not empty\n";
+		if (wireState == WireState::Creating) {
+			std::cout << "wirestate = Creating\n";
+			std::cout << "Adding new node to wire\n";
+			Debug::printVector2f(worldPos);
+			activeWire->addNewNodeToWire(snapPositionToGrid(worldPos));//for some reason the node position is messed up bad
+			//seems like the node position is not actually setting it
+		}
 	}
-
-	else { //place new wire point
-		//int newWireNodeID = activeWire->addNodeToWire(snapPositionToGrid(worldPos));
-	}
+	Debug::debugPrintWire(*activeWire);
 }
 
 void WireHandler::onMouseMove(const sf::Vector2f& worldPos) {
@@ -28,18 +51,17 @@ void WireHandler::onMouseRelease(const sf::Vector2f& worldPos) {
 }
 
 bool WireHandler::shouldRelease() const {
-	return true;
+	return wireState == WireState::Null;
 }
 
 void WireHandler::createWire(const sf::Vector2f& worldPos) {
 
 }
 
-sf::Vector2f& WireHandler::snapPositionToGrid(sf::Vector2f& position) {
-	position.x = std::round(position.x / gridSize) * gridSize;
-	position.y = std::round(position.y / gridSize) * gridSize;
-
-	return position;
+sf::Vector2f& WireHandler::snapPositionToGrid(const sf::Vector2f& position) {
+	
+	sf::Vector2f snappedPos(std::round(position.x / gridSize) * gridSize, std::round(position.y / gridSize) * gridSize);
+	return snappedPos;
 }
 
 sf::Vector2f WireHandler::positionOfConnection(ElectricalConnection& connection) {

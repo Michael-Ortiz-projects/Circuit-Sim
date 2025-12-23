@@ -12,7 +12,7 @@ Renderer::Renderer(sf::RenderWindow& Window, AssetManager& Assets, Grid& Grid)
     UIView.setCenter(windowSize * 0.5f);
 }
 
-void Renderer::drawCanvas(std::vector<SchematicComponent>& components, std::vector<Wire>& wires) {
+void Renderer::drawCanvas(std::vector<SchematicComponent>& components, std::unordered_map<int, Wire>& wires) {
     window.setView(canvasView);
     grid.draw(window, canvasView);
     for (auto& c : components) {
@@ -23,7 +23,7 @@ void Renderer::drawCanvas(std::vector<SchematicComponent>& components, std::vect
 
     for (auto& wire : wires) {
         std::map<int, bool> visited;
-        drawWireGraph(wire.graph.begin()->first, wire.graph, visited);
+        drawWireGraph(wire.second.graph.begin()->first, wire.second.graph, visited);
     }
 }
 

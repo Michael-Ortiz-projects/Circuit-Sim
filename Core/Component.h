@@ -32,7 +32,6 @@ public:
     bool selected;
 
     Component(int A, int B, const ComponentType& ty, double val = 0);
-    Component() = default;
 
     void setPosition(const sf::Vector2f& pos);
 

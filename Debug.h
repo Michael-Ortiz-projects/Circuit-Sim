@@ -2,6 +2,8 @@
 #include "UI/Button.h"
 #include "Core/Component.h"
 #include "iomanip"
+#include "Core/ElectricalNode.h"
+#include "Core/Wire.h"
 class Debug
 {
 public:
@@ -50,6 +52,20 @@ public:
             return "Switch";
         }
     }
+
+    static std::string lead_to_string(Lead lead) {
+        switch (lead) {
+        case Lead::A:
+            return "A";
+
+        case Lead::B:
+            return "B";
+
+        case Lead::Null:
+            return "Null";
+        }
+    }
+
     static std::string printVector2f(sf::Vector2f vector) {
         std::cout << "(" + std::to_string(vector.x) + ", " + std::to_string(vector.y) + ")\n";
         return "(" + std::to_string(vector.x) + ", " + std::to_string(vector.y) + ")\n";
@@ -65,6 +81,27 @@ public:
             << "View size:   (" << s.x << ", " << s.y << ")\n"
             << "Viewport:   (" << vp.left << ", " << vp.top
             << ", " << vp.width << ", " << vp.height << ")\n\n";
+    }
+
+    static void debugPrintWire(const Wire& wire) {
+        std::cout << "Wire ID: " << wire.ID << "\n";
+        std::cout << "Next Node ID: " << wire.nextNodeID << "\n";
+        std::cout << "Current Stem Node: " << wire.currentStemNode << "\n";
+        std::cout << "Graph nodes:\n";
+
+        for (const auto& [nodeID, node] : wire.graph) {
+            std::cout << "  Node " << nodeID
+                << " at (" << node.position.x << ", " << node.position.y << ")";
+
+            if (!node.neighbors.empty()) {
+                std::cout << " -> Neighbors: ";
+                for (int neighborID : node.neighbors) {
+                    std::cout << neighborID << " ";
+                }
+            }
+            std::cout << "\n";
+        }
+        std::cout << std::endl;
     }
 private:
     static inline bool enabled = true; // default on

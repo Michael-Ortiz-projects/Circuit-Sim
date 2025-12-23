@@ -1,7 +1,7 @@
 #include "Component.h"
 
 Component::Component(int A, int B, const ComponentType& ty, double val)
-    : nodeA(A), nodeB(B), type(ty), value(val), current(0), voltage(0)
+    : nodeA(A), nodeB(B), type(ty), value(val), current(0), voltage(0), rotation(0)
 {
     switch (ty) {
     case ComponentType::VoltageSource:

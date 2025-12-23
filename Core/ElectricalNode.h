@@ -14,6 +14,7 @@ struct ElectricalConnection {
 
 class ElectricalNode {
 public:
+	ElectricalNode();
 	ElectricalNode(int ID);
 	int id;  
 	std::vector<ElectricalConnection> connections;
