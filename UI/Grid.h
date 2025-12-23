@@ -9,6 +9,6 @@ public:
 
 private:
 	float gridSpacing;
-	sf::Color clearColor = sf::Color(30, 30, 30);
+	sf::Color clearColor = sf::Color(18, 20, 23);
 	sf::Color gridColor = sf::Color(40, 40, 48);
 };

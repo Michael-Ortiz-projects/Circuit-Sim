@@ -45,13 +45,5 @@ private:
 
     std::unordered_map<int, int> componentIDToIndex; // maps ID's to Component Vector
     
-    /*
-  
-    reuse old wire system in a sense because working with a graph of nodes is the superior way to think about a wire.
-    A map of nodes each with a posiiton and a vector of the indexes to neighboring nodes
-    Keep electrical nodes though, thats going to keep it clean so that you dont mix electrical connections with wire merging logic
-    
-
-    when 
-    */
+   
 };

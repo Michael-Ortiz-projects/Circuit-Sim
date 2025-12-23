@@ -61,7 +61,15 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y }, renderer.getCanvasView());
 
 	if (event.button == sf::Mouse::Button::Left) {
-		if (!currentHandler) {
+		ElectricalConnection clickedLead = findClickedLead(sf::Vector2f(event.x, event.y));
+		if (clickedLead.lead != Lead::Null) {
+			std::cout << "Clicked Component " << clickedLead.componentID << ", Lead "
+				<< Debug::lead_to_string(clickedLead.lead) << std::endl;
+			currentHandler = &wireHandler;
+			Debug::setHandler("Wire Handler");
+			wireHandler.attemptedConnection = clickedLead;
+		}
+		else if (!currentHandler) {
 			Component* clickedComponent = findComponentAt(worldMousePosition);
 			if (clickedComponent) {
 				currentHandler = &dragHandler;
@@ -76,14 +84,6 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 				}
 			}
 
-			ElectricalConnection clickedLead = findClickedLead(sf::Vector2f(event.x, event.y));
-			if (clickedLead.lead != Lead::Null) {
-				std::cout << "Clicked Component " << clickedLead.componentID << ", Lead " 
-					<< Debug::lead_to_string(clickedLead.lead) << std::endl;
-				currentHandler = &wireHandler;
-				Debug::setHandler("Wire Handler");
-				wireHandler.attemptedConnection = clickedLead;
-			}
 		}
 	}
 	if (currentHandler) currentHandler->onMousePress(worldMousePosition);
@@ -177,8 +177,15 @@ void Controller::rebuildSchematicComponents() {
 
 	for (const auto& comp : circuit.getComponents()) {
 		SchematicComponent c(comp);
+		sf::Vector2f target = comp.position;
+		sf::Vector2f snapped(
+			std::round(target.x / gridSize) * gridSize,
+			std::round(target.y / gridSize) * gridSize
+		);
+		c.setPosition(snapped);
 		c.setTexture(assets.getTexture(comp.type));
 		components.emplace_back(c);
+
 	}
 }
 

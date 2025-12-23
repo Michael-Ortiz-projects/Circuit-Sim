@@ -28,7 +28,7 @@ SchematicComponent::SchematicComponent(const Component& comp)
     hitBox.setOrigin(hitBox.getSize() * 0.5f);
     hitBox.setFillColor(sf::Color::Transparent);
     hitBox.setOutlineThickness(1.f);
-    hitBox.setOutlineColor(sf::Color::Blue);
+    hitBox.setOutlineColor(sf::Color(63, 182, 168));
 }
 void SchematicComponent::setPosition(const sf::Vector2f& pos) {
     position = pos;
@@ -50,7 +50,7 @@ void SchematicComponent::startDrag(const sf::Vector2f& worldPos) {
 void SchematicComponent::dragTo(const sf::Vector2f& worldPos) {
     if (!dragging) return;
 
-    sf::Vector2f target = worldPos + dragOffset;
+    sf::Vector2f target = worldPos;
     sf::Vector2f snapped(
         std::round(target.x / gridSize) * gridSize,
         std::round(target.y / gridSize) * gridSize

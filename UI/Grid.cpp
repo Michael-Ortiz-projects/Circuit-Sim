@@ -8,30 +8,39 @@ void Grid::setSpacing(float spacing) {
     gridSpacing = spacing;
 }
 
-void Grid::draw(sf::RenderWindow& window, const sf::View& view) {
+void Grid::draw(sf::RenderWindow& window, const sf::View& view)
+{
     window.clear(clearColor);
 
-    sf::Vector2f BottomLeftWindow = window.mapPixelToCoords(sf::Vector2i(0, 0), view);
-    sf::Vector2f TopRightWindow = window.mapPixelToCoords(sf::Vector2i(window.getSize().x, window.getSize().y), view);
+    sf::Vector2f bottomLeft =
+        window.mapPixelToCoords({ 0, 0 }, view);
+    sf::Vector2f topRight =
+        window.mapPixelToCoords(
+            { (int)window.getSize().x, (int)window.getSize().y }, view);
 
-    // Draw vertical grid lines
-    for (float x = std::floor(BottomLeftWindow.x / gridSpacing) * gridSpacing; x <= TopRightWindow.x; x += gridSpacing) {
-        sf::Vertex line[] = {
-            sf::Vertex(sf::Vector2f(x, BottomLeftWindow.y), gridColor),
-            sf::Vertex(sf::Vector2f(x, TopRightWindow.y), gridColor)
-        };
-        window.draw(line, 2, sf::Lines);
+    // snap grid 
+    float startX = std::floor(bottomLeft.x / gridSpacing) * gridSpacing;
+    float startY = std::floor(bottomLeft.y / gridSpacing) * gridSpacing;
+    float endX = std::ceil(topRight.x / gridSpacing) * gridSpacing;
+    float endY = std::ceil(topRight.y / gridSpacing) * gridSpacing;
+
+    float halfSize = gridSpacing * 0.20f;
+
+    sf::VertexArray crosses(sf::Lines);
+
+    for (float x = startX; x <= endX; x += gridSpacing)
+    {
+        for (float y = startY; y <= endY; y += gridSpacing)
+        {
+            // horizontal
+            crosses.append(sf::Vertex({ x - halfSize, y }, gridColor));
+            crosses.append(sf::Vertex({ x + halfSize, y }, gridColor));
+
+            // vertical
+            crosses.append(sf::Vertex({ x, y - halfSize }, gridColor));
+            crosses.append(sf::Vertex({ x, y + halfSize }, gridColor));
+        }
     }
 
-    // Draw horizontal grid lines
-    float yStart = std::floor(BottomLeftWindow.y / gridSpacing) * gridSpacing;
-    float yEnd = std::ceil(TopRightWindow.y / gridSpacing) * gridSpacing;
-
-    for (float y = yStart; y <= yEnd; y += gridSpacing) {
-        sf::Vertex line[] = {
-            sf::Vertex(sf::Vector2f(BottomLeftWindow.x, y), gridColor),
-            sf::Vertex(sf::Vector2f(TopRightWindow.x, y), gridColor)
-        };
-        window.draw(line, 2, sf::Lines);
-    }
+    window.draw(crosses);
 }

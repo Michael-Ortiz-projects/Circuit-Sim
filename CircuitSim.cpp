@@ -22,14 +22,7 @@ int main()
     AssetManager assets;
     Circuit circuit;
     Wire wire(sf::Vector2f(520, 520), 0);
-    /*wire1.graph[1].position = sf::Vector2f(520, 400);
-    wire1.graph[0].neighbors.push_back(1);
-    wire1.graph[1].neighbors.push_back(0);
-    circuit.getWires().push_back(wire1);
-    sample code for a simple wire graphic
     
-    now work on adding wire by clicking on leads using the controller and a wireHandler to do so
-    */
     std::vector<SchematicComponent> schematic_components;
 
     Renderer renderer(window, assets, grid);
@@ -99,12 +92,3 @@ int main()
     }
     return 0;
 }
-
-/*
-maybe add a cursor, not totally necessary|| make wires: i already made the selection hitbox, next i need to detect clicking the leads (use node selection radius in config)
-                                            make a wire class i think, definitely make a wire handler
-
-I want to add area component selection where i can highlight a region and all components in that region are selected and a bounding box around those components are created
-but to do that with the right click i need to move canvas drag logic to the middle mouse button
-
-*/
