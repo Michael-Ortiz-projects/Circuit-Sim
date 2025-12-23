@@ -11,7 +11,7 @@ public:
 
 	Wire(sf::Vector2f initialPosition, int id);
 
-	int addNewNodeToWire(sf::Vector2f& worldPosition);
+	int addNewNodeToWire(sf::Vector2f worldPosition);
 
 	int ID;
 	std::map<int, Node> graph;

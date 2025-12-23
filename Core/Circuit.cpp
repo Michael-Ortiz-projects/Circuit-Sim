@@ -78,7 +78,7 @@ void Circuit::removeConnectionFromNode(int nodeID, ElectricalConnection& connect
     );
 }
 
-int Circuit::createWire(sf::Vector2f& position) {
+int Circuit::createWire(sf::Vector2f position) {
     wires.emplace(nextWireID, Wire(position, nextWireID));
     return nextWireID++;
 }

@@ -78,7 +78,7 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 
 			ElectricalConnection clickedLead = findClickedLead(sf::Vector2f(event.x, event.y));
 			if (clickedLead.lead != Lead::Null) {
-				std::cout << "Clicked Component " + clickedLead.componentID << ", Lead " 
+				std::cout << "Clicked Component " << clickedLead.componentID << ", Lead " 
 					<< Debug::lead_to_string(clickedLead.lead) << std::endl;
 				currentHandler = &wireHandler;
 				Debug::setHandler("Wire Handler");

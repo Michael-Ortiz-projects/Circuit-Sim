@@ -27,7 +27,7 @@ public:
     void removeConnectionFromNode(int nodeID, ElectricalConnection& connection);
 
 
-    int createWire(sf::Vector2f& position);
+    int createWire(sf::Vector2f position);
 
     bool leadIsEmpty(ElectricalConnection& connection);
 

@@ -31,7 +31,7 @@ public:
 
 private:
 
-	sf::Vector2f& snapPositionToGrid(const sf::Vector2f& position);
+	sf::Vector2f snapPositionToGrid(const sf::Vector2f& position);
 	sf::Vector2f positionOfConnection(ElectricalConnection& connection);
 	Circuit& circuit;
 	std::vector<SchematicComponent>& schematicComponents;

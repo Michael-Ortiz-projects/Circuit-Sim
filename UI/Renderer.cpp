@@ -23,7 +23,9 @@ void Renderer::drawCanvas(std::vector<SchematicComponent>& components, std::unor
 
     for (auto& wire : wires) {
         std::map<int, bool> visited;
-        drawWireGraph(wire.second.graph.begin()->first, wire.second.graph, visited);
+        if (!wire.second.graph.empty()) {
+            drawWireGraph(wire.second.graph.begin()->first, wire.second.graph, visited);
+        }
     }
 }
 
