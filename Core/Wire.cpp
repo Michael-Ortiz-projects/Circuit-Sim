@@ -5,10 +5,10 @@ Wire::Wire(sf::Vector2f initialPosition, int id) {
 	graph.emplace(0, Node{ initialPosition, {} });
 	nextNodeID = 1;
     currentStemNode = 0;
+    previewOrientation = PreviewOrientation::None;
 }
 
-int Wire::appendNode(sf::Vector2f pos)
-{
+int Wire::appendNode(sf::Vector2f pos) {
     int id = nextNodeID++;
 
     graph[id].position = pos;
@@ -20,18 +20,40 @@ int Wire::appendNode(sf::Vector2f pos)
     return id;
 }
 
-void Wire::updatePreview(sf::Vector2f pos, bool invert) {
-    sf::Vector2f stem = graph[currentStemNode].position;
+void Wire::updatePreview(sf::Vector2f pos) {
+    sf::Vector2f stemPos = graph.at(currentStemNode).position;
+    sf::Vector2f delta = pos - stemPos;
 
-    if (!invert)
-        firstPreview = { pos.x, stem.y };
-    else
-        firstPreview = { stem.x, pos.y };
+    bool CrossedX = std::abs(delta.x) > axisTriggerDistance;
+    bool CrossedY = std::abs(delta.y) > axisTriggerDistance;
 
-    secondPreview = pos;
+    bool insideBox = !CrossedX && !CrossedY;
 
-    previewValid = true;
+    if (insideBox) {
+        previewOrientation = PreviewOrientation::None;
+        return;
+    }
 
+    if (previewOrientation == PreviewOrientation::None) {
+        if (CrossedX && !CrossedY) {
+            previewOrientation = PreviewOrientation::HorizontalFirst;
+        }
+        else if (CrossedY && !CrossedX) {
+            previewOrientation = PreviewOrientation::VerticalFirst;
+        }
+        else {
+            return;
+        }
+    }
+
+    if (previewOrientation == PreviewOrientation::HorizontalFirst){
+        firstPreview = { pos.x, stemPos.y };
+        secondPreview = pos;
+    }
+    else if (previewOrientation == PreviewOrientation::VerticalFirst) {
+        firstPreview = { stemPos.x, pos.y };
+        secondPreview = pos;
+    }
 }
 
 void Wire::commitPreview() {
@@ -40,7 +62,7 @@ void Wire::commitPreview() {
 
     if (secondPreview != graph[currentStemNode].position)
         appendNode(secondPreview);
-    previewValid = false;
+    previewOrientation = PreviewOrientation::None;
 }
 
 

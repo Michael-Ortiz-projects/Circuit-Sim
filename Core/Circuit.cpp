@@ -78,6 +78,21 @@ void Circuit::removeConnectionFromNode(int nodeID, ElectricalConnection& connect
     );
 }
 
+void Circuit::updateComponentLead(int nodeID, ElectricalConnection& connection) {
+    switch (connection.lead) {
+    case Lead::A:
+        getComponent(connection.componentID)->nodeA = nodeID;
+        return;
+    case Lead::B:
+        getComponent(connection.componentID)->nodeB = nodeID;
+        return;
+    case Lead::Null:
+        std::cout << "Update component Lead Null connection\n";
+        return;
+    }
+}
+
+
 int Circuit::createWire(sf::Vector2f position) {
     wires.emplace(nextWireID, Wire(position, nextWireID));
     return nextWireID++;

@@ -1,8 +1,16 @@
 #pragma once
 #include "SFML/Graphics.hpp"
+#include <iostream>
+
 struct Node {
 	sf::Vector2f position;
 	std::vector<int> neighbors;
+};
+
+enum class PreviewOrientation {
+	None,
+	HorizontalFirst,
+	VerticalFirst
 };
 
 class Wire {
@@ -12,7 +20,7 @@ public:
 
 	int appendNode(sf::Vector2f pos);
 
-	void updatePreview(sf::Vector2f pos, bool invert);
+	void updatePreview(sf::Vector2f pos);
 
 	void commitPreview();
 
@@ -30,7 +38,6 @@ public:
 	std::vector<int> junctionNodes;
 
 	bool selected;
-	bool previewValid = false;
 
 private:
 	std::map<int, Node> graph;
@@ -38,6 +45,7 @@ private:
 	sf::Vector2f firstPreview;
 	sf::Vector2f secondPreview;
 	int currentStemNode;
-
+	PreviewOrientation previewOrientation;
+	float axisTriggerDistance = 6.0f;
 };
 

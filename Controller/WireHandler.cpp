@@ -27,7 +27,7 @@ void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
             wireState = WireState::Creating;
             activeWire->selected = true;
 
-            activeWire->updatePreview(snapPositionToGrid(worldPos), false);
+            activeWire->updatePreview(snapPositionToGrid(worldPos));
             attemptedConnection = { -1, Lead::Null };
         }
         else if (wireState == WireState::Creating)
@@ -48,7 +48,7 @@ void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
 }
 
 void WireHandler::onMouseMove(const sf::Vector2f& worldPos) {
-	if (activeWire) activeWire->updatePreview(snapPositionToGrid(worldPos), false);
+	if (activeWire) activeWire->updatePreview(snapPositionToGrid(worldPos));
 }
 
 void WireHandler::onMouseRelease(const sf::Vector2f& worldPos) {
