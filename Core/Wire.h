@@ -1,16 +1,30 @@
 #pragma once
 #include "SFML/Graphics.hpp"
 #include <iostream>
+#include "../Config.h"
+#include "ElectricalNode.h"
+enum class NodeType {
+	Anchor,
+	Junction,
+	Intermediate
+};
 
 struct Node {
 	sf::Vector2f position;
 	std::vector<int> neighbors;
+	int belongsTo;
 };
 
 enum class PreviewOrientation {
 	None,
 	HorizontalFirst,
 	VerticalFirst
+};
+
+
+enum class WireMoveIntent {
+	Edit,
+	ComponentMove
 };
 
 class Wire {
@@ -26,6 +40,8 @@ public:
 
 	sf::VertexArray getPreviewLine() const;
 
+	void moveNode(int movingNodeID, sf::Vector2f newPosition, WireMoveIntent intent);
+
 
 	const std::map<int, Node>& getGraph() const { return graph; }	
 	int getNextNodeID() const { return nextNodeID; }
@@ -34,12 +50,24 @@ public:
 	sf::Vector2f getSecondPreview() const { return secondPreview; }
 
 	int ID;
-	std::vector<int> anchorNodes;
+	std::map<int, ElectricalConnection> anchorNodes;
 	std::vector<int> junctionNodes;
+
+	
 
 	bool selected;
 
 private:
+
+	sf::Vector2f snapPositionToGrid(const sf::Vector2f& position);
+	bool isAnchor(int nodeID);
+
+	sf::Vector2f getBendNodePosition(int movedID, int anchorID);
+	void insertBendNodeBetween(int nodeA, int nodeB);
+
+	void removeNeighborFrom(int nodeID, int to_remove);
+
+	void updateNeighborPosition(int movedID, int neighborID, sf::Vector2f previousPosition);
 	std::map<int, Node> graph;
 	int nextNodeID;
 	sf::Vector2f firstPreview;

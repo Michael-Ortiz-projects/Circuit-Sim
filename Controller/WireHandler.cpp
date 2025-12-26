@@ -4,34 +4,32 @@ WireHandler::WireHandler(Circuit& Circuit, std::vector<SchematicComponent>& comp
 	: circuit(Circuit), schematicComponents(components) { }
 
 void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
-    if (attemptedConnection.lead == Lead::Null)
-    {
-        if (wireState == WireState::Creating)
-        {
-            if (activeWire)
+    if (attemptedConnection.lead == Lead::Null) {
+        if (wireState == WireState::Creating) {
+            if (activeWire) {
                 activeWire->commitPreview();
+                activeWire->updatePreview(worldPos);
+            }
         }
     }
 
-    if (circuit.leadIsEmpty(attemptedConnection))
-    {
-        if (wireState == WireState::Null)
-        {
+    if (circuit.leadIsEmpty(attemptedConnection)) { //Work on the applying the node detection to implement node movement
+        if (wireState == WireState::Null) {
             int newNodeID = circuit.createElectricalNode();
             circuit.addConnectionToNode(newNodeID, attemptedConnection);
+            circuit.updateComponentLead(newNodeID, attemptedConnection);
 
             sf::Vector2f position = positionOfConnection(attemptedConnection);
-            int newWireID = circuit.createWire(snapPositionToGrid(position));
+            int newWireID = circuit.createWire(position);
 
             activeWire = circuit.getWire(newWireID);
             wireState = WireState::Creating;
             activeWire->selected = true;
 
-            activeWire->updatePreview(snapPositionToGrid(worldPos));
+            activeWire->updatePreview(worldPos);
             attemptedConnection = { -1, Lead::Null };
         }
-        else if (wireState == WireState::Creating)
-        {
+        else if (wireState == WireState::Creating) {
             if (activeWire)
             {
                 circuit.addConnectionToNode(activeWire->ID, attemptedConnection);
@@ -44,11 +42,13 @@ void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
             }
         }
     }
+
+    
     if (activeWire) Debug::debugPrintWire(*activeWire);
 }
 
 void WireHandler::onMouseMove(const sf::Vector2f& worldPos) {
-	if (activeWire) activeWire->updatePreview(snapPositionToGrid(worldPos));
+	if (activeWire) activeWire->updatePreview(worldPos);
 }
 
 void WireHandler::onMouseRelease(const sf::Vector2f& worldPos) {

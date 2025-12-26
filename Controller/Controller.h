@@ -39,6 +39,7 @@ public:
 
     ElectricalConnection findClickedLead(const sf::Vector2f point);
 
+    std::pair<int, int> findClickedNode(const sf::Vector2f point);
 
 private:
     InputHandler* currentHandler;

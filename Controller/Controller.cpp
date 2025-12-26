@@ -62,6 +62,7 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 
 	if (event.button == sf::Mouse::Button::Left) {
 		ElectricalConnection clickedLead = findClickedLead(sf::Vector2f(event.x, event.y));
+		std::pair<int, int> clickedWireNode = findClickedNode(sf::Vector2f(event.x, event.y));
 		if (clickedLead.lead != Lead::Null) {
 			std::cout << "Clicked Component " << clickedLead.componentID << ", Lead "
 				<< Debug::lead_to_string(clickedLead.lead) << std::endl;
@@ -100,6 +101,8 @@ void Controller::onScroll(const sf::Event::MouseWheelScrollEvent& event) {
 
 	if (currentHandler->shouldRelease()) {
 		currentHandler = nullptr;
+		Debug::setHandler("None");
+
 	}
 }
 
@@ -218,5 +221,19 @@ ElectricalConnection Controller::findClickedLead(const sf::Vector2f point) { // 
 		}
 	}
 	return { -1, Lead::Null };
+}
+
+std::pair<int, int> Controller::findClickedNode(const sf::Vector2f point) {// parameter is in pixel space, converts node position to pixel space, returns wireID, nodeID
+	for (const auto& w : circuit.getWires()) {
+		for (const auto& n : w.second.getGraph()) {
+			sf::Vector2i pixelPos = window.mapCoordsToPixel(n.second.position, renderer.getCanvasView());
+			sf::Vector2f distance = sf::Vector2f(pixelPos) - point;
+
+			if (distance.x * distance.x + distance.y * distance.y <= nodeSelectionRadius * nodeSelectionRadius) {
+				return { n.second.belongsTo, n.first };
+			}
+		}
+	}
+	return { -1, -1 };
 }
 

@@ -94,7 +94,7 @@ void Circuit::updateComponentLead(int nodeID, ElectricalConnection& connection) 
 
 
 int Circuit::createWire(sf::Vector2f position) {
-    wires.emplace(nextWireID, Wire(position, nextWireID));
+    wires.emplace(nextWireID, Wire(snapPositionToGrid(position), nextWireID));
     return nextWireID++;
 }
 
@@ -114,3 +114,11 @@ bool Circuit::leadIsEmpty(ElectricalConnection& connection) { // returns false i
         break;
     }
 }
+
+sf::Vector2f Circuit::snapPositionToGrid(const sf::Vector2f& position) {
+    return {
+        std::round(position.x / gridSize) * gridSize,
+        std::round(position.y / gridSize) * gridSize
+    };
+}
+

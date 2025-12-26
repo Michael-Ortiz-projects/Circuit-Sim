@@ -6,6 +6,7 @@
 #include "Component.h"
 #include "Wire.h"
 #include "ElectricalNode.h"
+#include "../Config.h"
 
 class Circuit {
 public:
@@ -34,6 +35,9 @@ public:
 
 
 private:
+
+    sf::Vector2f snapPositionToGrid(const sf::Vector2f& position);
+
     int nextComponentID = 0;
     int nextNodeID = 0;
     int nextWireID = 0;
