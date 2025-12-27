@@ -9,14 +9,21 @@
 enum class WireState {
 	Creating,
 	Editing,
-	Deleting,//for now
+	DraggingNode,
 	Null
+};
+
+
+struct WireInteraction {
+	ElectricalConnection connection{ -1, Lead::Null };
+	WireNodeReference wire_node{ -1, -1 };
+
+	bool hasLead() const { return connection.lead != Lead::Null; }
+	bool hasNode() const { return wire_node.isValid(); }
 };
 
 class WireHandler : public InputHandler {
 public:
-	ElectricalConnection attemptedConnection;
-
 	WireHandler(Circuit& Circuit, std::vector<SchematicComponent>& components);
 
 	void onMousePress(const sf::Vector2f& worldPos) override;
@@ -27,15 +34,24 @@ public:
 
 	bool shouldRelease() const override;
 
-	void createWire(const sf::Vector2f& worldPos);
 
+	void beginWireFromConnection(ElectricalConnection& connection);
+
+	void finishWireAtConnection(ElectricalConnection& end);
+
+	void beginNodeDrag(WireNodeReference& ref);
+
+	void setInteractionContext(WireInteraction context);
 private:
 
 	sf::Vector2f snapPositionToGrid(const sf::Vector2f& position);
 	sf::Vector2f positionOfConnection(ElectricalConnection& connection);
+
 	Circuit& circuit;
 	std::vector<SchematicComponent>& schematicComponents;
+
 	Wire* activeWire;
 	WireState wireState = WireState::Null;
 
+	WireInteraction interaction;
 };

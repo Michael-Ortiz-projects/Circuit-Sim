@@ -27,6 +27,15 @@ enum class WireMoveIntent {
 	ComponentMove
 };
 
+struct WireNodeReference {
+	int wireID;
+	int nodeID;
+
+	bool isValid() const {
+		return wireID >= 0 && nodeID >= 0;
+	}
+};
+
 class Wire {
 public:
 

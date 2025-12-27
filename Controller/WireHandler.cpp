@@ -4,63 +4,70 @@ WireHandler::WireHandler(Circuit& Circuit, std::vector<SchematicComponent>& comp
 	: circuit(Circuit), schematicComponents(components) { }
 
 void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
-    if (attemptedConnection.lead == Lead::Null) {
-        if (wireState == WireState::Creating) {
+    switch (wireState) {
+    case WireState::Null:
+        if (interaction.hasLead() && circuit.leadIsEmpty(interaction.connection)) {
+            std::cout << "Beginning Wire Creation\n";
+            beginWireFromConnection(interaction.connection);
+            activeWire->updatePreview(worldPos);
+        }
+
+        else if (interaction.hasNode()) {
+            std::cout << "Beginning Drag\n";
+            beginNodeDrag(interaction.wire_node);
+
+        }
+        break;
+    
+    case WireState::Creating:
+        if (interaction.hasLead() && circuit.leadIsEmpty(interaction.connection)) {
+            finishWireAtConnection(interaction.connection);
+            std::cout << "Ending Wire Creation\n";
+        }
+
+        else {
             if (activeWire) {
+                std::cout << "Appending Node\n";
                 activeWire->commitPreview();
                 activeWire->updatePreview(worldPos);
             }
         }
-    }
+        break;
 
-    if (circuit.leadIsEmpty(attemptedConnection)) { //Work on the applying the node detection to implement node movement
-        if (wireState == WireState::Null) {
-            int newNodeID = circuit.createElectricalNode();
-            circuit.addConnectionToNode(newNodeID, attemptedConnection);
-            circuit.updateComponentLead(newNodeID, attemptedConnection);
-
-            sf::Vector2f position = positionOfConnection(attemptedConnection);
-            int newWireID = circuit.createWire(position);
-
-            activeWire = circuit.getWire(newWireID);
-            wireState = WireState::Creating;
-            activeWire->selected = true;
-
-            activeWire->updatePreview(worldPos);
-            attemptedConnection = { -1, Lead::Null };
-        }
-        else if (wireState == WireState::Creating) {
-            if (activeWire)
-            {
-                circuit.addConnectionToNode(activeWire->ID, attemptedConnection);
-
-                activeWire->commitPreview();
-
-                wireState = WireState::Null;
-                activeWire->selected = false;
-                activeWire = nullptr;
-            }
-        }
+    default:
+        break;
     }
 
     
-    if (activeWire) Debug::debugPrintWire(*activeWire);
 }
 
 void WireHandler::onMouseMove(const sf::Vector2f& worldPos) {
-	if (activeWire) activeWire->updatePreview(worldPos);
+
+    switch (wireState) {
+    case WireState::Creating:
+        if (activeWire) {
+            activeWire->updatePreview(worldPos);
+        }
+        break;
+
+    case WireState::DraggingNode:
+        if (activeWire) {
+            activeWire->moveNode(interaction.wire_node.nodeID, worldPos, WireMoveIntent::Edit);
+        }
+        break;
+
+    default:
+        break;
+    }
 }
 
 void WireHandler::onMouseRelease(const sf::Vector2f& worldPos) {
-	attemptedConnection = { -1, Lead::Null };
+    interaction.connection = { -1, Lead::Null };
+    
 }
 
 bool WireHandler::shouldRelease() const {
 	return wireState == WireState::Null;
-}
-
-void WireHandler::createWire(const sf::Vector2f& worldPos) {
-
 }
 
 sf::Vector2f WireHandler::snapPositionToGrid(const sf::Vector2f& position) {
@@ -87,4 +94,44 @@ sf::Vector2f WireHandler::positionOfConnection(ElectricalConnection& connection)
 	case Lead::B: return it->getLeadPositionB();
 	default:      return { -1.f, -1.f };
 	}
+}
+
+
+void WireHandler::beginWireFromConnection(ElectricalConnection& connection) {
+    if (wireState != WireState::Null) return;
+
+    int nodeID = circuit.createElectricalNode();
+    circuit.addConnectionToNode(nodeID, connection);
+    circuit.updateComponentLead(nodeID, connection);
+
+    sf::Vector2f pos = positionOfConnection(connection);
+    int wireID = circuit.createWire(pos);
+
+    activeWire = circuit.getWire(wireID);
+    activeWire->selected = true;
+
+
+    wireState = WireState::Creating;
+    std::cout << "WireState = Creating\n\n";
+}
+
+void WireHandler::finishWireAtConnection(ElectricalConnection& end) {
+    if (wireState != WireState::Creating || !activeWire) return;
+
+    circuit.addConnectionToNode(activeWire->ID, end);
+    activeWire->commitPreview();
+
+    activeWire->selected = false;
+    activeWire = nullptr;
+    wireState = WireState::Null;
+}
+
+void WireHandler::beginNodeDrag(WireNodeReference& ref) {
+    activeWire = circuit.getWire(ref.wireID);
+
+    wireState = WireState::DraggingNode;
+}
+
+void WireHandler::setInteractionContext(WireInteraction context) {
+    interaction = context;
 }

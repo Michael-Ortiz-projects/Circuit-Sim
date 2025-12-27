@@ -43,8 +43,10 @@ std::vector<Component>& Circuit::getComponents() {
 
 Wire* Circuit::getWire(int wireID) {
     auto it = wires.find(wireID);
-    if (it == wires.end())
+    if (it == wires.end()) {
+        std::cout << "Circuit.getWire() returned nullptr\n";
         return nullptr;
+    }
 
     Wire& wire = it->second;
     return &wire;

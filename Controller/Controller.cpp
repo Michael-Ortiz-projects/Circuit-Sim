@@ -62,14 +62,20 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 
 	if (event.button == sf::Mouse::Button::Left) {
 		ElectricalConnection clickedLead = findClickedLead(sf::Vector2f(event.x, event.y));
-		std::pair<int, int> clickedWireNode = findClickedNode(sf::Vector2f(event.x, event.y));
-		if (clickedLead.lead != Lead::Null) {
+		WireNodeReference clickedNodeReference = findClickedNode(sf::Vector2f(event.x, event.y));
+
+		WireInteraction interaction = { clickedLead, clickedNodeReference };
+		if (interaction.hasLead() || interaction.hasNode()) {
 			std::cout << "Clicked Component " << clickedLead.componentID << ", Lead "
 				<< Debug::lead_to_string(clickedLead.lead) << std::endl;
+			std::cout << "Clicked Wire " << clickedNodeReference.wireID << ", Node " << clickedNodeReference.nodeID << std::endl;
 			currentHandler = &wireHandler;
 			Debug::setHandler("Wire Handler");
-			wireHandler.attemptedConnection = clickedLead;
+			wireHandler.setInteractionContext(interaction);
 		}
+
+		
+
 		else if (!currentHandler) {
 			Component* clickedComponent = findComponentAt(worldMousePosition);
 			if (clickedComponent) {
@@ -79,7 +85,7 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 			
 			}
 			else {
-				std::cout << "No clicked component\n";
+				//std::cout << "No clicked component\n\n";
 				for (auto& c : circuit.getComponents()) {
 					c.selected = false;
 				}
@@ -217,13 +223,14 @@ ElectricalConnection Controller::findClickedLead(const sf::Vector2f point) { // 
 
 		sf::Vector2f distanceB = sf::Vector2f(pixelPosB) - point;
 		if (distanceB.x * distanceB.x + distanceB.y * distanceB.y <= nodeSelectionRadius * nodeSelectionRadius) {
+			
 			return { c.componentID, Lead::B };
 		}
 	}
 	return { -1, Lead::Null };
 }
 
-std::pair<int, int> Controller::findClickedNode(const sf::Vector2f point) {// parameter is in pixel space, converts node position to pixel space, returns wireID, nodeID
+WireNodeReference Controller::findClickedNode(const sf::Vector2f point) {// parameter is in pixel space, converts node position to pixel space, returns wireID, nodeID
 	for (const auto& w : circuit.getWires()) {
 		for (const auto& n : w.second.getGraph()) {
 			sf::Vector2i pixelPos = window.mapCoordsToPixel(n.second.position, renderer.getCanvasView());
@@ -234,6 +241,7 @@ std::pair<int, int> Controller::findClickedNode(const sf::Vector2f point) {// pa
 			}
 		}
 	}
+	std::cout << "findClickedNode returned NULL\n";
 	return { -1, -1 };
 }
 

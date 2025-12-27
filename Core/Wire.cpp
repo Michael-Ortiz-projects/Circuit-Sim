@@ -68,10 +68,11 @@ void Wire::commitPreview() {
     previewOrientation = PreviewOrientation::None;
 }
 
-void Wire::moveNode(int movingNodeID, sf::Vector2f newPosition, WireMoveIntent intent) {
+void Wire::moveNode(int movingNodeID, sf::Vector2f newPosition, WireMoveIntent intent) { // fix this PLEASE node movement moves other nodes incorrectly
     Node& movingNode = graph.at(movingNodeID);
 
     sf::Vector2f prevPos(movingNode.position);
+
 
     if (isAnchor(movingNodeID)) {
         if (intent == WireMoveIntent::Edit) {
@@ -80,8 +81,10 @@ void Wire::moveNode(int movingNodeID, sf::Vector2f newPosition, WireMoveIntent i
         }
         if (intent == WireMoveIntent::ComponentMove) {
             movingNode.position = snapPositionToGrid(newPosition);
-
         }
+    }
+    else if (intent == WireMoveIntent::Edit) {
+        movingNode.position = snapPositionToGrid(newPosition);
     }
     std::vector<int> neighborIDs = movingNode.neighbors;
 
