@@ -68,55 +68,89 @@ int Wire::commitPreview() {
     if (secondPreview != graph[currentStemNode].position) {
         committedNode = appendNode(secondPreview);
     }
+
     previewOrientation = PreviewOrientation::None;
     return committedNode;
 }
 
-void Wire::moveNode(int movingNodeID, sf::Vector2f newPosition, WireMoveIntent intent) { // I need to determine node movement direction and insert nodes based on that
-                                                                                         // when i move a node diagonally fast it messes up, probably because the movement delta
+WireMoveResult Wire::moveNode(int movingNodeID, sf::Vector2f newPosition, WireMoveIntent intent) {
+    Node& movingNode = graph.at(movingNodeID);
+    WireMoveResult result = WireMoveResult::None;
+
+
+    sf::Vector2f newPos = snapPositionToGrid(newPosition);
+    sf::Vector2f currentPosition = movingNode.position;
+    sf::Vector2f delta = newPos - currentPosition;
+
+    if (delta == sf::Vector2f{ 0.f, 0.f })
+        return WireMoveResult::None;
+
+    sf::Vector2f intermediatePosition = currentPosition;
+
+    // X axis first
+    if (delta.x != 0.f) {
+        intermediatePosition.x += delta.x;
+        moveNodeSingleAxis(movingNodeID, intermediatePosition, MoveAxis::Horizontal, intent);
+        bool merged = collapseCoincidentNodes(movingNodeID);
+        if (merged)
+            result = WireMoveResult::NodeMerged;
+    }
+
+    // Y axis second
+    if (delta.y != 0.f) {
+        intermediatePosition.y += delta.y;
+        moveNodeSingleAxis(movingNodeID, intermediatePosition, MoveAxis::Vertical, intent);
+        bool merged = collapseCoincidentNodes(movingNodeID);
+        if (merged)
+            result = WireMoveResult::NodeMerged;
+    }
+
+    cleanupCollinearNodes();
+    return result;
+}
+
+void Wire::moveNodeSingleAxis(int movingNodeID, const sf::Vector2f& newGridPosition, MoveAxis axis, WireMoveIntent intent) {
     Node& movingNode = graph.at(movingNodeID);
 
-    sf::Vector2f newGridPosition = snapPositionToGrid(newPosition);
-    if (newGridPosition == movingNode.position) return;
-
-    
     std::vector<int> neighborIDs = movingNode.neighbors;
 
-    sf::Vector2f movementDelta = newPosition - movingNode.position;
-    bool horizontalMovement = std::abs(movementDelta.x) > std::abs(movementDelta.y);
-    std::cout << "Horizontal Movement: " << horizontalMovement << std::endl;
-    for (int neighborID : neighborIDs) {
-        if (isAnchor(neighborID) && (intent == WireMoveIntent::Edit || intent == WireMoveIntent::ComponentMove)) {
-            
+    bool horizontal = (axis == MoveAxis::Horizontal);
 
-            sf::Vector2f bendPosition(getBendNodePosition(newGridPosition, neighborID, horizontalMovement));
-            if (horizontalMovement && graph.at(neighborID).position.x == movingNode.position.x) {
-                insertBendNodeBetween(movingNodeID, neighborID, horizontalMovement, newGridPosition);
-                std::cout << "(" + std::to_string(bendPosition.x) + ", " + std::to_string(bendPosition.y) + ")\n";
-            }
-            else if (!horizontalMovement && graph.at(neighborID).position.y == movingNode.position.y) {
-                insertBendNodeBetween(movingNodeID, neighborID, horizontalMovement, newGridPosition);
-                std::cout << "(" + std::to_string(bendPosition.x) + ", " + std::to_string(bendPosition.y) + ")\n";
+    for (int neighborID : neighborIDs) {
+
+        if (isAnchor(neighborID) &&
+            (intent == WireMoveIntent::Edit || intent == WireMoveIntent::ComponentMove))
+        {
+            Node& neighbor = graph.at(neighborID);
+
+            bool aligned =
+                horizontal
+                ? (neighbor.position.x == movingNode.position.x)
+                : (neighbor.position.y == movingNode.position.y);
+
+            if (aligned) {
+                insertBendNodeBetween(
+                    movingNodeID,
+                    neighborID,
+                    horizontal,
+                    newGridPosition
+                );
             }
         }
-
         else {
-            updateNeighborPosition(movingNodeID, neighborID, horizontalMovement, newGridPosition);
-            std::cout << "Updated Neighbor position\n";
+            updateNeighborPosition(
+                movingNodeID,
+                neighborID,
+                horizontal,
+                newGridPosition
+            );
         }
     }
 
-
-
-
-
-
-
+    // Apply node movement rules
     if (isAnchor(movingNodeID)) {
-        if (intent == WireMoveIntent::Edit) {
-            std::cout << "Failed to move Anchor Node " << movingNodeID << "in wire : " << ID << "\n";
+        if (intent == WireMoveIntent::Edit)
             return;
-        }
         if (intent == WireMoveIntent::ComponentMove) {
             movingNode.position = newGridPosition;
         }
@@ -125,6 +159,8 @@ void Wire::moveNode(int movingNodeID, sf::Vector2f newPosition, WireMoveIntent i
         movingNode.position = newGridPosition;
     }
 }
+
+
 sf::VertexArray Wire::getPreviewLine() const
 {
     sf::VertexArray line(sf::Lines, 4);
@@ -200,5 +236,73 @@ void Wire::updateNeighborPosition(int movingID, int neighborID, bool horizontalM
     else if (!horizontalMovement && neighbor.position.y == moving.position.y)
     {
         neighbor.position.y = newMovingNodePosition.y;
+    }
+}
+
+bool Wire::collapseCoincidentNodes(int nodeID)
+{
+    Node& node = graph.at(nodeID);
+    std::vector<int> neighbors = node.neighbors;
+
+    for (int neighborID : neighbors) {
+
+        if (graph.at(neighborID).position != node.position)
+            continue;
+
+        Node& neighbor = graph.at(neighborID);
+
+        for (int n : neighbor.neighbors) {
+            if (n == nodeID) continue;
+            graph.at(n).neighbors.push_back(nodeID);
+            removeNeighborFrom(n, neighborID);
+            node.neighbors.push_back(n);
+        }
+
+        removeNeighborFrom(nodeID, neighborID);
+        graph.erase(neighborID);
+
+        return true;
+    }
+    return false;
+}
+
+bool Wire::isCollinear(int nodeID)
+{
+    Node& n = graph.at(nodeID);
+    if (n.neighbors.size() != 2)
+        return false;
+
+    Node& a = graph.at(n.neighbors[0]);
+    Node& b = graph.at(n.neighbors[1]);
+
+    return
+        (a.position.x == n.position.x && n.position.x == b.position.x) ||
+        (a.position.y == n.position.y && n.position.y == b.position.y);
+}
+
+void Wire::removeCollinearNode(int nodeID) {
+    Node& n = graph.at(nodeID);
+
+    int a = n.neighbors[0];
+    int b = n.neighbors[1];
+
+    removeNeighborFrom(a, nodeID);
+    removeNeighborFrom(b, nodeID);
+
+    graph.at(a).neighbors.push_back(b);
+    graph.at(b).neighbors.push_back(a);
+
+    graph.erase(nodeID);
+}
+
+void Wire::cleanupCollinearNodes() {
+    std::vector<int> toCheck;
+
+    for (auto& [id, node] : graph)
+        toCheck.push_back(id);
+
+    for (int id : toCheck) {
+        if (!isAnchor(id) && isCollinear(id))
+            removeCollinearNode(id);
     }
 }

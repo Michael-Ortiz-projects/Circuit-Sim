@@ -36,6 +36,17 @@ struct WireNodeReference {
 	}
 };
 
+enum class MoveAxis {
+	Horizontal,
+	Vertical
+};
+
+enum class WireMoveResult {
+	None,
+	NodeMerged,
+	NodeRemoved
+};
+
 class Wire {
 public:
 
@@ -49,7 +60,15 @@ public:
 
 	sf::VertexArray getPreviewLine() const;
 
-	void moveNode(int movingNodeID, sf::Vector2f newPosition, WireMoveIntent intent);
+	WireMoveResult moveNode(int movingNodeID, sf::Vector2f newPosition, WireMoveIntent intent);
+
+	void moveNodeSingleAxis(int movingNodeID, const sf::Vector2f& newGridPosition, MoveAxis axis, WireMoveIntent intent);
+
+	bool collapseCoincidentNodes(int nodeID);
+
+	void cleanupCollinearNodes();
+
+	void removeCollinearNode(int nodeID);
 
 
 	const std::map<int, Node>& getGraph() const { return graph; }	
@@ -70,6 +89,7 @@ private:
 
 	sf::Vector2f snapPositionToGrid(const sf::Vector2f& position);
 	bool isAnchor(int nodeID);
+	bool isCollinear(int nodeID);
 
 	sf::Vector2f getBendNodePosition(sf::Vector2f newMovingNodePosition, int anchorID, bool horizontalMove);
 	void insertBendNodeBetween(int nodeA, int nodeB, bool horizontalMove, sf::Vector2f newMovingNodePosition);

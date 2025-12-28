@@ -52,7 +52,24 @@ void WireHandler::onMouseMove(const sf::Vector2f& worldPos) {
 
     case WireState::DraggingNode:
         if (activeWire) {
-            activeWire->moveNode(interaction.wire_node.nodeID, worldPos, WireMoveIntent::Edit);
+
+            WireMoveResult moveResult = activeWire->moveNode(interaction.wire_node.nodeID, worldPos, WireMoveIntent::Edit);
+
+            switch (moveResult) {
+            case WireMoveResult::NodeMerged:
+                interaction.wire_node = { -1, -1 };
+                wireState = WireState::Null;
+                break;
+
+            case WireMoveResult::NodeRemoved:
+                interaction.wire_node = { -1, -1 };
+                wireState = WireState::Null;
+                break;
+
+            case WireMoveResult::None:
+                wireState = WireState::DraggingNode;
+                break;
+            }
         }
         break;
 
