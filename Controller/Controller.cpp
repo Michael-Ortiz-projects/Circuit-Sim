@@ -141,6 +141,11 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 			currentHandler = nullptr;
 		}
 	}
+
+	if (event.code == sf::Keyboard::F1) {
+		for (const auto& w : circuit.getWires())
+			Debug::debugPrintWire(w.second);
+	}
 }
 
 void Controller::setHandler(InputHandler* handler, UICommand cmd) {
@@ -241,7 +246,7 @@ WireNodeReference Controller::findClickedNode(const sf::Vector2f point) {// para
 			}
 		}
 	}
-	std::cout << "findClickedNode returned NULL\n";
+	std::cout << "findClickedNode returned NULL\n\n";
 	return { -1, -1 };
 }
 

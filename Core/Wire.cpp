@@ -59,19 +59,57 @@ void Wire::updatePreview(sf::Vector2f pos) {
     }
 }
 
-void Wire::commitPreview() {
-    if (firstPreview != graph[currentStemNode].position)
-        appendNode(firstPreview);
+int Wire::commitPreview() {
+    int committedNode = -1;
+    if (firstPreview != graph[currentStemNode].position) {
+        committedNode = appendNode(firstPreview);
+    }
 
-    if (secondPreview != graph[currentStemNode].position)
-        appendNode(secondPreview);
+    if (secondPreview != graph[currentStemNode].position) {
+        committedNode = appendNode(secondPreview);
+    }
     previewOrientation = PreviewOrientation::None;
+    return committedNode;
 }
 
-void Wire::moveNode(int movingNodeID, sf::Vector2f newPosition, WireMoveIntent intent) { // fix this PLEASE node movement moves other nodes incorrectly
+void Wire::moveNode(int movingNodeID, sf::Vector2f newPosition, WireMoveIntent intent) { // I need to determine node movement direction and insert nodes based on that
+                                                                                         // when i move a node diagonally fast it messes up, probably because the movement delta
     Node& movingNode = graph.at(movingNodeID);
 
-    sf::Vector2f prevPos(movingNode.position);
+    sf::Vector2f newGridPosition = snapPositionToGrid(newPosition);
+    if (newGridPosition == movingNode.position) return;
+
+    
+    std::vector<int> neighborIDs = movingNode.neighbors;
+
+    sf::Vector2f movementDelta = newPosition - movingNode.position;
+    bool horizontalMovement = std::abs(movementDelta.x) > std::abs(movementDelta.y);
+    std::cout << "Horizontal Movement: " << horizontalMovement << std::endl;
+    for (int neighborID : neighborIDs) {
+        if (isAnchor(neighborID) && (intent == WireMoveIntent::Edit || intent == WireMoveIntent::ComponentMove)) {
+            
+
+            sf::Vector2f bendPosition(getBendNodePosition(newGridPosition, neighborID, horizontalMovement));
+            if (horizontalMovement && graph.at(neighborID).position.x == movingNode.position.x) {
+                insertBendNodeBetween(movingNodeID, neighborID, horizontalMovement, newGridPosition);
+                std::cout << "(" + std::to_string(bendPosition.x) + ", " + std::to_string(bendPosition.y) + ")\n";
+            }
+            else if (!horizontalMovement && graph.at(neighborID).position.y == movingNode.position.y) {
+                insertBendNodeBetween(movingNodeID, neighborID, horizontalMovement, newGridPosition);
+                std::cout << "(" + std::to_string(bendPosition.x) + ", " + std::to_string(bendPosition.y) + ")\n";
+            }
+        }
+
+        else {
+            updateNeighborPosition(movingNodeID, neighborID, horizontalMovement, newGridPosition);
+            std::cout << "Updated Neighbor position\n";
+        }
+    }
+
+
+
+
+
 
 
     if (isAnchor(movingNodeID)) {
@@ -80,25 +118,11 @@ void Wire::moveNode(int movingNodeID, sf::Vector2f newPosition, WireMoveIntent i
             return;
         }
         if (intent == WireMoveIntent::ComponentMove) {
-            movingNode.position = snapPositionToGrid(newPosition);
+            movingNode.position = newGridPosition;
         }
     }
     else if (intent == WireMoveIntent::Edit) {
-        movingNode.position = snapPositionToGrid(newPosition);
-    }
-    std::vector<int> neighborIDs = movingNode.neighbors;
-
-    for (int neighborID : neighborIDs) {
-        if (isAnchor(neighborID) && (intent == WireMoveIntent::Edit || intent == WireMoveIntent::ComponentMove)) {
-            sf::Vector2f position(getBendNodePosition(movingNodeID, neighborID));
-            if (position.x != graph.at(neighborID).position.x || position.y != graph.at(neighborID).position.y) {
-                insertBendNodeBetween(movingNodeID, neighborID);
-            }
-        }
-
-        else {
-            updateNeighborPosition(movingNodeID, neighborID, prevPos);
-        }
+        movingNode.position = newGridPosition;
     }
 }
 sf::VertexArray Wire::getPreviewLine() const
@@ -127,33 +151,26 @@ bool Wire::isAnchor(int nodeID) {
     return anchorNodes.find(nodeID) != anchorNodes.end();
 }
 
-sf::Vector2f Wire::getBendNodePosition(int movedID, int anchorID) {
-    Node& moved = graph.at(movedID);
+sf::Vector2f Wire::getBendNodePosition(sf::Vector2f newMovingNodePosition, int anchorID, bool horizontalMove) {
     Node& anchor = graph.at(anchorID);
-
-    bool horizontalMove =
-        std::abs(moved.position.y - anchor.position.y) <=
-        std::abs(moved.position.x - anchor.position.x);
 
     sf::Vector2f result;
     if (horizontalMove) {
-        result = { moved.position.x, anchor.position.y };
+        result = { newMovingNodePosition.x, anchor.position.y };
     }
     else {
-        result = { anchor.position.x, moved.position.y };
+        result = { anchor.position.x, newMovingNodePosition.y };
     }
     return result;
 }
 
-void Wire::insertBendNodeBetween(int nodeA, int nodeB) {
+void Wire::insertBendNodeBetween(int nodeA, int nodeB, bool horizontalMove, sf::Vector2f newMovingNodePosition) {
     Node& A = graph.at(nodeA);
     Node& B = graph.at(nodeB);
 
     int newID = nextNodeID++;
 
-    sf::Vector2f newPosition(getBendNodePosition(nodeA, nodeB));
-
-    graph[newID] = Node{ newPosition, { nodeA, nodeB}, ID };
+    graph[newID] = Node{ getBendNodePosition(newMovingNodePosition, nodeB, horizontalMove), {nodeA, nodeB}, ID};
 
     removeNeighborFrom(nodeA, nodeB);
     A.neighbors.push_back(newID);
@@ -168,24 +185,20 @@ void Wire::removeNeighborFrom(int nodeID, int to_remove) {
     neighbors.erase(std::remove(neighbors.begin(), neighbors.end(), to_remove), neighbors.end());
 }
 
-void Wire::updateNeighborPosition(int movedID, int neighborID, sf::Vector2f previousPosition) {
-    Node& moved = graph.at(movedID);
+void Wire::updateNeighborPosition(int movingID, int neighborID, bool horizontalMovement, sf::Vector2f newMovingNodePosition) {
+    Node& moving = graph.at(movingID);
     Node& neighbor = graph.at(neighborID);
 
     if (isAnchor(neighborID))
         return;
 
-    sf::Vector2f movementDelta = moved.position - previousPosition;
-
-    if (movementDelta == sf::Vector2f(0.f, 0.f))
-        return;
-
-    if (std::abs(movementDelta.x) > std::abs(movementDelta.y))
+    if (horizontalMovement && neighbor.position.x == moving.position.x)
     {
-        neighbor.position.y = moved.position.y;
+        neighbor.position.x = newMovingNodePosition.x;
+        std::cout << "Set neighbor position\n";
     }
-    else if (std::abs(movementDelta.y) > std::abs(movementDelta.x))
+    else if (!horizontalMovement && neighbor.position.y == moving.position.y)
     {
-        neighbor.position.x = moved.position.x;
+        neighbor.position.y = newMovingNodePosition.y;
     }
 }

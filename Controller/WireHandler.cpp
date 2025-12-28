@@ -13,7 +13,7 @@ void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
         }
 
         else if (interaction.hasNode()) {
-            std::cout << "Beginning Drag\n";
+            std::cout << "Beginning Drag on node " << interaction.wire_node.nodeID << std::endl;
             beginNodeDrag(interaction.wire_node);
 
         }
@@ -63,6 +63,11 @@ void WireHandler::onMouseMove(const sf::Vector2f& worldPos) {
 
 void WireHandler::onMouseRelease(const sf::Vector2f& worldPos) {
     interaction.connection = { -1, Lead::Null };
+
+    if (wireState == WireState::DraggingNode) {
+        interaction.wire_node = { -1, -1 };
+        wireState = WireState::Null;
+    }
     
 }
 
@@ -108,6 +113,7 @@ void WireHandler::beginWireFromConnection(ElectricalConnection& connection) {
     int wireID = circuit.createWire(pos);
 
     activeWire = circuit.getWire(wireID);
+    activeWire->anchorNodes.emplace(nodeID, connection);
     activeWire->selected = true;
 
 
@@ -119,8 +125,7 @@ void WireHandler::finishWireAtConnection(ElectricalConnection& end) {
     if (wireState != WireState::Creating || !activeWire) return;
 
     circuit.addConnectionToNode(activeWire->ID, end);
-    activeWire->commitPreview();
-
+    activeWire->anchorNodes.emplace(activeWire->commitPreview(), end);
     activeWire->selected = false;
     activeWire = nullptr;
     wireState = WireState::Null;
