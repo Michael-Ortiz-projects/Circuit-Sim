@@ -6,7 +6,7 @@
 
 class DragHandler : public InputHandler {
 public:
-	DragHandler(std::vector<SchematicComponent>& comps);
+	DragHandler(std::vector<SchematicComponent>& comps, std::unordered_map<int, Wire>& Wires);
 
 	void setDraggedComponent(Component& component);
 
@@ -22,4 +22,6 @@ private:
 	std::vector<SchematicComponent>& components;
 	bool dragging;
 	Component* active;
+	std::unordered_map<int, Wire>& wires;
+	
 };

@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include "SFML/Graphics.hpp"
+#include "ElectricalNode.h"
 #include "../Config.h"
 
 enum class ComponentType {
@@ -22,6 +23,7 @@ public:
     ComponentType type;
     double value;
 
+
     sf::Vector2f position;
     float rotation;
 
@@ -30,6 +32,12 @@ public:
     bool isClosed = true;
 
     bool selected;
+
+    WireNodeReference A_WireNodeReference;
+    WireNodeReference B_WireNodeReference;
+
+    sf::Vector2f leadOffsetA = { -60.f, 0.f };
+    sf::Vector2f leadOffsetB = { 60.f, 0.f };
 
     Component(int A, int B, const ComponentType& ty, double val = 0);
 

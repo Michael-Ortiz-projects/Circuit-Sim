@@ -27,7 +27,7 @@ public:
     void addConnectionToNode(int nodeID, ElectricalConnection& connection);
     void removeConnectionFromNode(int nodeID, ElectricalConnection& connection);
 
-    void updateComponentLead(int nodeID, ElectricalConnection& connection);
+    void updateComponentLead(int wireID, int wireNodeID, int ElectricalNodeID, ElectricalConnection& connection);
 
     int createWire(sf::Vector2f position);
 

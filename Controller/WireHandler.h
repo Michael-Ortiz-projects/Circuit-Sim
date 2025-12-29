@@ -54,4 +54,6 @@ private:
 	WireState wireState = WireState::Null;
 
 	WireInteraction interaction;
+
+	int activeElectricalNodeID = -1;
 };

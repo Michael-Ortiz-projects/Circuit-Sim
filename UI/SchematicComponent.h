@@ -34,6 +34,9 @@ public:
     int componentID;
     bool selected = false;
 
+    WireNodeReference A_WireNodeReference;
+    WireNodeReference B_WireNodeReference;
+
 private:
     ComponentType type;
     sf::Vector2f position;

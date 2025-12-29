@@ -27,15 +27,6 @@ enum class WireMoveIntent {
 	ComponentMove
 };
 
-struct WireNodeReference {
-	int wireID;
-	int nodeID;
-
-	bool isValid() const {
-		return wireID >= 0 && nodeID >= 0;
-	}
-};
-
 enum class MoveAxis {
 	Horizontal,
 	Vertical

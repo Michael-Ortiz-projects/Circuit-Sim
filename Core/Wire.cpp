@@ -87,7 +87,6 @@ WireMoveResult Wire::moveNode(int movingNodeID, sf::Vector2f newPosition, WireMo
 
     sf::Vector2f intermediatePosition = currentPosition;
 
-    // X axis first
     if (delta.x != 0.f) {
         intermediatePosition.x += delta.x;
         moveNodeSingleAxis(movingNodeID, intermediatePosition, MoveAxis::Horizontal, intent);
@@ -96,7 +95,6 @@ WireMoveResult Wire::moveNode(int movingNodeID, sf::Vector2f newPosition, WireMo
             result = WireMoveResult::NodeMerged;
     }
 
-    // Y axis second
     if (delta.y != 0.f) {
         intermediatePosition.y += delta.y;
         moveNodeSingleAxis(movingNodeID, intermediatePosition, MoveAxis::Vertical, intent);
@@ -147,7 +145,6 @@ void Wire::moveNodeSingleAxis(int movingNodeID, const sf::Vector2f& newGridPosit
         }
     }
 
-    // Apply node movement rules
     if (isAnchor(movingNodeID)) {
         if (intent == WireMoveIntent::Edit)
             return;

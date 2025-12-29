@@ -1,7 +1,7 @@
 #include "DragHandler.h"
 
-DragHandler::DragHandler(std::vector<SchematicComponent>& comps) 
-	: components(comps), dragging(false), active(nullptr) {}
+DragHandler::DragHandler(std::vector<SchematicComponent>& comps, std::unordered_map<int, Wire>& Wires)
+	: components(comps), wires(Wires), dragging(false), active(nullptr) {}
 
 void DragHandler::setDraggedComponent(Component& component) {
 	active = &component;
@@ -13,12 +13,20 @@ void DragHandler::onMousePress(const sf::Vector2f& worldPos)  {
 		active->startDrag(worldPos);
 		dragging = true;
 		std::cout << "Starting drag\n";
+
+		
 	}
 }
 
 void DragHandler::onMouseMove(const sf::Vector2f& worldPos) {
 	if (active && dragging) {
 		active->dragTo(worldPos);
+		if (active->A_WireNodeReference.isValid())
+			wires.at(active->A_WireNodeReference.wireID).moveNode(active->A_WireNodeReference.nodeID, worldPos + active->leadOffsetA, WireMoveIntent::ComponentMove);
+
+		if (active->B_WireNodeReference.isValid())
+			wires.at(active->B_WireNodeReference.wireID).moveNode(active->B_WireNodeReference.nodeID, worldPos + active->leadOffsetB, WireMoveIntent::ComponentMove);
+
 	}
 }
 

@@ -2,7 +2,7 @@
 #include "InputHandler.h"
 
 Controller::Controller(Circuit& Circuit, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer)
-	: circuit(Circuit), components(Components), cameraController(Window, Renderer.getCanvasView()), dragHandler(Components), placeHandler(Components, Circuit, Assets),
+	: circuit(Circuit), components(Components), cameraController(Window, Renderer.getCanvasView()), dragHandler(Components, Circuit.getWires()), placeHandler(Components, Circuit, Assets),
 	wireHandler(Circuit, Components), currentHandler(nullptr), command(UICommand::None), window(Window), renderer(Renderer), assets(Assets) { }
 
 void Controller::handleEvent(const sf::Event& event) {
@@ -85,7 +85,6 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 			
 			}
 			else {
-				//std::cout << "No clicked component\n\n";
 				for (auto& c : circuit.getComponents()) {
 					c.selected = false;
 				}

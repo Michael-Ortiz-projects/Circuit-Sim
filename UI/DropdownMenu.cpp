@@ -52,7 +52,7 @@ bool DropdownMenu::poll(UICommand& outputCommand) {
 			open = !open;
 			std::cout << "Menu ";
 			open ? std::cout << "Open\n\n" : std::cout << "Closed\n\n";
-			return false; // toggle is UI-only, not a controller command
+			return false;
 		}
 	}
 
@@ -95,7 +95,7 @@ void DropdownMenu::updateMenuLayout() {
 void DropdownMenu::draw(sf::RenderWindow& window) {
 	parentButton.draw(window);
 	if (open) {
-		window.draw(panel);   // draw container first
+		window.draw(panel);
 		for (auto& opt : options)
 			opt.draw(window);
 	}

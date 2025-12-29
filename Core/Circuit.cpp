@@ -10,7 +10,11 @@ int Circuit::addComponent(const Component& comp, const sf::Vector2f& canvasPos) 
     componentIDToIndex[id] = static_cast<int>(components.size());
     c.nodeA = comp.nodeA; 
     c.nodeB = comp.nodeB;
+    c.A_WireNodeReference = { -1, -1 };
+    c.B_WireNodeReference = { -1, -1 };
+
     components.push_back(c);
+
     return id;
 }
 
@@ -80,13 +84,16 @@ void Circuit::removeConnectionFromNode(int nodeID, ElectricalConnection& connect
     );
 }
 
-void Circuit::updateComponentLead(int nodeID, ElectricalConnection& connection) {
+void Circuit::updateComponentLead(int wireID, int wireNodeID, int ElectricalNodeID, ElectricalConnection& connection) {
     switch (connection.lead) {
     case Lead::A:
-        getComponent(connection.componentID)->nodeA = nodeID;
+        getComponent(connection.componentID)->nodeA = ElectricalNodeID;
+        getComponent(connection.componentID)->A_WireNodeReference = { wireID, wireNodeID };
         return;
     case Lead::B:
-        getComponent(connection.componentID)->nodeB = nodeID;
+        getComponent(connection.componentID)->nodeB = ElectricalNodeID;
+        getComponent(connection.componentID)->B_WireNodeReference = { wireID, wireNodeID };
+
         return;
     case Lead::Null:
         std::cout << "Update component Lead Null connection\n";

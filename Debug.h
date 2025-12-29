@@ -104,7 +104,7 @@ public:
         std::cout << std::endl;
     }
 private:
-    static inline bool enabled = true; // default on
+    static inline bool enabled = true;
 };
 
 

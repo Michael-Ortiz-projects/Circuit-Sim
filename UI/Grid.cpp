@@ -18,7 +18,6 @@ void Grid::draw(sf::RenderWindow& window, const sf::View& view)
         window.mapPixelToCoords(
             { (int)window.getSize().x, (int)window.getSize().y }, view);
 
-    // snap grid 
     float startX = std::floor(bottomLeft.x / gridSpacing) * gridSpacing;
     float startY = std::floor(bottomLeft.y / gridSpacing) * gridSpacing;
     float endX = std::ceil(topRight.x / gridSpacing) * gridSpacing;
@@ -32,11 +31,9 @@ void Grid::draw(sf::RenderWindow& window, const sf::View& view)
     {
         for (float y = startY; y <= endY; y += gridSpacing)
         {
-            // horizontal
             crosses.append(sf::Vertex({ x - halfSize, y }, gridColor));
             crosses.append(sf::Vertex({ x + halfSize, y }, gridColor));
 
-            // vertical
             crosses.append(sf::Vertex({ x, y - halfSize }, gridColor));
             crosses.append(sf::Vertex({ x, y + halfSize }, gridColor));
         }

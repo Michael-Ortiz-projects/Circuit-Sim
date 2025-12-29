@@ -122,15 +122,17 @@ sf::Vector2f WireHandler::positionOfConnection(ElectricalConnection& connection)
 void WireHandler::beginWireFromConnection(ElectricalConnection& connection) {
     if (wireState != WireState::Null) return;
 
-    int nodeID = circuit.createElectricalNode();
-    circuit.addConnectionToNode(nodeID, connection);
-    circuit.updateComponentLead(nodeID, connection);
-
+    activeElectricalNodeID = circuit.createElectricalNode();
     sf::Vector2f pos = positionOfConnection(connection);
     int wireID = circuit.createWire(pos);
 
+    circuit.addConnectionToNode(activeElectricalNodeID, connection);
+    circuit.updateComponentLead(wireID, 0, activeElectricalNodeID, connection);
+
+    
+
     activeWire = circuit.getWire(wireID);
-    activeWire->anchorNodes.emplace(nodeID, connection);
+    activeWire->anchorNodes.emplace(activeElectricalNodeID, connection);
     activeWire->selected = true;
 
 
@@ -141,8 +143,10 @@ void WireHandler::beginWireFromConnection(ElectricalConnection& connection) {
 void WireHandler::finishWireAtConnection(ElectricalConnection& end) {
     if (wireState != WireState::Creating || !activeWire) return;
 
+    int finalWireNodeID = activeWire->commitPreview();
     circuit.addConnectionToNode(activeWire->ID, end);
-    activeWire->anchorNodes.emplace(activeWire->commitPreview(), end);
+    circuit.updateComponentLead(activeWire->ID, finalWireNodeID, activeElectricalNodeID, end);
+    activeWire->anchorNodes.emplace(finalWireNodeID, end);
     activeWire->selected = false;
     activeWire = nullptr;
     wireState = WireState::Null;
