@@ -12,7 +12,7 @@ void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
             activeWire->updatePreview(worldPos);
         }
 
-        else if (interaction.hasNode()) {
+        else if (interaction.hasWireNode()) {
             std::cout << "Beginning Drag on node " << interaction.wire_node.nodeID << std::endl;
             beginNodeDrag(interaction.wire_node);
 
@@ -25,8 +25,15 @@ void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
             std::cout << "Ending Wire Creation\n";
         }
 
+        if (interaction.hasLead() && !circuit.leadIsEmpty(interaction.connection)) {
+            //add current activeWire onto the existing wire connected to this lead
+        }
+
+
+
         else {
             if (activeWire) {
+
                 std::cout << "Appending Node\n";
                 activeWire->commitPreview();
                 activeWire->updatePreview(worldPos);
@@ -117,7 +124,6 @@ sf::Vector2f WireHandler::positionOfConnection(ElectricalConnection& connection)
 	default:      return { -1.f, -1.f };
 	}
 }
-
 
 void WireHandler::beginWireFromConnection(ElectricalConnection& connection) {
     if (wireState != WireState::Null) return;

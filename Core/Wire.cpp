@@ -292,6 +292,31 @@ void Wire::removeCollinearNode(int nodeID) {
     graph.erase(nodeID);
 }
 
+SegmentHit Wire::segmentHitTest(const sf::Vector2f& point, float snapEps, float grid) {
+    SegmentHit best;
+
+    for (auto& [id, node] : graph) {
+        for (int n : node.neighbors) {
+            if (id >= n) continue; // avoid double-counting
+
+            const sf::Vector2f& a = node.position;
+            const sf::Vector2f& b = graph.at(n).position;
+
+            if (!hitOrthogonalSegment(point, a, b, snapEps))
+                continue;
+
+            sf::Vector2f snapped = snapToGridBetween(a, b, point);
+            float dist = std::hypot(point.x - snapped.x, point.y - snapped.y);
+
+            if (!best.valid || dist < best.distance) {
+                best = { id, n, snapped, dist, true };
+            }
+        }
+    }
+
+    return best;
+}
+
 void Wire::cleanupCollinearNodes() {
     std::vector<int> toCheck;
 
@@ -302,4 +327,45 @@ void Wire::cleanupCollinearNodes() {
         if (!isAnchor(id) && isCollinear(id))
             removeCollinearNode(id);
     }
+}
+
+
+float Wire::snapCoordinateToGrid(const float coordinate) {
+    return std::round(coordinate / gridSize) * gridSize;
+}
+
+sf::Vector2f Wire::snapToGridBetween(sf::Vector2f A, sf::Vector2f B, sf::Vector2f point) {
+    if (A.y == B.y) {
+        float x = snapCoordinateToGrid(point.x);
+        float minX = std::min(A.x, B.x);
+        float maxX = std::max(A.x, B.x);
+        x = std::clamp(x, minX, maxX);
+        return { x, A.y };
+    }
+
+    if (A.x == B.x) {
+        float y = snapCoordinateToGrid(point.y);
+        float minY = std::min(A.y, B.y);
+        float maxY = std::max(A.y, B.y);
+        y = std::clamp(y, minY, maxY);
+        return { A.x, y };
+    }
+
+    return { -1, -1 };
+}
+
+bool Wire::hitOrthogonalSegment(const sf::Vector2f& point, const sf::Vector2f& a, const sf::Vector2f& b, float radius) {
+    if (a.y == b.y) {
+        return point.x >= std::min(a.x, b.x) - radius &&
+            point.x <= std::max(a.x, b.x) + radius &&
+            std::abs(point.y - a.y) <= radius;
+    }
+
+    if (a.x == b.x) {
+        return point.y >= std::min(a.y, b.y) - radius &&
+            point.y <= std::max(a.y, b.y) + radius &&
+            std::abs(point.x - a.x) <= radius;
+    }
+
+    return false;
 }

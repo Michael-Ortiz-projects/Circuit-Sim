@@ -19,7 +19,7 @@ struct WireInteraction {
 	WireNodeReference wire_node{ -1, -1 };
 
 	bool hasLead() const { return connection.lead != Lead::Null; }
-	bool hasNode() const { return wire_node.isValid(); }
+	bool hasWireNode() const { return wire_node.isValid(); }
 };
 
 class WireHandler : public InputHandler {

@@ -33,6 +33,7 @@ public:
 
     bool leadIsEmpty(ElectricalConnection& connection);
 
+    WireHit findWireSegmentAt(const sf::Vector2f& point, float snapRadius, float grid);
 
 private:
 

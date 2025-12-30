@@ -65,7 +65,7 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 		WireNodeReference clickedNodeReference = findClickedNode(sf::Vector2f(event.x, event.y));
 
 		WireInteraction interaction = { clickedLead, clickedNodeReference };
-		if (interaction.hasLead() || interaction.hasNode()) {
+		if (interaction.hasLead() || interaction.hasWireNode()) {
 			std::cout << "Clicked Component " << clickedLead.componentID << ", Lead "
 				<< Debug::lead_to_string(clickedLead.lead) << std::endl;
 			std::cout << "Clicked Wire " << clickedNodeReference.wireID << ", Node " << clickedNodeReference.nodeID << std::endl;

@@ -21,7 +21,6 @@ enum class PreviewOrientation {
 	VerticalFirst
 };
 
-
 enum class WireMoveIntent {
 	Edit,
 	ComponentMove
@@ -38,6 +37,22 @@ enum class WireMoveResult {
 	NodeRemoved
 };
 
+struct SegmentHit {
+	int nodeA = -1;
+	int nodeB = -1;
+	sf::Vector2f snappedPosition { };
+	float distance = FLT_MAX;
+	bool valid = false;
+
+	bool isValid() const { return valid; }
+};
+
+struct WireHit {
+	int wireID = -1;
+	SegmentHit segment;
+
+	bool isValid() const { return wireID != -1 && segment.isValid(); }
+};
 class Wire {
 public:
 
@@ -61,6 +76,13 @@ public:
 
 	void removeCollinearNode(int nodeID);
 
+	SegmentHit segmentHitTest(const sf::Vector2f& point, float snapEps, float grid);
+
+	float snapCoordinateToGrid(const float coordinate);
+
+	sf::Vector2f snapToGridBetween(sf::Vector2f A, sf::Vector2f B, sf::Vector2f point);
+
+	bool hitOrthogonalSegment(const sf::Vector2f& point, const sf::Vector2f& a, const sf::Vector2f& b, float radius);
 
 	const std::map<int, Node>& getGraph() const { return graph; }	
 	int getNextNodeID() const { return nextNodeID; }
