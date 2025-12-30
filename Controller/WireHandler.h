@@ -42,6 +42,7 @@ public:
 	void beginNodeDrag(WireNodeReference& ref);
 
 	void setInteractionContext(WireInteraction context);
+	void setSegmentContext(WireHit context);
 private:
 
 	sf::Vector2f snapPositionToGrid(const sf::Vector2f& position);
@@ -54,6 +55,7 @@ private:
 	WireState wireState = WireState::Null;
 
 	WireInteraction interaction;
+	WireHit wireSegment;
 
 	int activeElectricalNodeID = -1;
 };

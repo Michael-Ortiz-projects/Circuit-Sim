@@ -26,7 +26,23 @@ void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
         }
 
         if (interaction.hasLead() && !circuit.leadIsEmpty(interaction.connection)) {
-            //add current activeWire onto the existing wire connected to this lead
+            
+        }
+
+        if (!interaction.hasLead()) {
+            std::cout << "This ran\n";
+            if (wireSegment.valid) {
+                std::cout << "Snapped position:";
+                Debug::printVector2f(wireSegment.segment.snappedPosition);
+                std::cout << "Appending Node\n";
+                activeWire->commitPreview();
+                activeWire->updatePreview(worldPos);
+                //wire.merge or something like that to merge the wires once they are connected
+                //maybe finishWireAtSegment(segment)
+            }
+            else {
+                std::cout << "No valid segment hit to snap to\n";
+            }
         }
 
 
@@ -166,4 +182,8 @@ void WireHandler::beginNodeDrag(WireNodeReference& ref) {
 
 void WireHandler::setInteractionContext(WireInteraction context) {
     interaction = context;
+}
+
+void WireHandler::setSegmentContext(WireHit context) {
+    segment = context;
 }

@@ -41,7 +41,6 @@ struct SegmentHit {
 	int nodeA = -1;
 	int nodeB = -1;
 	sf::Vector2f snappedPosition { };
-	float distance = FLT_MAX;
 	bool valid = false;
 
 	bool isValid() const { return valid; }
@@ -50,8 +49,8 @@ struct SegmentHit {
 struct WireHit {
 	int wireID = -1;
 	SegmentHit segment;
-
-	bool isValid() const { return wireID != -1 && segment.isValid(); }
+	float distance = FLT_MAX;
+	bool valid = false;
 };
 class Wire {
 public:
@@ -76,7 +75,7 @@ public:
 
 	void removeCollinearNode(int nodeID);
 
-	SegmentHit segmentHitTest(const sf::Vector2f& point, float snapEps, float grid);
+	SegmentHit projectOntoSegment(sf::Vector2f& point);
 
 	float snapCoordinateToGrid(const float coordinate);
 

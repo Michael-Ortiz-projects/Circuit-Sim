@@ -292,24 +292,34 @@ void Wire::removeCollinearNode(int nodeID) {
     graph.erase(nodeID);
 }
 
-SegmentHit Wire::segmentHitTest(const sf::Vector2f& point, float snapEps, float grid) {
+SegmentHit Wire::projectOntoSegment(sf::Vector2f& worldPoint) {
     SegmentHit best;
 
-    for (auto& [id, node] : graph) {
+    for (const auto& [id, node] : graph) {
         for (int n : node.neighbors) {
-            if (id >= n) continue; // avoid double-counting
+            if (id >= n) continue;
 
             const sf::Vector2f& a = node.position;
             const sf::Vector2f& b = graph.at(n).position;
 
-            if (!hitOrthogonalSegment(point, a, b, snapEps))
+            if (a.x != b.x && a.y != b.y)
                 continue;
 
-            sf::Vector2f snapped = snapToGridBetween(a, b, point);
-            float dist = std::hypot(point.x - snapped.x, point.y - snapped.y);
+            sf::Vector2f snapped = snapToGridBetween(a, b, worldPoint);
 
-            if (!best.valid || dist < best.distance) {
-                best = { id, n, snapped, dist, true };
+            float d = std::hypot(
+                worldPoint.x - snapped.x,
+                worldPoint.y - snapped.y
+            );
+
+            if (!best.valid || d < std::hypot(
+                worldPoint.x - best.snappedPosition.x,
+                worldPoint.y - best.snappedPosition.y)) {
+
+                best.nodeA = id;
+                best.nodeB = n;
+                best.snappedPosition = snapped;
+                best.valid = true;
             }
         }
     }

@@ -63,6 +63,7 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 	if (event.button == sf::Mouse::Button::Left) {
 		ElectricalConnection clickedLead = findClickedLead(sf::Vector2f(event.x, event.y));
 		WireNodeReference clickedNodeReference = findClickedNode(sf::Vector2f(event.x, event.y));
+		WireHit clickedWireSegment = findClickedSegment(sf::Vector2f(event.x, event.y));
 
 		WireInteraction interaction = { clickedLead, clickedNodeReference };
 		if (interaction.hasLead() || interaction.hasWireNode()) {
@@ -72,6 +73,11 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 			currentHandler = &wireHandler;
 			Debug::setHandler("Wire Handler");
 			wireHandler.setInteractionContext(interaction);
+		}
+
+		if (clickedWireSegment.valid && currentHandler == &wireHandler) {
+			std::cout << "Clicked Wire " << clickedWireSegment.wireID << ", Segment: " << clickedWireSegment.segment.nodeA << ", " << clickedWireSegment.segment.nodeB << "\n\n";
+			wireHandler.setSegmentContext(clickedWireSegment);
 		}
 
 		
@@ -205,27 +211,27 @@ void Controller::rebuildSchematicComponents() {
 InputHandler* Controller::getHandler() {
 	return currentHandler;
 }
-Component* Controller::findComponentAt(const sf::Vector2f point) {
+Component* Controller::findComponentAt(const sf::Vector2f mousePixel) {
 	for (auto& comp : components) {
-		if (comp.hitBoxContainsPoint(point)) {
+		if (comp.hitBoxContainsPoint(mousePixel)) {
 			return circuit.getComponent(comp.componentID);
 		}
 	}
 	return nullptr;
 }
 
-ElectricalConnection Controller::findClickedLead(const sf::Vector2f point) { // parameter is in pixel space, converts lead position to pixel space
+ElectricalConnection Controller::findClickedLead(const sf::Vector2f mousePixel) { // parameter is in pixel space, converts lead position to pixel space
 	for (const auto c : components) {
 		sf::Vector2i pixelPosA = window.mapCoordsToPixel(c.getLeadPositionA(), renderer.getCanvasView());
 
-		sf::Vector2f distanceA = sf::Vector2f(pixelPosA) - point;
+		sf::Vector2f distanceA = sf::Vector2f(pixelPosA) - mousePixel;
 		if (distanceA.x * distanceA.x + distanceA.y * distanceA.y <= nodeSelectionRadius * nodeSelectionRadius) {
 			return { c.componentID, Lead::A };
 		}
 
 		sf::Vector2i pixelPosB = window.mapCoordsToPixel(c.getLeadPositionB(), renderer.getCanvasView());
 
-		sf::Vector2f distanceB = sf::Vector2f(pixelPosB) - point;
+		sf::Vector2f distanceB = sf::Vector2f(pixelPosB) - mousePixel;
 		if (distanceB.x * distanceB.x + distanceB.y * distanceB.y <= nodeSelectionRadius * nodeSelectionRadius) {
 			
 			return { c.componentID, Lead::B };
@@ -234,11 +240,11 @@ ElectricalConnection Controller::findClickedLead(const sf::Vector2f point) { // 
 	return { -1, Lead::Null };
 }
 
-WireNodeReference Controller::findClickedNode(const sf::Vector2f point) {// parameter is in pixel space, converts node position to pixel space, returns wireID, nodeID
+WireNodeReference Controller::findClickedNode(const sf::Vector2f mousePixel) {// parameter is in pixel space, converts node position to pixel space, returns wireID, nodeID
 	for (const auto& w : circuit.getWires()) {
 		for (const auto& n : w.second.getGraph()) {
 			sf::Vector2i pixelPos = window.mapCoordsToPixel(n.second.position, renderer.getCanvasView());
-			sf::Vector2f distance = sf::Vector2f(pixelPos) - point;
+			sf::Vector2f distance = sf::Vector2f(pixelPos) - mousePixel;
 
 			if (distance.x * distance.x + distance.y * distance.y <= nodeSelectionRadius * nodeSelectionRadius) {
 				return { n.second.belongsTo, n.first };
@@ -249,3 +255,45 @@ WireNodeReference Controller::findClickedNode(const sf::Vector2f point) {// para
 	return { -1, -1 };
 }
 
+WireHit Controller::findClickedSegment(const sf::Vector2f mousePixel) {
+	WireHit best;
+	
+	sf::Vector2f mouseWorld =
+		window.mapPixelToCoords(
+			sf::Vector2i(mousePixel),
+			renderer.getCanvasView()
+		);
+
+	for (auto& [wireID, wire] : circuit.getWires()) {
+
+		SegmentHit seg = wire.projectOntoSegment(mouseWorld);
+		if (!seg.isValid())
+			continue;
+
+		sf::Vector2f snappedPixel =
+			sf::Vector2f(
+				window.mapCoordsToPixel(
+					seg.snappedPosition,
+					renderer.getCanvasView()
+				)
+			);
+
+		float pixelDist =
+			std::hypot(
+				mousePixel.x - snappedPixel.x,
+				mousePixel.y - snappedPixel.y
+			);
+
+		if (pixelDist > wireSelectionRadius)
+			continue;
+
+		if (!best.valid || pixelDist < best.distance) {
+			best.wireID = wireID;
+			best.segment = seg;
+			best.distance = pixelDist;
+			best.valid = true;
+		}
+	}
+
+	return best;
+}

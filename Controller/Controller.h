@@ -35,11 +35,13 @@ public:
 
     InputHandler* getHandler();
 
-    Component* findComponentAt(const sf::Vector2f point);
+    Component* findComponentAt(const sf::Vector2f mousePixel);
 
-    ElectricalConnection findClickedLead(const sf::Vector2f point);
+    ElectricalConnection findClickedLead(const sf::Vector2f mousePixel);
 
-    WireNodeReference findClickedNode(const sf::Vector2f point);
+    WireNodeReference findClickedNode(const sf::Vector2f mousePixel);
+
+    WireHit findClickedSegment(const sf::Vector2f mousePixel);
 
 private:
     InputHandler* currentHandler;

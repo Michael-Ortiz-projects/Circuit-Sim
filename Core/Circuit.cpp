@@ -124,21 +124,6 @@ bool Circuit::leadIsEmpty(ElectricalConnection& connection) { // returns false i
     }
 }
 
-WireHit Circuit::findWireSegmentAt(const sf::Vector2f& point, float snapRadius, float grid) {
-    WireHit best;
-
-    for (auto& [id, wire] : wires) {
-        SegmentHit hit = wire.segmentHitTest(point, snapRadius, grid);
-        if (!hit.isValid()) continue;
-
-        if (!best.isValid() || hit.distance < best.segment.distance) {
-            best = { id, hit };
-        }
-    }
-
-    return best;
-}
-
 
 sf::Vector2f Circuit::snapPositionToGrid(const sf::Vector2f& position) {
     return {
