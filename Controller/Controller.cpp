@@ -148,7 +148,7 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 	}
 
 	if (event.code == sf::Keyboard::F1) {
-		for (const auto& w : circuit.getWires())
+		for (auto& w : circuit.getWires())
 			Debug::debugPrintWire(w.second);
 	}
 }
@@ -241,7 +241,7 @@ ElectricalConnection Controller::findClickedLead(const sf::Vector2f mousePixel) 
 }
 
 WireNodeReference Controller::findClickedNode(const sf::Vector2f mousePixel) {// parameter is in pixel space, converts node position to pixel space, returns wireID, nodeID
-	for (const auto& w : circuit.getWires()) {
+	for (auto& w : circuit.getWires()) {
 		for (const auto& n : w.second.getGraph()) {
 			sf::Vector2i pixelPos = window.mapCoordsToPixel(n.second.position, renderer.getCanvasView());
 			sf::Vector2f distance = sf::Vector2f(pixelPos) - mousePixel;

@@ -13,6 +13,13 @@ enum class WireState {
 	Null
 };
 
+struct Vector2fCompare {
+	bool operator()(const sf::Vector2f& a, const sf::Vector2f& b) const {
+		if (a.x != b.x) return a.x < b.x;
+		return a.y < b.y;
+	}
+};
+
 
 struct WireInteraction {
 	ElectricalConnection connection{ -1, Lead::Null };
@@ -40,6 +47,8 @@ public:
 	void finishWireAtConnection(ElectricalConnection& end);
 
 	void beginNodeDrag(WireNodeReference& ref);
+
+	void finishWireAtSegment(WireHit& wireSegment);
 
 	void setInteractionContext(WireInteraction context);
 	void setSegmentContext(WireHit context);

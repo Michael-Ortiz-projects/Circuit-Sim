@@ -23,6 +23,7 @@ public:
 
     int createElectricalNode();
     void removeElectricalNode(int nodeID);
+    void mergeElectricalNodes(int primary, int active);
 
     void addConnectionToNode(int nodeID, ElectricalConnection& connection);
     void removeConnectionFromNode(int nodeID, ElectricalConnection& connection);
@@ -33,6 +34,7 @@ public:
 
     bool leadIsEmpty(ElectricalConnection& connection);
 
+    std::unordered_map<int, int> wireIDToElectricalNode;
 
 private:
 
@@ -48,7 +50,5 @@ private:
     std::unordered_map<int, ElectricalNode> nodes;
     std::unordered_map<int, Wire> wires;
 
-    std::unordered_map<int, int> componentIDToIndex; // maps ID's to Component Vector
-    
-   
+    std::unordered_map<int, int> componentIDToIndex;
 };

@@ -57,7 +57,9 @@ public:
 
 	Wire(sf::Vector2f initialPosition, int id);
 
-	int appendNode(sf::Vector2f pos);
+	int appendNodeFromStem(sf::Vector2f pos);
+
+	int insertNode(sf::Vector2f pos);
 
 	void updatePreview(sf::Vector2f pos);
 
@@ -81,9 +83,7 @@ public:
 
 	sf::Vector2f snapToGridBetween(sf::Vector2f A, sf::Vector2f B, sf::Vector2f point);
 
-	bool hitOrthogonalSegment(const sf::Vector2f& point, const sf::Vector2f& a, const sf::Vector2f& b, float radius);
-
-	const std::map<int, Node>& getGraph() const { return graph; }	
+	std::map<int, Node>& getGraph() { return graph; }	
 	int getNextNodeID() const { return nextNodeID; }
 	int getStemNode() const { return currentStemNode; }
 	sf::Vector2f getFirstPreview() const { return firstPreview; }

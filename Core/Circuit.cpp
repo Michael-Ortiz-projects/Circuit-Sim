@@ -69,6 +69,16 @@ void Circuit::removeElectricalNode(int nodeID) {
     nodes.erase(nodeID);
 }
 
+void Circuit::mergeElectricalNodes(int primary, int active) {
+    ElectricalNode& activeNode = nodes.at(active);
+    ElectricalNode& primaryNode = nodes.at(primary);
+    for (const auto& connection : activeNode.connections) {
+        if (std::find(primaryNode.connections.begin(), primaryNode.connections.end(), connection) == primaryNode.connections.end()) {
+            primaryNode.connections.push_back(connection);
+        }
+    }
+
+}
 void Circuit::addConnectionToNode(int nodeID, ElectricalConnection& connection) {
     nodes[nodeID].connections.push_back({ connection });
 }

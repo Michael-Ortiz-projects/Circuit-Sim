@@ -83,7 +83,7 @@ public:
             << ", " << vp.width << ", " << vp.height << ")\n\n";
     }
 
-    static void debugPrintWire(const Wire& wire) {
+    static void debugPrintWire(Wire& wire) {
         std::cout << "Wire ID: " << wire.ID << "\n";
         std::cout << "Next Node ID: " << wire.getNextNodeID() << "\n";
         std::cout << "Current Stem Node: " << wire.getStemNode() << "\n";

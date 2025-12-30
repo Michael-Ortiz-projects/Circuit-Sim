@@ -8,7 +8,7 @@ Wire::Wire(sf::Vector2f initialPosition, int id) {
     previewOrientation = PreviewOrientation::None;
 }
 
-int Wire::appendNode(sf::Vector2f pos) {
+int Wire::appendNodeFromStem(sf::Vector2f pos) {
     int id = nextNodeID++;
 
     graph[id].position = pos;
@@ -17,6 +17,12 @@ int Wire::appendNode(sf::Vector2f pos) {
     graph[id].neighbors.push_back(currentStemNode);
 
     currentStemNode = id;
+    return id;
+}
+
+int Wire::insertNode(sf::Vector2f pos) {
+    int id = nextNodeID++;
+    graph[id].position = pos;
     return id;
 }
 
@@ -62,11 +68,11 @@ void Wire::updatePreview(sf::Vector2f pos) {
 int Wire::commitPreview() {
     int committedNode = -1;
     if (firstPreview != graph[currentStemNode].position) {
-        committedNode = appendNode(firstPreview);
+        committedNode = appendNodeFromStem(firstPreview);
     }
 
     if (secondPreview != graph[currentStemNode].position) {
-        committedNode = appendNode(secondPreview);
+        committedNode = appendNodeFromStem(secondPreview);
     }
 
     previewOrientation = PreviewOrientation::None;
@@ -364,18 +370,3 @@ sf::Vector2f Wire::snapToGridBetween(sf::Vector2f A, sf::Vector2f B, sf::Vector2
     return { -1, -1 };
 }
 
-bool Wire::hitOrthogonalSegment(const sf::Vector2f& point, const sf::Vector2f& a, const sf::Vector2f& b, float radius) {
-    if (a.y == b.y) {
-        return point.x >= std::min(a.x, b.x) - radius &&
-            point.x <= std::max(a.x, b.x) + radius &&
-            std::abs(point.y - a.y) <= radius;
-    }
-
-    if (a.x == b.x) {
-        return point.y >= std::min(a.y, b.y) - radius &&
-            point.y <= std::max(a.y, b.y) + radius &&
-            std::abs(point.x - a.x) <= radius;
-    }
-
-    return false;
-}

@@ -35,10 +35,8 @@ void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
                 std::cout << "Snapped position:";
                 Debug::printVector2f(wireSegment.segment.snappedPosition);
                 std::cout << "Appending Node\n";
-                activeWire->commitPreview();
-                activeWire->updatePreview(worldPos);
-                //wire.merge or something like that to merge the wires once they are connected
-                //maybe finishWireAtSegment(segment)
+                finishWireAtSegment(wireSegment);
+                
             }
             else {
                 std::cout << "No valid segment hit to snap to\n";
@@ -148,6 +146,8 @@ void WireHandler::beginWireFromConnection(ElectricalConnection& connection) {
     sf::Vector2f pos = positionOfConnection(connection);
     int wireID = circuit.createWire(pos);
 
+    circuit.wireIDToElectricalNode[wireID] = activeElectricalNodeID;
+
     circuit.addConnectionToNode(activeElectricalNodeID, connection);
     circuit.updateComponentLead(wireID, 0, activeElectricalNodeID, connection);
 
@@ -180,10 +180,75 @@ void WireHandler::beginNodeDrag(WireNodeReference& ref) {
     wireState = WireState::DraggingNode;
 }
 
+void WireHandler::finishWireAtSegment(WireHit& wireSegment) {
+
+    if (wireState != WireState::Creating || !activeWire || wireSegment.wireID < 0) return;
+    
+    activeWire->commitPreview();
+
+    Wire& primaryWire = *circuit.getWire(wireSegment.wireID);
+    auto& primaryGraph = primaryWire.getGraph();
+    std::map<sf::Vector2f, int, Vector2fCompare> primaryPositionToNode;
+
+    for (auto& [primaryID, node] : primaryGraph) {
+        primaryPositionToNode[node.position] = primaryID;
+    }
+
+    std::unordered_map<int, int> idRemap;
+
+    for (auto& [activeID, node] : activeWire->getGraph()) {
+        auto it = primaryPositionToNode.find(node.position);
+
+        if (it != primaryPositionToNode.end()) {
+            idRemap[activeID] = it->second;
+        }
+
+        else {
+            int newID = primaryWire.insertNode(node.position);
+            idRemap[activeID] = newID;
+            primaryPositionToNode[node.position] = newID;
+        }
+    }
+
+    for (auto& [activeID, activeNode] : activeWire->getGraph()) { // uses ID map to update neighbor lists
+        int primaryID = idRemap[activeID]; 
+
+        for (int activeNeighbor : activeNode.neighbors) {
+            int primaryNeighbor = idRemap[activeNeighbor]; 
+
+            if (primaryID == primaryNeighbor) continue;
+
+            auto& neighbors = primaryGraph.at(primaryID).neighbors;
+
+            if (std::find(neighbors.begin(), neighbors.end(), primaryNeighbor) == neighbors.end()) {
+                neighbors.push_back(primaryNeighbor);
+                primaryGraph[primaryNeighbor].neighbors.push_back(primaryID);
+            }
+        }
+    }
+
+    for (auto& [activeNodeID, connection] : activeWire->anchorNodes) {
+        int primaryID = idRemap[activeNodeID];
+        primaryWire.anchorNodes[primaryID] = connection;
+    }
+    
+    //do remapping for junction nodes when I get to junction merging logic
+
+
+    int primaryElectricalNodeID = circuit.wireIDToElectricalNode.at(primaryWire.ID);
+
+    circuit.mergeElectricalNodes(primaryElectricalNodeID, activeElectricalNodeID);
+
+    activeWire->selected = false;
+    activeWire = nullptr;
+    wireState = WireState::Null;
+    //need to work on erasing wires from circuit and junction moving logic (they should be treated like anchors in a way)
+}
+
 void WireHandler::setInteractionContext(WireInteraction context) {
     interaction = context;
 }
 
 void WireHandler::setSegmentContext(WireHit context) {
-    segment = context;
+    wireSegment = context;
 }
