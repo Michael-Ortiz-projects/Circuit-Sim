@@ -121,16 +121,85 @@ void Wire::moveNodeSingleAxis(int movingNodeID, const sf::Vector2f& newGridPosit
 
     for (int neighborID : neighborIDs) {
 
-        if (isAnchor(neighborID) && (intent == WireMoveIntent::Edit || intent == WireMoveIntent::ComponentMove)) {
-            Node& neighbor = graph.at(neighborID);
+        if (isAnchor(neighborID)) {
+            Node& anchor = graph.at(neighborID);
 
-            bool orthogonalBreak = horizontal ? (neighbor.position.x == movingNode.position.x) : (neighbor.position.y == movingNode.position.y);
+            bool orthogonalBreak = horizontal ? (anchor.position.x == movingNode.position.x) : (anchor.position.y == movingNode.position.y);
 
             if (orthogonalBreak) {
                 insertBendNodeBetween(movingNodeID, neighborID, horizontal, newGridPosition);
             }
         }
+        else if (isJunction(neighborID)) {
+            Node& junction = graph.at(neighborID);
+            bool movingInNeighborDirection;
 
+            if (horizontal){
+                for (const auto& n : junction.neighbors) {
+                    Node& junctionNeighbor = graph.at(n);
+                    if (junctionNeighbor.position.y == junction.position.y) {
+                        sf::Vector2f move = sf::Vector2f(newGridPosition.x, junction.position.y) - junction.position;
+                        sf::Vector2f toTarget = junctionNeighbor.position - junction.position;
+                        movingInNeighborDirection = move.x * toTarget.x > 0;
+                    }
+                }
+
+                if (movingInNeighborDirection) {
+
+                    bool movingNodeAboveJunction = movingNode.position.y > junction.position.y;
+
+
+                    for (const auto& n : junction.neighbors) {
+                        Node& junctionNeighbor = graph.at(n);
+                        bool junctionNeighborAboveJunction = junctionNeighbor.position.y > junction.position.y;
+
+                        if ((movingNodeAboveJunction && !junctionNeighborAboveJunction) || (!movingNodeAboveJunction && junctionNeighborAboveJunction)) {
+                            //neighbor is across the junction from the moving node
+                            insertNode(junction.position);
+                            //remake neighbors of junction, inserted node, and the neighbors of the inserted node (idk how)
+                            //there are two types of junctions, + and T(sideways), maybe first classify horizontal movement left or right
+                            //if moving Right, the neighbor of inserted = junction, node left of junction, node above junction
+                            //reconfigure the other node neighbors based on that
+                            
+                            break;
+                        }
+                    }
+                    
+
+                    //treat like normal and move the node position
+                    //except if there is a neighbor on the opposite side the junction as the moving node,
+                    //insert a new junction at the old junctino point to preserve geometry
+                    //update neighbor list too
+                }
+
+                else {
+                    insertBendNodeBetween(movingNodeID, neighborID, horizontal, newGridPosition);
+                }
+            }
+
+            else {
+                for (const auto& n : junction.neighbors) {
+                    Node& junctionNeighbor = graph.at(n);
+                    if (junctionNeighbor.position.x == junction.position.x) {
+                        sf::Vector2f move = sf::Vector2f(junction.position.x, newGridPosition.y) - junction.position;
+                        sf::Vector2f toTarget = junctionNeighbor.position - junction.position;
+                        movingInNeighborDirection = move.y * toTarget.y > 0;
+
+                        if (movingInNeighborDirection) {
+                            //treat like normal and move the node position
+                            //except if there is a neighbor on the opposite side of the junction as the moving node,
+                            //insert a new junction at the old junctino point to preserve geometry
+                            //update neighbor list too
+                        }
+
+                        else {
+                            insertBendNodeBetween(movingNodeID, neighborID, horizontal, newGridPosition);
+                        }
+                    }
+                }
+            }
+            //if not moving the junction node in a direction of a neighbor, treat it just like an achnor node
+        }
 
         else {
             updateNeighborPosition(movingNodeID, neighborID, horizontal, newGridPosition);
