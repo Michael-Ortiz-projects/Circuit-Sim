@@ -83,11 +83,19 @@ public:
 
 	sf::Vector2f snapToGridBetween(sf::Vector2f A, sf::Vector2f B, sf::Vector2f point);
 
+	sf::Vector2f computeJunctionPosition(int junctionID);
+
+	void removeNeighborFrom(int nodeID, int to_remove);
+
+
 	std::map<int, Node>& getGraph() { return graph; }	
 	int getNextNodeID() const { return nextNodeID; }
 	int getStemNode() const { return currentStemNode; }
 	sf::Vector2f getFirstPreview() const { return firstPreview; }
 	sf::Vector2f getSecondPreview() const { return secondPreview; }
+
+	bool isAnchor(int nodeID);
+	bool isJunction(int nodeID);
 
 	int ID;
 	std::map<int, ElectricalConnection> anchorNodes;
@@ -100,13 +108,12 @@ public:
 private:
 
 	sf::Vector2f snapPositionToGrid(const sf::Vector2f& position);
-	bool isAnchor(int nodeID);
+	
 	bool isCollinear(int nodeID);
 
 	sf::Vector2f getBendNodePosition(sf::Vector2f newMovingNodePosition, int anchorID, bool horizontalMove);
 	void insertBendNodeBetween(int nodeA, int nodeB, bool horizontalMove, sf::Vector2f newMovingNodePosition);
 
-	void removeNeighborFrom(int nodeID, int to_remove);
 
 	void updateNeighborPosition(int movingID, int neighborID, bool horizontalMove, sf::Vector2f newMovingNodePosition);
 	std::map<int, Node> graph;

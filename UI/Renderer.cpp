@@ -27,6 +27,14 @@ void Renderer::drawCanvas(std::vector<SchematicComponent>& components, std::unor
 
         if (!graph.empty()) {
             drawWireGraph(graph.begin()->first, graph, visited);
+            for (const auto& nodeID : wire.second.junctionNodes) {
+                sf::CircleShape junctionPoint;
+                junctionPoint.setFillColor(sf::Color(63, 182, 168));
+                junctionPoint.setRadius(2.5);
+                junctionPoint.setOrigin({ 2.5, 2.5 });
+                junctionPoint.setPosition(graph.at(nodeID).position);
+                window.draw(junctionPoint);
+            }
         }
 
         if (wire.second.selected) {

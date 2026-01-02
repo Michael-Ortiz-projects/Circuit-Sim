@@ -117,6 +117,25 @@ int Circuit::createWire(sf::Vector2f position) {
     return nextWireID++;
 }
 
+void Circuit::eraseWire(int wireID) {
+    Wire& wire = wires.at(wireID); // careful here could fail if ID isnt in wires
+    int eNodeID = wireIDToElectricalNode.at(wireID);
+    for (auto& [wireNodeID, connection] : wire.anchorNodes) {
+
+        removeConnectionFromNode(eNodeID, connection);
+
+        updateComponentLead(-1, -1, -1, connection);
+    }
+
+    if (nodes.at(eNodeID).connections.empty()) {
+        removeElectricalNode(eNodeID);
+    }
+
+    wireIDToElectricalNode.erase(wireID);
+
+    wires.erase(wireID);
+}
+
 bool Circuit::leadIsEmpty(ElectricalConnection& connection) { // returns false if connection is not valid
     switch (connection.lead) {
     case Lead::A:

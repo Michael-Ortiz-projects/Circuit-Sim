@@ -29,21 +29,12 @@ void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
             
         }
 
-        if (!interaction.hasLead()) {
-            std::cout << "This ran\n";
-            if (wireSegment.valid) {
-                std::cout << "Snapped position:";
-                Debug::printVector2f(wireSegment.segment.snappedPosition);
-                std::cout << "Appending Node\n";
-                finishWireAtSegment(wireSegment);
-                
-            }
-            else {
-                std::cout << "No valid segment hit to snap to\n";
-            }
+        if (!interaction.hasLead() && wireSegment.valid) {
+            std::cout << "Snapped position:";
+            Debug::printVector2f(wireSegment.segment.snappedPosition);
+            std::cout << "Appending Node\n";
+            finishWireAtSegment(wireSegment);
         }
-
-
 
         else {
             if (activeWire) {
@@ -58,8 +49,6 @@ void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
     default:
         break;
     }
-
-    
 }
 
 void WireHandler::onMouseMove(const sf::Vector2f& worldPos) {
@@ -154,7 +143,7 @@ void WireHandler::beginWireFromConnection(ElectricalConnection& connection) {
     
 
     activeWire = circuit.getWire(wireID);
-    activeWire->anchorNodes.emplace(activeElectricalNodeID, connection);
+    activeWire->anchorNodes.emplace(0, connection);
     activeWire->selected = true;
 
 
@@ -186,9 +175,42 @@ void WireHandler::finishWireAtSegment(WireHit& wireSegment) {
     
     activeWire->commitPreview();
 
+
+
     Wire& primaryWire = *circuit.getWire(wireSegment.wireID);
     auto& primaryGraph = primaryWire.getGraph();
     std::map<sf::Vector2f, int, Vector2fCompare> primaryPositionToNode;
+
+    int junctionNodeID = -1;
+
+    SegmentHit& seg = wireSegment.segment;
+
+    if (seg.valid) {
+        const sf::Vector2f& p = seg.snappedPosition;
+
+        // Check if there's already a node there
+        auto it = primaryPositionToNode.find(p);
+        if (it != primaryPositionToNode.end()) {
+            junctionNodeID = it->second;
+        }
+        else {
+            junctionNodeID = primaryWire.insertNode(p);
+
+            int A = seg.nodeA;
+            int B = seg.nodeB;
+
+            primaryWire.removeNeighborFrom(A, B);
+            primaryWire.removeNeighborFrom(B, A);
+
+            primaryGraph[A].neighbors.push_back(junctionNodeID);
+            primaryGraph[junctionNodeID].neighbors.push_back(A);
+
+            primaryGraph[junctionNodeID].neighbors.push_back(B);
+            primaryGraph[B].neighbors.push_back(junctionNodeID);
+
+            primaryWire.junctionNodes.push_back(junctionNodeID);
+        }
+    }
 
     for (auto& [primaryID, node] : primaryGraph) {
         primaryPositionToNode[node.position] = primaryID;
@@ -231,18 +253,16 @@ void WireHandler::finishWireAtSegment(WireHit& wireSegment) {
         int primaryID = idRemap[activeNodeID];
         primaryWire.anchorNodes[primaryID] = connection;
     }
-    
-    //do remapping for junction nodes when I get to junction merging logic
-
 
     int primaryElectricalNodeID = circuit.wireIDToElectricalNode.at(primaryWire.ID);
 
     circuit.mergeElectricalNodes(primaryElectricalNodeID, activeElectricalNodeID);
 
     activeWire->selected = false;
+    circuit.eraseWire(activeWire->ID);
     activeWire = nullptr;
     wireState = WireState::Null;
-    //need to work on erasing wires from circuit and junction moving logic (they should be treated like anchors in a way)
+    //WORK ON JUNCTION MOVEMENT
 }
 
 void WireHandler::setInteractionContext(WireInteraction context) {

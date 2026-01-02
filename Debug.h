@@ -99,6 +99,12 @@ public:
                     std::cout << neighborID << " ";
                 }
             }
+            if (wire.isJunction(nodeID)) {
+                std::cout << " Junction Node ";
+            }
+            if (wire.isAnchor(nodeID)) {
+                std::cout << "Anchor Node ";
+            }
             std::cout << "\n";
         }
         std::cout << std::endl;

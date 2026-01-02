@@ -31,6 +31,7 @@ public:
     void updateComponentLead(int wireID, int wireNodeID, int ElectricalNodeID, ElectricalConnection& connection);
 
     int createWire(sf::Vector2f position);
+    void eraseWire(int wireID);
 
     bool leadIsEmpty(ElectricalConnection& connection);
 

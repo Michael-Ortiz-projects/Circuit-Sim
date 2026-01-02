@@ -109,57 +109,47 @@ WireMoveResult Wire::moveNode(int movingNodeID, sf::Vector2f newPosition, WireMo
             result = WireMoveResult::NodeMerged;
     }
 
-    cleanupCollinearNodes();
+    //cleanupCollinearNodes();
     return result;
 }
 
 void Wire::moveNodeSingleAxis(int movingNodeID, const sf::Vector2f& newGridPosition, MoveAxis axis, WireMoveIntent intent) {
     Node& movingNode = graph.at(movingNodeID);
+    bool horizontal = (axis == MoveAxis::Horizontal);
 
     std::vector<int> neighborIDs = movingNode.neighbors;
 
-    bool horizontal = (axis == MoveAxis::Horizontal);
-
     for (int neighborID : neighborIDs) {
 
-        if (isAnchor(neighborID) &&
-            (intent == WireMoveIntent::Edit || intent == WireMoveIntent::ComponentMove))
-        {
+        if (isAnchor(neighborID) && (intent == WireMoveIntent::Edit || intent == WireMoveIntent::ComponentMove)) {
             Node& neighbor = graph.at(neighborID);
 
-            bool aligned =
-                horizontal
-                ? (neighbor.position.x == movingNode.position.x)
-                : (neighbor.position.y == movingNode.position.y);
+            bool orthogonalBreak = horizontal ? (neighbor.position.x == movingNode.position.x) : (neighbor.position.y == movingNode.position.y);
 
-            if (aligned) {
-                insertBendNodeBetween(
-                    movingNodeID,
-                    neighborID,
-                    horizontal,
-                    newGridPosition
-                );
+            if (orthogonalBreak) {
+                insertBendNodeBetween(movingNodeID, neighborID, horizontal, newGridPosition);
             }
         }
+
+
         else {
-            updateNeighborPosition(
-                movingNodeID,
-                neighborID,
-                horizontal,
-                newGridPosition
-            );
+            updateNeighborPosition(movingNodeID, neighborID, horizontal, newGridPosition);
         }
     }
 
     if (isAnchor(movingNodeID)) {
-        if (intent == WireMoveIntent::Edit)
-            return;
-        if (intent == WireMoveIntent::ComponentMove) {
+        if (intent == WireMoveIntent::ComponentMove)
             movingNode.position = newGridPosition;
-        }
+        return;
     }
-    else if (intent == WireMoveIntent::Edit) {
+
+    if (intent == WireMoveIntent::Edit) {
         movingNode.position = newGridPosition;
+    }
+
+    if (isJunction(movingNodeID) && intent == WireMoveIntent::Edit) {
+        movingNode.position = newGridPosition;
+        return;
     }
 }
 
@@ -190,6 +180,9 @@ bool Wire::isAnchor(int nodeID) {
     return anchorNodes.find(nodeID) != anchorNodes.end();
 }
 
+bool Wire::isJunction(int nodeID) {
+    return graph.at(nodeID).neighbors.size() >= 3;
+}
 sf::Vector2f Wire::getBendNodePosition(sf::Vector2f newMovingNodePosition, int anchorID, bool horizontalMove) {
     Node& anchor = graph.at(anchorID);
 
@@ -219,6 +212,10 @@ void Wire::insertBendNodeBetween(int nodeA, int nodeB, bool horizontalMove, sf::
     
 }
 
+sf::Vector2f Wire::computeJunctionPosition(int junctionID) {
+    return { -1, -1 }; //for now, make this comput the junciton position, The behavior im looking for is a clamp to a segment
+}
+
 void Wire::removeNeighborFrom(int nodeID, int to_remove) {
     std::vector<int>& neighbors = graph.at(nodeID).neighbors;
     neighbors.erase(std::remove(neighbors.begin(), neighbors.end(), to_remove), neighbors.end());
@@ -239,6 +236,7 @@ void Wire::updateNeighborPosition(int movingID, int neighborID, bool horizontalM
     else if (!horizontalMovement && neighbor.position.y == moving.position.y)
     {
         neighbor.position.y = newMovingNodePosition.y;
+        std::cout << "Set Neighbor position\n";
     }
 }
 
