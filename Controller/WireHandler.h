@@ -46,7 +46,7 @@ public:
 
 	void finishWireAtConnection(ElectricalConnection& end);
 
-	void beginNodeDrag(WireNodeReference& ref);
+	void finishWireAtNode(WireNodeReference wire_node);
 
 	void finishWireAtSegment(WireHit& wireSegment);
 
@@ -56,6 +56,7 @@ private:
 
 	sf::Vector2f snapPositionToGrid(const sf::Vector2f& position);
 	sf::Vector2f positionOfConnection(ElectricalConnection& connection);
+	void beginNodeDrag(WireNodeReference& ref);
 
 	Circuit& circuit;
 	std::vector<SchematicComponent>& schematicComponents;

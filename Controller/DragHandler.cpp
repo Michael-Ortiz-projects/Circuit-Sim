@@ -21,12 +21,14 @@ void DragHandler::onMousePress(const sf::Vector2f& worldPos)  {
 void DragHandler::onMouseMove(const sf::Vector2f& worldPos) {
 	if (active && dragging) {
 		active->dragTo(worldPos);
-		if (active->A_WireNodeReference.isValid())
-			wires.at(active->A_WireNodeReference.wireID).moveNode(active->A_WireNodeReference.nodeID, worldPos + active->leadOffsetA, WireMoveIntent::ComponentMove);
+		if (active->A_WireNodeReference.isValid()) {
+			//wires.at(active->A_WireNodeReference.wireID).moveNode(active->A_WireNodeReference.nodeID, worldPos + active->leadOffsetA, WireMoveIntent::ComponentMove);
+		}
 
-		if (active->B_WireNodeReference.isValid())
-			wires.at(active->B_WireNodeReference.wireID).moveNode(active->B_WireNodeReference.nodeID, worldPos + active->leadOffsetB, WireMoveIntent::ComponentMove);
-
+		if (active->B_WireNodeReference.isValid()) {
+			//wires.at(active->B_WireNodeReference.wireID).moveNode(active->B_WireNodeReference.nodeID, worldPos + active->leadOffsetB, WireMoveIntent::ComponentMove);
+		}
+		
 	}
 }
 

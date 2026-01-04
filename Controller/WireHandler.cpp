@@ -15,37 +15,37 @@ void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
         else if (interaction.hasWireNode()) {
             std::cout << "Beginning Drag on node " << interaction.wire_node.nodeID << std::endl;
             beginNodeDrag(interaction.wire_node);
-
         }
         break;
     
     case WireState::Creating:
-        if (interaction.hasLead() && circuit.leadIsEmpty(interaction.connection)) {
-            finishWireAtConnection(interaction.connection);
-            std::cout << "Ending Wire Creation\n";
-        }
+        if (activeWire && snapPositionToGrid(worldPos) != activeWire->getGraph().at(activeWire->getStemNode()).position) {
+            if (interaction.hasLead()) {
+                finishWireAtConnection(interaction.connection);
+                std::cout << "Ending Wire Creation\n";
+            }
 
-        if (interaction.hasLead() && !circuit.leadIsEmpty(interaction.connection)) {
-            
-        }
+            else if (interaction.hasWireNode()) {
+                std::cout << "Finishing Wire At Node\n";
+                finishWireAtNode(interaction.wire_node);
+                std::cout << "Finished Wire At Node\n";
+            }
 
-        if (!interaction.hasLead() && wireSegment.valid) {
-            std::cout << "Snapped position:";
-            Debug::printVector2f(wireSegment.segment.snappedPosition);
-            std::cout << "Appending Node\n";
-            finishWireAtSegment(wireSegment);
-        }
+            else if (wireSegment.valid) {
+                std::cout << "Snapped position:";
+                Debug::printVector2f(wireSegment.segment.snappedPosition);
+                std::cout << "Finishing Wire At Segment\n";
+                finishWireAtSegment(wireSegment);
+            }
 
-        else {
-            if (activeWire) {
-
+            else {
                 std::cout << "Appending Node\n";
                 activeWire->commitPreview();
                 activeWire->updatePreview(worldPos);
             }
+            break;
         }
         break;
-
     default:
         break;
     }
@@ -63,8 +63,7 @@ void WireHandler::onMouseMove(const sf::Vector2f& worldPos) {
     case WireState::DraggingNode:
         if (activeWire) {
 
-            WireMoveResult moveResult = activeWire->moveNode(interaction.wire_node.nodeID, worldPos, WireMoveIntent::Edit);
-
+            WireMoveResult moveResult = WireMoveResult::None;//activeWire->moveNode(interaction.wire_node.nodeID, worldPos, WireMoveIntent::Edit);
             switch (moveResult) {
             case WireMoveResult::NodeMerged:
                 interaction.wire_node = { -1, -1 };
@@ -143,7 +142,6 @@ void WireHandler::beginWireFromConnection(ElectricalConnection& connection) {
     
 
     activeWire = circuit.getWire(wireID);
-    activeWire->anchorNodes.emplace(0, connection);
     activeWire->selected = true;
 
 
@@ -154,71 +152,145 @@ void WireHandler::beginWireFromConnection(ElectricalConnection& connection) {
 void WireHandler::finishWireAtConnection(ElectricalConnection& end) {
     if (wireState != WireState::Creating || !activeWire) return;
 
-    int finalWireNodeID = activeWire->commitPreview();
+    int finalNodeID = activeWire->commitPreview();
     circuit.addConnectionToNode(activeWire->ID, end);
-    circuit.updateComponentLead(activeWire->ID, finalWireNodeID, activeElectricalNodeID, end);
-    activeWire->anchorNodes.emplace(finalWireNodeID, end);
+    circuit.updateComponentLead(activeWire->ID, finalNodeID, activeElectricalNodeID, end);
     activeWire->selected = false;
     activeWire = nullptr;
     wireState = WireState::Null;
 }
 
-void WireHandler::beginNodeDrag(WireNodeReference& ref) {
-    activeWire = circuit.getWire(ref.wireID);
+void WireHandler::finishWireAtNode(WireNodeReference wire_node) {
+    if (!wire_node.isValid() || !activeWire) return;
 
-    wireState = WireState::DraggingNode;
+    activeWire->commitPreview();
+
+    Wire& primaryWire = *circuit.getWire(wire_node.wireID);
+
+    int targetNodeID = wire_node.nodeID;
+
+    bool sameWire = (&primaryWire == activeWire);
+
+    if (sameWire) {
+        primaryWire.collapseNodeInto(targetNodeID, activeWire->getStemNode());
+        
+
+        activeWire->selected = false;
+        wireState = WireState::Null;
+        activeWire = &primaryWire;
+        return;
+    }
+
+    auto& primaryGraph = primaryWire.getGraph();
+    auto& activeGraph = activeWire->getGraph();
+
+    // build a map of positions to nodes in primaryWire
+    std::map<sf::Vector2f, int, Vector2fCompare> primaryPositionToNode;
+    for (auto& [id, node] : primaryGraph)
+        primaryPositionToNode[node.position] = id;
+
+    std::unordered_map<int, int> idRemap;
+
+    for (auto& [activeID, node] : activeGraph) {
+        auto it = primaryPositionToNode.find(node.position);
+        if (it != primaryPositionToNode.end()) {
+            idRemap[activeID] = it->second;
+        }
+        else {
+            int newID = primaryWire.createNode(node.position);
+            idRemap[activeID] = newID;
+            primaryPositionToNode[node.position] = newID;
+        }
+    }
+
+    // connect neighbors 
+    for (auto& [activeID, activeNode] : activeGraph) {
+        int primaryID = idRemap[activeID];
+
+        for (Dir d : {Dir::Left, Dir::Right, Dir::Up, Dir::Down}) {
+            int activeNeighbor = activeNode.neighbors[d];
+            if (activeNeighbor == -1) continue;
+
+            auto it = idRemap.find(activeNeighbor);
+            if (it == idRemap.end()) continue;
+
+            int primaryNeighbor = it->second;
+            if (primaryID == primaryNeighbor) continue;
+            if (primaryGraph.find(primaryNeighbor) == primaryGraph.end()) continue;
+
+            if (!primaryGraph.at(primaryID).neighbors.has(d))
+                primaryWire.connectNodes(primaryID, primaryNeighbor);
+        }
+    }
+
+    for (auto& [activeID, activeNode] : activeGraph) {
+        if (activeNode.isAnchor) {
+            int primaryID = idRemap[activeID];
+            primaryWire.getGraph().at(primaryID).isAnchor = true;
+        }
+    }
+    std::cout << "Debug 0\n";
+    if (!sameWire) {
+        int primaryElectricalNodeID = circuit.wireIDToElectricalNode.at(primaryWire.ID);
+        circuit.mergeElectricalNodes(primaryElectricalNodeID, activeElectricalNodeID);
+
+        activeWire->selected = false;
+        int id = activeWire->ID;
+        activeWire = nullptr;
+        wireState = WireState::Null;
+        std::cout << "debug 1\n";
+
+        circuit.eraseWire(id);
+        std::cout << "debug 2\n";
+    }
 }
 
 void WireHandler::finishWireAtSegment(WireHit& wireSegment) {
 
-    if (wireState != WireState::Creating || !activeWire || wireSegment.wireID < 0) return;
+    if (wireState != WireState::Creating || wireSegment.wireID < 0) return;
     
     activeWire->commitPreview();
 
-
-
     Wire& primaryWire = *circuit.getWire(wireSegment.wireID);
     auto& primaryGraph = primaryWire.getGraph();
-    std::map<sf::Vector2f, int, Vector2fCompare> primaryPositionToNode;
-
-    int junctionNodeID = -1;
-
+    auto& activeGraph = activeWire->getGraph();
     SegmentHit& seg = wireSegment.segment;
 
+    int junctionNodeID = -1;
+    bool sameWire = (&primaryWire == activeWire);
+
+    // build the position to Node map
+    std::map<sf::Vector2f, int, Vector2fCompare> primaryPositionToNode;
+    for (auto& [primaryID, node] : primaryWire.getGraph()) {
+        primaryPositionToNode[node.position] = primaryID;
+    }
+
+    // check if there’s already a node at the snapped position
     if (seg.valid) {
         const sf::Vector2f& p = seg.snappedPosition;
 
-        // Check if there's already a node there
         auto it = primaryPositionToNode.find(p);
         if (it != primaryPositionToNode.end()) {
-            junctionNodeID = it->second;
+            junctionNodeID = it->second; // node already exists
         }
         else {
-            junctionNodeID = primaryWire.insertNode(p);
-
-            int A = seg.nodeA;
-            int B = seg.nodeB;
-
-            primaryWire.removeNeighborFrom(A, B);
-            primaryWire.removeNeighborFrom(B, A);
-
-            primaryGraph[A].neighbors.push_back(junctionNodeID);
-            primaryGraph[junctionNodeID].neighbors.push_back(A);
-
-            primaryGraph[junctionNodeID].neighbors.push_back(B);
-            primaryGraph[B].neighbors.push_back(junctionNodeID);
-
-            primaryWire.junctionNodes.push_back(junctionNodeID);
+            junctionNodeID = primaryWire.createNode(p);
+            primaryPositionToNode[p] = junctionNodeID; // add it to the map
+            // Connect to segment endpoints
+            primaryWire.connectNodes(junctionNodeID, seg.nodeA);
+            primaryWire.connectNodes(junctionNodeID, seg.nodeB);
         }
     }
+    // update map of existing nodes for lookup
 
     for (auto& [primaryID, node] : primaryGraph) {
         primaryPositionToNode[node.position] = primaryID;
     }
+    // remap active wire nodes into primary wire
 
     std::unordered_map<int, int> idRemap;
 
-    for (auto& [activeID, node] : activeWire->getGraph()) {
+    for (auto& [activeID, node] : activeGraph) {
         auto it = primaryPositionToNode.find(node.position);
 
         if (it != primaryPositionToNode.end()) {
@@ -226,43 +298,61 @@ void WireHandler::finishWireAtSegment(WireHit& wireSegment) {
         }
 
         else {
-            int newID = primaryWire.insertNode(node.position);
+            int newID = primaryWire.createNode(node.position);
             idRemap[activeID] = newID;
             primaryPositionToNode[node.position] = newID;
         }
     }
 
-    for (auto& [activeID, activeNode] : activeWire->getGraph()) { // uses ID map to update neighbor lists
+    for (auto& [activeID, activeNode] : activeGraph) { // uses ID map to update neighbor lists
         int primaryID = idRemap[activeID]; 
 
-        for (int activeNeighbor : activeNode.neighbors) {
-            int primaryNeighbor = idRemap[activeNeighbor]; 
+        for (Dir d : {Dir::Left, Dir::Right, Dir::Up, Dir::Down}) {
+            int activeNeighbor = activeNode.neighbors[d];
+            if (activeNeighbor == -1) continue;
 
+            int primaryNeighbor = idRemap[activeNeighbor];
             if (primaryID == primaryNeighbor) continue;
 
-            auto& neighbors = primaryGraph.at(primaryID).neighbors;
-
-            if (std::find(neighbors.begin(), neighbors.end(), primaryNeighbor) == neighbors.end()) {
-                neighbors.push_back(primaryNeighbor);
-                primaryGraph[primaryNeighbor].neighbors.push_back(primaryID);
+            auto& primaryNode = primaryGraph.at(primaryID);
+            if (!primaryNode.neighbors.has(d)) {
+                primaryWire.connectNodes(primaryID, primaryNeighbor);
             }
         }
     }
 
-    for (auto& [activeNodeID, connection] : activeWire->anchorNodes) {
-        int primaryID = idRemap[activeNodeID];
-        primaryWire.anchorNodes[primaryID] = connection;
+    for (auto& [activeID, activeNode] : activeGraph) {
+        if (activeNode.isAnchor) {
+            int primaryID = idRemap[activeID];
+            primaryWire.getGraph().at(primaryID).isAnchor = true;
+        }
     }
 
-    int primaryElectricalNodeID = circuit.wireIDToElectricalNode.at(primaryWire.ID);
+   
 
-    circuit.mergeElectricalNodes(primaryElectricalNodeID, activeElectricalNodeID);
+    if (!sameWire) {
+        int primaryElectricalNodeID = circuit.wireIDToElectricalNode.at(primaryWire.ID);
+        circuit.mergeElectricalNodes(primaryElectricalNodeID, activeElectricalNodeID);
 
-    activeWire->selected = false;
-    circuit.eraseWire(activeWire->ID);
-    activeWire = nullptr;
-    wireState = WireState::Null;
-    //WORK ON JUNCTION MOVEMENT
+        activeWire->selected = false;
+        int id = activeWire->ID;
+        activeWire = nullptr;
+        wireState = WireState::Null;
+
+        circuit.eraseWire(id);
+    }
+    else {
+        activeWire->selected = false;
+        wireState = WireState::Null;
+        activeWire = &primaryWire;
+    }
+}
+
+
+void WireHandler::beginNodeDrag(WireNodeReference& ref) {
+    activeWire = circuit.getWire(ref.wireID);
+
+    wireState = WireState::DraggingNode;
 }
 
 void WireHandler::setInteractionContext(WireInteraction context) {

@@ -95,15 +95,28 @@ void Circuit::removeConnectionFromNode(int nodeID, ElectricalConnection& connect
 }
 
 void Circuit::updateComponentLead(int wireID, int wireNodeID, int ElectricalNodeID, ElectricalConnection& connection) {
+    auto comp = getComponent(connection.componentID);
     switch (connection.lead) {
     case Lead::A:
-        getComponent(connection.componentID)->nodeA = ElectricalNodeID;
-        getComponent(connection.componentID)->A_WireNodeReference = { wireID, wireNodeID };
+        comp->nodeA = ElectricalNodeID;
+        comp->A_WireNodeReference = { wireID, wireNodeID };
+        // Only mark as anchor if wire and node exist
+        if (wires.find(wireID) != wires.end()) {
+            auto& graph = wires.at(wireID).getGraph();
+            if (graph.find(wireNodeID) != graph.end()) {
+                graph.at(wireNodeID).isAnchor = true;
+            }
+        }
         return;
     case Lead::B:
-        getComponent(connection.componentID)->nodeB = ElectricalNodeID;
-        getComponent(connection.componentID)->B_WireNodeReference = { wireID, wireNodeID };
-
+        comp->nodeB = ElectricalNodeID;
+        comp->B_WireNodeReference = { wireID, wireNodeID };
+        if (wires.find(wireID) != wires.end()) {
+            auto& graph = wires.at(wireID).getGraph();
+            if (graph.find(wireNodeID) != graph.end()) {
+                graph.at(wireNodeID).isAnchor = true;
+            }
+        }
         return;
     case Lead::Null:
         std::cout << "Update component Lead Null connection\n";
@@ -118,22 +131,54 @@ int Circuit::createWire(sf::Vector2f position) {
 }
 
 void Circuit::eraseWire(int wireID) {
-    Wire& wire = wires.at(wireID); // careful here could fail if ID isnt in wires
-    int eNodeID = wireIDToElectricalNode.at(wireID);
-    for (auto& [wireNodeID, connection] : wire.anchorNodes) {
+    auto wireIt = wires.find(wireID);
+    if (wireIt == wires.end()) return; // wire doesn't exist
 
-        removeConnectionFromNode(eNodeID, connection);
+    Wire& wire = wireIt->second;
 
-        updateComponentLead(-1, -1, -1, connection);
+    // Get electrical node safely
+    auto enIt = wireIDToElectricalNode.find(wireID);
+    int eNodeID = -1;
+    if (enIt != wireIDToElectricalNode.end()) {
+        eNodeID = enIt->second;
     }
 
-    if (nodes.at(eNodeID).connections.empty()) {
+    // Collect anchor connections first to avoid invalidating graph iteration
+    std::vector<ElectricalConnection> connectionsToRemove;
+    for (auto& [id, node] : wire.getGraph()) {
+        if (node.isAnchor) {
+            for (auto& comp : components) {
+                if (comp.A_WireNodeReference.wireID == wireID && comp.A_WireNodeReference.nodeID == id) {
+                    connectionsToRemove.push_back({ comp.id, Lead::A });
+                }
+                if (comp.B_WireNodeReference.wireID == wireID && comp.B_WireNodeReference.nodeID == id) {
+                    connectionsToRemove.push_back({ comp.id, Lead::B });
+                }
+            }
+        }
+    }
+
+
+    // Remove electrical connections
+    for (auto& conn : connectionsToRemove) {
+        if (eNodeID != -1 && nodes.find(eNodeID) != nodes.end()) {
+            removeConnectionFromNode(eNodeID, conn);
+        }
+        updateComponentLead(-1, -1, -1, conn);
+    }
+
+
+    // Remove electrical node if empty
+    if (eNodeID != -1 && nodes.find(eNodeID) != nodes.end() && nodes.at(eNodeID).connections.empty()) {
         removeElectricalNode(eNodeID);
     }
 
+
+    // Erase wire ID mapping first
     wireIDToElectricalNode.erase(wireID);
 
-    wires.erase(wireID);
+    // Finally erase the wire itself
+    wires.erase(wireIt);
 }
 
 bool Circuit::leadIsEmpty(ElectricalConnection& connection) { // returns false if connection is not valid

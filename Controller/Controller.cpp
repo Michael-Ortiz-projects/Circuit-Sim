@@ -64,20 +64,22 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 		ElectricalConnection clickedLead = findClickedLead(sf::Vector2f(event.x, event.y));
 		WireNodeReference clickedNodeReference = findClickedNode(sf::Vector2f(event.x, event.y));
 		WireHit clickedWireSegment = findClickedSegment(sf::Vector2f(event.x, event.y));
-
 		WireInteraction interaction = { clickedLead, clickedNodeReference };
+
+		wireHandler.setInteractionContext(interaction);
+		wireHandler.setSegmentContext(clickedWireSegment);
+
+
 		if (interaction.hasLead() || interaction.hasWireNode()) {
 			std::cout << "Clicked Component " << clickedLead.componentID << ", Lead "
 				<< Debug::lead_to_string(clickedLead.lead) << std::endl;
 			std::cout << "Clicked Wire " << clickedNodeReference.wireID << ", Node " << clickedNodeReference.nodeID << std::endl;
 			currentHandler = &wireHandler;
 			Debug::setHandler("Wire Handler");
-			wireHandler.setInteractionContext(interaction);
 		}
 
 		if (clickedWireSegment.valid && currentHandler == &wireHandler) {
 			std::cout << "Clicked Wire " << clickedWireSegment.wireID << ", Segment: " << clickedWireSegment.segment.nodeA << ", " << clickedWireSegment.segment.nodeB << "\n\n";
-			wireHandler.setSegmentContext(clickedWireSegment);
 		}
 
 		
@@ -104,6 +106,7 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 void Controller::onMouseMove(const sf::Event::MouseMoveEvent& event) {
 	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y }, renderer.getCanvasView());
 	if (currentHandler) currentHandler->onMouseMove(worldMousePosition);
+
 }
 
 void Controller::onScroll(const sf::Event::MouseWheelScrollEvent& event) {
@@ -258,11 +261,7 @@ WireNodeReference Controller::findClickedNode(const sf::Vector2f mousePixel) {//
 WireHit Controller::findClickedSegment(const sf::Vector2f mousePixel) {
 	WireHit best;
 	
-	sf::Vector2f mouseWorld =
-		window.mapPixelToCoords(
-			sf::Vector2i(mousePixel),
-			renderer.getCanvasView()
-		);
+	sf::Vector2f mouseWorld = window.mapPixelToCoords(sf::Vector2i(mousePixel), renderer.getCanvasView());
 
 	for (auto& [wireID, wire] : circuit.getWires()) {
 
@@ -271,18 +270,9 @@ WireHit Controller::findClickedSegment(const sf::Vector2f mousePixel) {
 			continue;
 
 		sf::Vector2f snappedPixel =
-			sf::Vector2f(
-				window.mapCoordsToPixel(
-					seg.snappedPosition,
-					renderer.getCanvasView()
-				)
-			);
+			sf::Vector2f(window.mapCoordsToPixel(seg.snappedPosition, renderer.getCanvasView()));
 
-		float pixelDist =
-			std::hypot(
-				mousePixel.x - snappedPixel.x,
-				mousePixel.y - snappedPixel.y
-			);
+		float pixelDist = std::hypot(mousePixel.x - snappedPixel.x, mousePixel.y - snappedPixel.y);
 
 		if (pixelDist > wireSelectionRadius)
 			continue;

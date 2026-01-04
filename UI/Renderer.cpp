@@ -1,5 +1,8 @@
 #include "Renderer.h"
 
+using Edge = std::pair<int, int>;
+
+
 Renderer::Renderer(sf::RenderWindow& Window, AssetManager& Assets, Grid& Grid)
     : assets(Assets), window(Window), grid(Grid) {
     sf::Vector2f windowSize(window.getSize());
@@ -22,18 +25,20 @@ void Renderer::drawCanvas(std::vector<SchematicComponent>& components, std::unor
     }
 
     for (auto& wire : wires) {
-        std::map<int, bool> visited;
+        std::set<std::pair<int, int>> drawnEdges;
         const auto& graph = wire.second.getGraph();
 
         if (!graph.empty()) {
-            drawWireGraph(graph.begin()->first, graph, visited);
-            for (const auto& nodeID : wire.second.junctionNodes) {
-                sf::CircleShape junctionPoint;
-                junctionPoint.setFillColor(sf::Color(63, 182, 168));
-                junctionPoint.setRadius(2.5);
-                junctionPoint.setOrigin({ 2.5, 2.5 });
-                junctionPoint.setPosition(graph.at(nodeID).position);
-                window.draw(junctionPoint);
+            drawWireGraph(graph.begin()->first, graph, drawnEdges);
+            for (const auto& [id, node] : wire.second.getGraph()) {
+                if (wire.second.isJunction(id)) {
+                    sf::CircleShape junctionPoint;
+                    junctionPoint.setFillColor(sf::Color(63, 182, 168));
+                    junctionPoint.setRadius(2.5);
+                    junctionPoint.setOrigin({ 2.5, 2.5 });
+                    junctionPoint.setPosition(node.position);
+                    window.draw(junctionPoint);
+                }
             }
         }
 
@@ -58,18 +63,29 @@ sf::View& Renderer::getUIView() {
     return UIView;
 }
 
-void Renderer::drawWireGraph(int nodeID, const std::map<int, Node>& graph, std::map<int, bool>& visited) {
-    visited[nodeID] = true;
+void Renderer::drawWireGraph(int nodeID, const std::map<int, Node>& graph, std::set<std::pair<int, int>>& drawnEdges) {
+    const Node& node = graph.at(nodeID);
 
-    for (int neighborID : graph.at(nodeID).neighbors) {
-        if (!visited[neighborID]) {
-            sf::Vertex line[] = {
-                            sf::Vertex(graph.at(nodeID).position, sf::Color(154, 159, 166, 255)),
-                            sf::Vertex(graph.at(neighborID).position, sf::Color(154, 159, 166, 255))
-            };
-            window.draw(line, 2, sf::Lines);
+    for (Dir d : {Dir::Left, Dir::Right, Dir::Up, Dir::Down}) {
+        int neighborID = node.neighbors[d];
+        if (neighborID == -1) continue;
 
-            drawWireGraph(neighborID, graph, visited);
-        }
+        int a = std::min(nodeID, neighborID);
+        int b = std::max(nodeID, neighborID);
+
+        if (drawnEdges.count({ a, b }))
+            continue;
+
+        drawnEdges.insert({ a, b });
+
+        const Node& neighbor = graph.at(neighborID);
+
+        sf::Vertex line[] = {
+            sf::Vertex(node.position, sf::Color(154, 159, 166, 255)),
+            sf::Vertex(neighbor.position, sf::Color(154, 159, 166, 255))
+        };
+        window.draw(line, 2, sf::Lines);
+
+        drawWireGraph(neighborID, graph, drawnEdges);
     }
 }

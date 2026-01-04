@@ -2,28 +2,65 @@
 
 Wire::Wire(sf::Vector2f initialPosition, int id) {
 	ID = id;
-	graph.emplace(0, Node{ initialPosition, {}, id });
+	graph.emplace(0, Node{ 0, initialPosition, {}, id, false });
 	nextNodeID = 1;
     currentStemNode = 0;
     previewOrientation = PreviewOrientation::None;
 }
 
 int Wire::appendNodeFromStem(sf::Vector2f pos) {
+    int newID = createNode(pos);
+    connectNodes(newID, currentStemNode);
+
+    currentStemNode = newID;
+    return currentStemNode;
+}
+
+int Wire::createNode(sf::Vector2f pos) {
     int id = nextNodeID++;
-
-    graph[id].position = pos;
-
-    graph[currentStemNode].neighbors.push_back(id);
-    graph[id].neighbors.push_back(currentStemNode);
-
-    currentStemNode = id;
+    graph[id] = Node();
+    graph.at(id).position = pos;
+    graph.at(id).belongsTo = ID;
     return id;
 }
 
-int Wire::insertNode(sf::Vector2f pos) {
-    int id = nextNodeID++;
-    graph[id].position = pos;
-    return id;
+void Wire::deleteNode(int nodeID) {
+    auto it = graph.find(nodeID);
+    if (it == graph.end()) return;
+
+    Node& node = it->second;
+
+    for (Dir d : {Dir::Left, Dir::Right, Dir::Up, Dir::Down}) {
+        int neighborID = node.neighbors[d];
+        if (neighborID == -1) continue;
+
+        auto neighborIt = graph.find(neighborID);
+        if (neighborIt != graph.end()) {
+            Node& neighbor = neighborIt->second;
+
+            // Remove reference back to this node
+            neighbor.neighbors[oppositeDirection(d)] = -1;
+        }
+    }
+
+    graph.erase(it);
+}
+
+void Wire::collapseNodeInto(int keepID, int removeID) {
+    Node& keep = graph.at(keepID);
+    Node& remove = graph.at(removeID);
+
+    for (Dir d : {Dir::Left, Dir::Right, Dir::Up, Dir::Down}) {
+        int n = remove.neighbors[d];
+        if (n == -1) continue;
+
+        Dir opposite = oppositeDirection(d);
+        graph.at(n).neighbors[opposite] = keepID;
+        keep.neighbors[d] = n;
+    }
+
+    keep.isAnchor |= remove.isAnchor;
+    graph.erase(removeID);
 }
 
 void Wire::updatePreview(sf::Vector2f pos) {
@@ -77,150 +114,10 @@ int Wire::commitPreview() {
 
     previewOrientation = PreviewOrientation::None;
     return committedNode;
+    //when placing a wire collinear nodes need to be erased because it is annoying to always have to put an L wire when placing
+    //essentially make it possible to build a straight wire one grid square at a time without making a bunch of nodes
 }
 
-WireMoveResult Wire::moveNode(int movingNodeID, sf::Vector2f newPosition, WireMoveIntent intent) {
-    Node& movingNode = graph.at(movingNodeID);
-    WireMoveResult result = WireMoveResult::None;
-
-
-    sf::Vector2f newPos = snapPositionToGrid(newPosition);
-    sf::Vector2f currentPosition = movingNode.position;
-    sf::Vector2f delta = newPos - currentPosition;
-
-    if (delta == sf::Vector2f{ 0.f, 0.f })
-        return WireMoveResult::None;
-
-    sf::Vector2f intermediatePosition = currentPosition;
-
-    if (delta.x != 0.f) {
-        intermediatePosition.x += delta.x;
-        moveNodeSingleAxis(movingNodeID, intermediatePosition, MoveAxis::Horizontal, intent);
-        bool merged = collapseCoincidentNodes(movingNodeID);
-        if (merged)
-            result = WireMoveResult::NodeMerged;
-    }
-
-    if (delta.y != 0.f) {
-        intermediatePosition.y += delta.y;
-        moveNodeSingleAxis(movingNodeID, intermediatePosition, MoveAxis::Vertical, intent);
-        bool merged = collapseCoincidentNodes(movingNodeID);
-        if (merged)
-            result = WireMoveResult::NodeMerged;
-    }
-
-    //cleanupCollinearNodes();
-    return result;
-}
-
-void Wire::moveNodeSingleAxis(int movingNodeID, const sf::Vector2f& newGridPosition, MoveAxis axis, WireMoveIntent intent) {
-    Node& movingNode = graph.at(movingNodeID);
-    bool horizontal = (axis == MoveAxis::Horizontal);
-
-    std::vector<int> neighborIDs = movingNode.neighbors;
-
-    for (int neighborID : neighborIDs) {
-
-        if (isAnchor(neighborID)) {
-            Node& anchor = graph.at(neighborID);
-
-            bool orthogonalBreak = horizontal ? (anchor.position.x == movingNode.position.x) : (anchor.position.y == movingNode.position.y);
-
-            if (orthogonalBreak) {
-                insertBendNodeBetween(movingNodeID, neighborID, horizontal, newGridPosition);
-            }
-        }
-        else if (isJunction(neighborID)) {
-            Node& junction = graph.at(neighborID);
-            bool movingInNeighborDirection;
-
-            if (horizontal){
-                for (const auto& n : junction.neighbors) {
-                    Node& junctionNeighbor = graph.at(n);
-                    if (junctionNeighbor.position.y == junction.position.y) {
-                        sf::Vector2f move = sf::Vector2f(newGridPosition.x, junction.position.y) - junction.position;
-                        sf::Vector2f toTarget = junctionNeighbor.position - junction.position;
-                        movingInNeighborDirection = move.x * toTarget.x > 0;
-                    }
-                }
-
-                if (movingInNeighborDirection) {
-
-                    bool movingNodeAboveJunction = movingNode.position.y > junction.position.y;
-
-
-                    for (const auto& n : junction.neighbors) {
-                        Node& junctionNeighbor = graph.at(n);
-                        bool junctionNeighborAboveJunction = junctionNeighbor.position.y > junction.position.y;
-
-                        if ((movingNodeAboveJunction && !junctionNeighborAboveJunction) || (!movingNodeAboveJunction && junctionNeighborAboveJunction)) {
-                            //neighbor is across the junction from the moving node
-                            insertNode(junction.position);
-                            //remake neighbors of junction, inserted node, and the neighbors of the inserted node (idk how)
-                            //there are two types of junctions, + and T(sideways), maybe first classify horizontal movement left or right
-                            //if moving Right, the neighbor of inserted = junction, node left of junction, node above junction
-                            //reconfigure the other node neighbors based on that
-                            
-                            break;
-                        }
-                    }
-                    
-
-                    //treat like normal and move the node position
-                    //except if there is a neighbor on the opposite side the junction as the moving node,
-                    //insert a new junction at the old junctino point to preserve geometry
-                    //update neighbor list too
-                }
-
-                else {
-                    insertBendNodeBetween(movingNodeID, neighborID, horizontal, newGridPosition);
-                }
-            }
-
-            else {
-                for (const auto& n : junction.neighbors) {
-                    Node& junctionNeighbor = graph.at(n);
-                    if (junctionNeighbor.position.x == junction.position.x) {
-                        sf::Vector2f move = sf::Vector2f(junction.position.x, newGridPosition.y) - junction.position;
-                        sf::Vector2f toTarget = junctionNeighbor.position - junction.position;
-                        movingInNeighborDirection = move.y * toTarget.y > 0;
-
-                        if (movingInNeighborDirection) {
-                            //treat like normal and move the node position
-                            //except if there is a neighbor on the opposite side of the junction as the moving node,
-                            //insert a new junction at the old junctino point to preserve geometry
-                            //update neighbor list too
-                        }
-
-                        else {
-                            insertBendNodeBetween(movingNodeID, neighborID, horizontal, newGridPosition);
-                        }
-                    }
-                }
-            }
-            //if not moving the junction node in a direction of a neighbor, treat it just like an achnor node
-        }
-
-        else {
-            updateNeighborPosition(movingNodeID, neighborID, horizontal, newGridPosition);
-        }
-    }
-
-    if (isAnchor(movingNodeID)) {
-        if (intent == WireMoveIntent::ComponentMove)
-            movingNode.position = newGridPosition;
-        return;
-    }
-
-    if (intent == WireMoveIntent::Edit) {
-        movingNode.position = newGridPosition;
-    }
-
-    if (isJunction(movingNodeID) && intent == WireMoveIntent::Edit) {
-        movingNode.position = newGridPosition;
-        return;
-    }
-}
 
 
 sf::VertexArray Wire::getPreviewLine() const
@@ -246,151 +143,41 @@ sf::Vector2f Wire::snapPositionToGrid(const sf::Vector2f& position) {
 }
 
 bool Wire::isAnchor(int nodeID) {
-    return anchorNodes.find(nodeID) != anchorNodes.end();
+    return graph.at(nodeID).isAnchor;
 }
 
 bool Wire::isJunction(int nodeID) {
-    return graph.at(nodeID).neighbors.size() >= 3;
-}
-sf::Vector2f Wire::getBendNodePosition(sf::Vector2f newMovingNodePosition, int anchorID, bool horizontalMove) {
-    Node& anchor = graph.at(anchorID);
-
-    sf::Vector2f result;
-    if (horizontalMove) {
-        result = { newMovingNodePosition.x, anchor.position.y };
+    int neighborcount = 0;
+    for (Dir d : {Dir::Left, Dir::Right, Dir::Up, Dir::Down}) {
+        if (graph.at(nodeID).neighbors.has(d)) neighborcount++;
     }
-    else {
-        result = { anchor.position.x, newMovingNodePosition.y };
-    }
-    return result;
+    return neighborcount > 2;
 }
 
-void Wire::insertBendNodeBetween(int nodeA, int nodeB, bool horizontalMove, sf::Vector2f newMovingNodePosition) {
-    Node& A = graph.at(nodeA);
-    Node& B = graph.at(nodeB);
 
-    int newID = nextNodeID++;
-
-    graph[newID] = Node{ getBendNodePosition(newMovingNodePosition, nodeB, horizontalMove), {nodeA, nodeB}, ID};
-
-    removeNeighborFrom(nodeA, nodeB);
-    A.neighbors.push_back(newID);
-
-    removeNeighborFrom(nodeB, nodeA);
-    B.neighbors.push_back(newID);
-    
-}
-
-sf::Vector2f Wire::computeJunctionPosition(int junctionID) {
-    return { -1, -1 }; //for now, make this comput the junciton position, The behavior im looking for is a clamp to a segment
-}
-
-void Wire::removeNeighborFrom(int nodeID, int to_remove) {
-    std::vector<int>& neighbors = graph.at(nodeID).neighbors;
-    neighbors.erase(std::remove(neighbors.begin(), neighbors.end(), to_remove), neighbors.end());
-}
-
-void Wire::updateNeighborPosition(int movingID, int neighborID, bool horizontalMovement, sf::Vector2f newMovingNodePosition) {
-    Node& moving = graph.at(movingID);
-    Node& neighbor = graph.at(neighborID);
-
-    if (isAnchor(neighborID))
-        return;
-
-    if (horizontalMovement && neighbor.position.x == moving.position.x)
-    {
-        neighbor.position.x = newMovingNodePosition.x;
-        std::cout << "Set neighbor position\n";
-    }
-    else if (!horizontalMovement && neighbor.position.y == moving.position.y)
-    {
-        neighbor.position.y = newMovingNodePosition.y;
-        std::cout << "Set Neighbor position\n";
-    }
-}
-
-bool Wire::collapseCoincidentNodes(int nodeID)
-{
-    Node& node = graph.at(nodeID);
-    std::vector<int> neighbors = node.neighbors;
-
-    for (int neighborID : neighbors) {
-
-        if (graph.at(neighborID).position != node.position)
-            continue;
-
-        Node& neighbor = graph.at(neighborID);
-
-        for (int n : neighbor.neighbors) {
-            if (n == nodeID) continue;
-            graph.at(n).neighbors.push_back(nodeID);
-            removeNeighborFrom(n, neighborID);
-            node.neighbors.push_back(n);
-        }
-
-        removeNeighborFrom(nodeID, neighborID);
-        graph.erase(neighborID);
-
-        return true;
-    }
-    return false;
-}
-
-bool Wire::isCollinear(int nodeID)
-{
-    Node& n = graph.at(nodeID);
-    if (n.neighbors.size() != 2)
-        return false;
-
-    Node& a = graph.at(n.neighbors[0]);
-    Node& b = graph.at(n.neighbors[1]);
-
-    return
-        (a.position.x == n.position.x && n.position.x == b.position.x) ||
-        (a.position.y == n.position.y && n.position.y == b.position.y);
-}
-
-void Wire::removeCollinearNode(int nodeID) {
-    Node& n = graph.at(nodeID);
-
-    int a = n.neighbors[0];
-    int b = n.neighbors[1];
-
-    removeNeighborFrom(a, nodeID);
-    removeNeighborFrom(b, nodeID);
-
-    graph.at(a).neighbors.push_back(b);
-    graph.at(b).neighbors.push_back(a);
-
-    graph.erase(nodeID);
-}
 
 SegmentHit Wire::projectOntoSegment(sf::Vector2f& worldPoint) {
     SegmentHit best;
 
     for (const auto& [id, node] : graph) {
-        for (int n : node.neighbors) {
-            if (id >= n) continue;
+        for (Dir d : {Dir::Right, Dir::Down}) { // only check each segment once
+            int neighborID = node.neighbors[d];
+            if (neighborID == -1) continue;
 
             const sf::Vector2f& a = node.position;
-            const sf::Vector2f& b = graph.at(n).position;
+            const sf::Vector2f& b = graph.at(neighborID).position;
 
-            if (a.x != b.x && a.y != b.y)
-                continue;
+            // Skip non-axis-aligned segments
+            if (a.x != b.x && a.y != b.y) continue;
 
+            // Project worldPoint onto the segment and snap to grid
             sf::Vector2f snapped = snapToGridBetween(a, b, worldPoint);
 
-            float d = std::hypot(
-                worldPoint.x - snapped.x,
-                worldPoint.y - snapped.y
-            );
+            float dist = std::hypot(worldPoint.x - snapped.x, worldPoint.y - snapped.y);
 
-            if (!best.valid || d < std::hypot(
-                worldPoint.x - best.snappedPosition.x,
-                worldPoint.y - best.snappedPosition.y)) {
-
+            if (!best.valid || dist < std::hypot(worldPoint.x - best.snappedPosition.x, worldPoint.y - best.snappedPosition.y)) {
                 best.nodeA = id;
-                best.nodeB = n;
+                best.nodeB = neighborID;
                 best.snappedPosition = snapped;
                 best.valid = true;
             }
@@ -398,18 +185,6 @@ SegmentHit Wire::projectOntoSegment(sf::Vector2f& worldPoint) {
     }
 
     return best;
-}
-
-void Wire::cleanupCollinearNodes() {
-    std::vector<int> toCheck;
-
-    for (auto& [id, node] : graph)
-        toCheck.push_back(id);
-
-    for (int id : toCheck) {
-        if (!isAnchor(id) && isCollinear(id))
-            removeCollinearNode(id);
-    }
 }
 
 
@@ -437,3 +212,35 @@ sf::Vector2f Wire::snapToGridBetween(sf::Vector2f A, sf::Vector2f B, sf::Vector2
     return { -1, -1 };
 }
 
+void Wire::connectNodes(int a, int b) {
+    graph.at(a).neighbors[directionFrom(a, b)] = b;
+    graph.at(b).neighbors[directionFrom(b, a)] = a;
+}
+
+void Wire::disconnectNodes(int a, int b) {
+    graph.at(a).neighbors[directionFrom(a, b)] = -1;
+    graph.at(b).neighbors[directionFrom(b, a)] = -1;
+}
+
+Dir Wire::directionFrom(int a, int b) {
+    const Node& A = graph.at(a);
+    const Node& B = graph.at(b);
+
+    sf::Vector2f delta = B.position - A.position;
+
+    if (delta.x < 0) return Dir::Left;
+    if (delta.x > 0) return Dir::Right;
+    if (delta.y < 0) return Dir::Up;
+    if (delta.y > 0) return Dir::Down;
+
+    throw std::logic_error("directionFrom called on coincident nodes");
+}
+
+Dir Wire::oppositeDirection(Dir d) {
+    switch (d) {
+    case Dir::Left:  return Dir::Right;
+    case Dir::Right: return Dir::Left;
+    case Dir::Up:    return Dir::Down;
+    case Dir::Down:  return Dir::Up;
+    }
+}

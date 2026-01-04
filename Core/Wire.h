@@ -3,16 +3,42 @@
 #include <iostream>
 #include "../Config.h"
 #include "ElectricalNode.h"
-enum class NodeType {
-	Anchor,
-	Junction,
-	Intermediate
+#include <unordered_set>
+#include <array>
+
+enum class Dir : uint8_t {
+	Left = 0,
+	Right,
+	Up,
+	Down
+};
+
+struct Neighbors {
+	std::array<int, 4> id = { -1, -1, -1, -1 };
+
+	int& operator[](Dir d) {
+		return id[static_cast<int>(d)];
+	}
+
+	int operator[](Dir d) const {
+		return id[static_cast<int>(d)];
+	}
+
+	bool has(Dir d) const {
+		return (*this)[d] != -1;
+	}
+
+	void clear(Dir d) {
+		(*this)[d] = -1;
+	}
 };
 
 struct Node {
+	int id;
 	sf::Vector2f position;
-	std::vector<int> neighbors;
+	Neighbors neighbors;
 	int belongsTo;
+	bool isAnchor = false;
 };
 
 enum class PreviewOrientation {
@@ -52,14 +78,24 @@ struct WireHit {
 	float distance = FLT_MAX;
 	bool valid = false;
 };
+
+
+
+
 class Wire {
 public:
-
+	int ID;
+	bool selected;
+	
 	Wire(sf::Vector2f initialPosition, int id);
 
 	int appendNodeFromStem(sf::Vector2f pos);
 
-	int insertNode(sf::Vector2f pos);
+	int createNode(sf::Vector2f pos);
+
+	void deleteNode(int nodeID);
+
+	void collapseNodeInto(int keepID, int removeID);
 
 	void updatePreview(sf::Vector2f pos);
 
@@ -67,26 +103,14 @@ public:
 
 	sf::VertexArray getPreviewLine() const;
 
-	WireMoveResult moveNode(int movingNodeID, sf::Vector2f newPosition, WireMoveIntent intent);
-
-	void moveNodeSingleAxis(int movingNodeID, const sf::Vector2f& newGridPosition, MoveAxis axis, WireMoveIntent intent);
-
-	bool collapseCoincidentNodes(int nodeID);
-
-	void cleanupCollinearNodes();
-
-	void removeCollinearNode(int nodeID);
-
 	SegmentHit projectOntoSegment(sf::Vector2f& point);
 
 	float snapCoordinateToGrid(const float coordinate);
 
 	sf::Vector2f snapToGridBetween(sf::Vector2f A, sf::Vector2f B, sf::Vector2f point);
 
-	sf::Vector2f computeJunctionPosition(int junctionID);
-
-	void removeNeighborFrom(int nodeID, int to_remove);
-
+	void connectNodes(int a, int b);
+	void disconnectNodes(int a, int b);
 
 	std::map<int, Node>& getGraph() { return graph; }	
 	int getNextNodeID() const { return nextNodeID; }
@@ -97,25 +121,14 @@ public:
 	bool isAnchor(int nodeID);
 	bool isJunction(int nodeID);
 
-	int ID;
-	std::map<int, ElectricalConnection> anchorNodes;
-	std::vector<int> junctionNodes;
-
-	
-
-	bool selected;
-
 private:
 
-	sf::Vector2f snapPositionToGrid(const sf::Vector2f& position);
-	
-	bool isCollinear(int nodeID);
+	sf::Vector2f snapPositionToGrid(const sf::Vector2f& position);	
 
-	sf::Vector2f getBendNodePosition(sf::Vector2f newMovingNodePosition, int anchorID, bool horizontalMove);
-	void insertBendNodeBetween(int nodeA, int nodeB, bool horizontalMove, sf::Vector2f newMovingNodePosition);
+	Dir directionFrom(int a, int b);//direction from a to b
 
+	Dir oppositeDirection(Dir d);
 
-	void updateNeighborPosition(int movingID, int neighborID, bool horizontalMove, sf::Vector2f newMovingNodePosition);
 	std::map<int, Node> graph;
 	int nextNodeID;
 	sf::Vector2f firstPreview;

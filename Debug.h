@@ -93,12 +93,18 @@ public:
             std::cout << "  Node " << nodeID
                 << " at (" << node.position.x << ", " << node.position.y << ")";
 
-            if (!node.neighbors.empty()) {
-                std::cout << " -> Neighbors: ";
-                for (int neighborID : node.neighbors) {
+            bool hasNeighbors = false;
+            for (Dir d : {Dir::Left, Dir::Right, Dir::Up, Dir::Down}) {
+                int neighborID = node.neighbors[d];
+                if (neighborID != -1) {
+                    if (!hasNeighbors) {
+                        std::cout << " -> Neighbors: ";
+                        hasNeighbors = true;
+                    }
                     std::cout << neighborID << " ";
                 }
             }
+
             if (wire.isJunction(nodeID)) {
                 std::cout << " Junction Node ";
             }
