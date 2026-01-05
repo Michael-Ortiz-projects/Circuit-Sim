@@ -50,6 +50,8 @@ public:
 
 	void finishWireAtSegment(WireHit& wireSegment);
 
+	void mergeActiveWireIntoPrimary(Wire& primaryWire, Wire& activeWire);
+
 	void setInteractionContext(WireInteraction context);
 	void setSegmentContext(WireHit context);
 private:

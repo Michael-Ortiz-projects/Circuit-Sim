@@ -79,17 +79,12 @@ struct WireHit {
 	bool valid = false;
 };
 
-
-
-
 class Wire {
 public:
 	int ID;
 	bool selected;
 	
 	Wire(sf::Vector2f initialPosition, int id);
-
-	int appendNodeFromStem(sf::Vector2f pos);
 
 	int createNode(sf::Vector2f pos);
 
@@ -101,33 +96,66 @@ public:
 
 	int commitPreview();
 
-	sf::VertexArray getPreviewLine() const;
-
 	SegmentHit projectOntoSegment(sf::Vector2f& point);
 
-	float snapCoordinateToGrid(const float coordinate);
-
-	sf::Vector2f snapToGridBetween(sf::Vector2f A, sf::Vector2f B, sf::Vector2f point);
-
 	void connectNodes(int a, int b);
+	void connectNodes(Node& a, Node& b);
+	void connectNodes(Node& a, Node& b, Dir dirAB) {
+		a.neighbors[dirAB] = b.id;
+		b.neighbors[oppositeDirection(dirAB)] = a.id;
+	}
+
 	void disconnectNodes(int a, int b);
+	void disconnectNodes(Node& a, Node& b);
+
+	WireMoveResult moveNode(int nodeID, sf::Vector2f worldPosition, WireMoveIntent intent);
 
 	std::map<int, Node>& getGraph() { return graph; }	
 	int getNextNodeID() const { return nextNodeID; }
 	int getStemNode() const { return currentStemNode; }
 	sf::Vector2f getFirstPreview() const { return firstPreview; }
 	sf::Vector2f getSecondPreview() const { return secondPreview; }
+	sf::VertexArray getPreviewLine() const;
+
 
 	bool isAnchor(int nodeID);
 	bool isJunction(int nodeID);
 
 private:
+	void moveNodeSingleAxis(Node& primaryNode, MoveAxis axis, int newCoordinate, sf::Vector2f delta, WireMoveIntent& intent);
+
+	int insertNodeBetween(Node& a, Node& b, sf::Vector2f position);
+
+	bool cleanAllCoincidentNodes(Node& primaryNode);
+
+	void mergeNodes(Node& keep, Node& remove);
+
+	int appendNodeFromStem(sf::Vector2f pos);
 
 	sf::Vector2f snapPositionToGrid(const sf::Vector2f& position);	
 
+	sf::Vector2f snapToGridBetween(sf::Vector2f A, sf::Vector2f B, sf::Vector2f point);
+
+	float snapCoordinateToGrid(const float coordinate);
+
 	Dir directionFrom(int a, int b);//direction from a to b
+	Dir directionFrom(const Node& a, const Node& b);
+	Dir directionFrom(sf::Vector2f A, sf::Vector2f B);
 
 	Dir oppositeDirection(Dir d);
+	std::string dirToString(Dir d) {
+		switch (d) {
+		case Dir::Left:
+			return "Left";
+		case Dir::Right:
+			return "Right";
+		case Dir::Up:
+			return "Up";
+		case Dir::Down:
+			return "Down";
+		}
+	}
+	bool isOrthogonalTo(Dir d, Dir toCheck);
 
 	std::map<int, Node> graph;
 	int nextNodeID;
