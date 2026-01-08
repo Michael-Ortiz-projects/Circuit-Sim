@@ -101,7 +101,7 @@ public:
                         std::cout << " -> Neighbors: ";
                         hasNeighbors = true;
                     }
-                    std::cout << neighborID << " ";
+                    std::cout << "[" << dirToString(d) << "] = " << neighborID << "   ";
                 }
             }
 
@@ -114,6 +114,19 @@ public:
             std::cout << "\n";
         }
         std::cout << std::endl;
+    }
+
+static  std::string dirToString(Dir d) {
+        switch (d) {
+        case Dir::Left:
+            return "Left";
+        case Dir::Right:
+            return "Right";
+        case Dir::Up:
+            return "Up";
+        case Dir::Down:
+            return "Down";
+        }
     }
 private:
     static inline bool enabled = true;

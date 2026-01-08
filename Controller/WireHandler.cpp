@@ -64,6 +64,7 @@ void WireHandler::onMouseMove(const sf::Vector2f& worldPos) {
         if (activeWire) {
 
             WireMoveResult moveResult = activeWire->moveNode(interaction.wire_node.nodeID, worldPos, WireMoveIntent::Edit);
+
             switch (moveResult) {
             case WireMoveResult::NodeMerged:
                 interaction.wire_node = { -1, -1 };
@@ -77,6 +78,7 @@ void WireHandler::onMouseMove(const sf::Vector2f& worldPos) {
 
             case WireMoveResult::None:
                 wireState = WireState::DraggingNode;
+                //Debug::debugPrintWire(*activeWire);
                 break;
             }
         }
@@ -151,10 +153,8 @@ void WireHandler::beginWireFromConnection(ElectricalConnection& connection) {
 
 void WireHandler::finishWireAtConnection(ElectricalConnection& end) {
     if (wireState != WireState::Creating || !activeWire) return;
-    Debug::debugPrintWire(*activeWire);
 
     int finalNodeID = activeWire->commitPreview();
-    Debug::debugPrintWire(*activeWire);
 
     circuit.addConnectionToNode(activeWire->ID, end);
     circuit.updateComponentLead(activeWire->ID, finalNodeID, activeElectricalNodeID, end);

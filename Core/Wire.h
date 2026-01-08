@@ -100,10 +100,7 @@ public:
 
 	void connectNodes(int a, int b);
 	void connectNodes(Node& a, Node& b);
-	void connectNodes(Node& a, Node& b, Dir dirAB) {
-		a.neighbors[dirAB] = b.id;
-		b.neighbors[oppositeDirection(dirAB)] = a.id;
-	}
+	void connectNodes(Node& a, Node& b, Dir dirAB);
 
 	void disconnectNodes(int a, int b);
 	void disconnectNodes(Node& a, Node& b);
@@ -155,7 +152,10 @@ private:
 			return "Down";
 		}
 	}
+	void printNodeData(Node& node);
+	void printGraphData();
 	bool isOrthogonalTo(Dir d, Dir toCheck);
+	float distanceBetween(sf::Vector2f a, sf::Vector2f b);
 
 	std::map<int, Node> graph;
 	int nextNodeID;

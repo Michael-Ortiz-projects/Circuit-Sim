@@ -125,19 +125,20 @@ WireMoveResult Wire::moveNode(int nodeID, sf::Vector2f worldPosition, WireMoveIn
     Node& primaryNode = graph.at(nodeID);
     sf::Vector2f snappedPosition = snapPositionToGrid(worldPosition);
     sf::Vector2f delta = snappedPosition - primaryNode.position;
+    //std::cout << "delta.x = " << delta.x << "\ndelta.y = " << delta.y << std::endl;
     bool primaryDeleted = false;
 
     if (std::abs(delta.x) > 0) {
         moveNodeSingleAxis(primaryNode, MoveAxis::Horizontal, snappedPosition.x, delta, intent);
-        //primaryDeleted = cleanAllCoincidentNodes(primaryNode);
+        printGraphData();
+        primaryDeleted = cleanAllCoincidentNodes(primaryNode);
     }
 
     if (std::abs(delta.y) > 0) {
         moveNodeSingleAxis(primaryNode, MoveAxis::Vertical, snappedPosition.y, delta, intent);
-        //primaryDeleted = cleanAllCoincidentNodes(primaryNode);
+        primaryDeleted = cleanAllCoincidentNodes(primaryNode);
     }
     
-
     return primaryDeleted ? WireMoveResult::NodeRemoved : WireMoveResult::None;
 
 }
@@ -146,7 +147,6 @@ WireMoveResult Wire::moveNode(int nodeID, sf::Vector2f worldPosition, WireMoveIn
 void Wire::moveNodeSingleAxis(Node& primaryNode, MoveAxis axis, int newCoordinate, sf::Vector2f delta, WireMoveIntent& intent) {//bugged right now, maybe disconnect the appropriate node, move, then connect appropriate nodes
     sf::Vector2f oldPrimaryPosition = primaryNode.position;
     sf::Vector2f newPrimaryPosition = axis == MoveAxis::Horizontal ? (sf::Vector2f(newCoordinate, primaryNode.position.y)) : (sf::Vector2f(primaryNode.position.x, newCoordinate));
-    //axis == MoveAxis::Horizontal ? (primaryNode.position.x = newCoordinate) : (primaryNode.position.y = newCoordinate);
     Dir movingDirection = axis == MoveAxis::Horizontal ? (delta.x < 0 ? Dir::Left : Dir::Right) : (delta.y < 0 ? Dir::Up : Dir::Down);
     std::vector<int> originalNeighbors;
 
@@ -160,30 +160,34 @@ void Wire::moveNodeSingleAxis(Node& primaryNode, MoveAxis axis, int newCoordinat
         Node& primaryNeighbor = graph.at(neighborID);
         Dir primaryToNeighborDirection = directionFrom(primaryNode, primaryNeighbor);
         bool primaryNeighborMovingTowardNeighbor = primaryNeighbor.neighbors[movingDirection] != -1;
-        std::cout << "primary neighbor = " << primaryNeighbor.id << "\n";
+        //std::cout << "primary neighbor = " << primaryNeighbor.id << "\n";
 
         if (primaryNeighbor.isAnchor) {
-            std::cout << "is anchor node\n";
+            //std::cout << "is anchor node\n";
             //do anchor movement
             if (isOrthogonalTo(primaryToNeighborDirection, movingDirection)) {
                 //allow node insertion
-                std::cout << "direction from primary to neighbor is ortho to moving direction\n";
+                //std::cout << "direction from primary to neighbor is ortho to moving direction\n";
                 
                 sf::Vector2f insertedPosition;
-                axis == MoveAxis::Horizontal ? (insertedPosition = sf::Vector2f(newCoordinate, primaryNeighbor.position.y)) : (insertedPosition = sf::Vector2f(primaryNeighbor.position.x, newCoordinate));
-                Node& inserted = graph.at(createNode(insertedPosition));
-                disconnectNodes(primaryNode, primaryNeighbor);
-
-                primaryNode.position = newPrimaryPosition;
-                connectNodes(primaryNode, inserted);
-                connectNodes(primaryNeighbor, inserted);//FIND A WAY TO DO THIS MORE, DISCONNECT MOVE RECONNECT
-
 
                 if (primaryNeighborMovingTowardNeighbor) {
                     Node& primaryNeighbors_NeighborInMovingDirection = graph.at(primaryNeighbor.neighbors[movingDirection]);
 
                     disconnectNodes(primaryNeighbor, primaryNeighbors_NeighborInMovingDirection);
+                    axis == MoveAxis::Horizontal ? (insertedPosition = sf::Vector2f(newCoordinate, primaryNeighbor.position.y)) : (insertedPosition = sf::Vector2f(primaryNeighbor.position.x, newCoordinate));
+                    primaryNode.position = newPrimaryPosition;
+
+                    Node& inserted = graph.at(insertNodeBetween(primaryNode, primaryNeighbor, insertedPosition));
+                    primaryNode.position = oldPrimaryPosition;
                     connectNodes(inserted, primaryNeighbors_NeighborInMovingDirection);
+                }
+                else {
+                    axis == MoveAxis::Horizontal ? (insertedPosition = sf::Vector2f(newCoordinate, primaryNeighbor.position.y)) : (insertedPosition = sf::Vector2f(primaryNeighbor.position.x, newCoordinate));
+                    primaryNode.position = newPrimaryPosition;
+
+                    Node& inserted = graph.at(insertNodeBetween(primaryNode, primaryNeighbor, insertedPosition));
+                    primaryNode.position = oldPrimaryPosition;
                 }
             }
         }
@@ -196,27 +200,44 @@ void Wire::moveNodeSingleAxis(Node& primaryNode, MoveAxis axis, int newCoordinat
                 if (primaryNeighbor.neighbors[primaryToNeighborDirection] != -1) {
                     //two orthogonal segments on junction, insert a new node
                     sf::Vector2f insertedPosition;
-                    axis == MoveAxis::Horizontal ? (insertedPosition = sf::Vector2f(newCoordinate, primaryNeighbor.position.y)) : (insertedPosition = sf::Vector2f(primaryNeighbor.position.x, newCoordinate));
-                    Node& inserted = graph.at(insertNodeBetween(primaryNode, primaryNeighbor, insertedPosition));
-                    Node& primaryNeighbors_NeighborInMovingDirection = graph.at(primaryNeighbor.neighbors[movingDirection]);
+                    
 
                     if (primaryNeighborMovingTowardNeighbor) {
+                        Node& primaryNeighbors_NeighborInMovingDirection = graph.at(primaryNeighbor.neighbors[movingDirection]);
+
                         disconnectNodes(primaryNeighbor, primaryNeighbors_NeighborInMovingDirection);
-                        connectNodes(inserted, primaryNeighbors_NeighborInMovingDirection);
+                        axis == MoveAxis::Horizontal ? (insertedPosition = sf::Vector2f(newCoordinate, primaryNeighbor.position.y)) : (insertedPosition = sf::Vector2f(primaryNeighbor.position.x, newCoordinate));
+                        primaryNode.position = newPrimaryPosition;
+                        Node& inserted = graph.at(insertNodeBetween(primaryNode, primaryNeighbor, insertedPosition));
+                        primaryNode.position = oldPrimaryPosition;
+                        connectNodes(inserted, primaryNeighbors_NeighborInMovingDirection, movingDirection);
+                    }
+                    else {
+                        axis == MoveAxis::Horizontal ? (insertedPosition = sf::Vector2f(newCoordinate, primaryNeighbor.position.y)) : (insertedPosition = sf::Vector2f(primaryNeighbor.position.x, newCoordinate));
+                        primaryNode.position = newPrimaryPosition;
+
+                        Node& inserted = graph.at(insertNodeBetween(primaryNode, primaryNeighbor, insertedPosition));
+                        primaryNode.position = oldPrimaryPosition;
                     }
                        
                 }
 
                 else {
                     //only one orthogonal segment, insert node if necessary
-                    if (!primaryNeighborMovingTowardNeighbor) {
-                        sf::Vector2f insertedPosition;
-                        axis == MoveAxis::Horizontal ? (insertedPosition = sf::Vector2f(newCoordinate, primaryNeighbor.position.y)) : (insertedPosition = sf::Vector2f(primaryNeighbor.position.x, newCoordinate));
-                        Node& inserted = graph.at(insertNodeBetween(primaryNode, primaryNeighbor, insertedPosition));
-                    }
-                    else {
+
+                    if (primaryNeighborMovingTowardNeighbor) {
                         axis == MoveAxis::Horizontal ? (primaryNeighbor.position.x = newCoordinate) : (primaryNeighbor.position.y = newCoordinate);
                     }
+
+                    else {
+                        sf::Vector2f insertedPosition;
+                        axis == MoveAxis::Horizontal ? (insertedPosition = sf::Vector2f(newCoordinate, primaryNeighbor.position.y)) : (insertedPosition = sf::Vector2f(primaryNeighbor.position.x, newCoordinate));
+                        primaryNode.position = newPrimaryPosition;
+
+                        Node& inserted = graph.at(insertNodeBetween(primaryNode, primaryNeighbor, insertedPosition));
+                        primaryNode.position = oldPrimaryPosition;
+                    }
+                    
                 }
             }
         }
@@ -279,28 +300,61 @@ bool Wire::cleanAllCoincidentNodes(Node& primaryNode) {
     restart_outer:;
     } while (mergedSomething);
 
+    std::cout << "cleanCoincidentNodes() finished\n" << primaryDeleted << std::endl;
     return primaryDeleted;
 }
 
-void Wire::mergeNodes(Node& keep, Node& remove) {
-    std::cout << "merge nodes ran\n";
+void Wire::mergeNodes(Node& keep, Node& remove) { //not complete at all
+    std::cout << "merge nodes running\nMerging nodes: " << keep.id << " and " << remove.id << std::endl;
     for (Dir d : {Dir::Left, Dir::Right, Dir::Up, Dir::Down}) {
-        int neighborID = remove.neighbors[d];
-        if (neighborID == -1) continue;
+        int removeNeighborID = remove.neighbors[d];//2
+        int keepNeighborID = keep.neighbors[d];//-1
+        if (removeNeighborID == -1 || removeNeighborID == keep.id) continue;//THIS IS A BUG LOOK INTO THIS
+        Node& removeNeighbor = graph.at(removeNeighborID);
+       
+        if (removeNeighborID != -1 && keepNeighborID != -1 && keepNeighborID != removeNeighborID) {//if both keep and remove have neighbors in the same direction
+        //find which neighbor is further from their position
+            Node& keepNeighbor = graph.at(keepNeighborID);
+            float distToRemoveNeighbor = distanceBetween(keep.position, removeNeighbor.position);
+            float distToKeepNeighbor = distanceBetween(keep.position, keepNeighbor.position);
 
-        Node& neighbor = graph.at(neighborID);
+            if (distToKeepNeighbor < distToRemoveNeighbor) {
+                disconnectNodes(remove, keepNeighbor);
+                connectNodes(keep, keepNeighbor, d);
+                connectNodes(keepNeighbor, removeNeighbor, oppositeDirection(d));
+            }
 
-        // Disconnect remove from neighbor
-        disconnectNodes(remove, neighbor);
+            else {
+                disconnectNodes(remove, removeNeighbor);
+                connectNodes(keep, removeNeighbor, d);
+                connectNodes(keepNeighbor, removeNeighbor, oppositeDirection(d));
+            }
 
-        // Connect keep to neighbor if not already connected
-        if (!keep.neighbors.has(directionFrom(keep, neighbor))) {
-            connectNodes(keep, neighbor);
         }
+        else {
+            std::cout << "disconnecting nodes running between \n" << keep.id << "and " << removeNeighborID;
+
+
+            // Disconnect remove from neighbor
+            disconnectNodes(remove, removeNeighbor);
+            disconnectNodes(keep, remove);
+            std::cout << "\ndisconnecting nodes ran\n";
+            // Connect keep to neighbor if not already connected
+            printNodeData(keep);
+            printNodeData(remove);
+            std::cout << "connecting nodes running\n";
+
+            connectNodes(keep, removeNeighbor, d);
+            std::cout << "connecting nodes ran\n";
+        }
+        
+        
     }
 
     // remove node from graph
+    disconnectNodes(keep, remove);
     graph.erase(remove.id);
+    std::cout << "merge nodes finished\n";
 }
 
 int Wire::insertNodeBetween(Node& a, Node& b, sf::Vector2f position) {
@@ -390,13 +444,27 @@ void Wire::connectNodes(Node& a, Node& b) {
     b.neighbors[directionFrom(b, a)] = a.id;
 }
 
+void Wire::connectNodes(Node& a, Node& b, Dir dirAB) {
+    a.neighbors[dirAB] = b.id;
+    b.neighbors[oppositeDirection(dirAB)] = a.id;
+}
 void Wire::disconnectNodes(int a, int b) {
     disconnectNodes(graph.at(a), graph.at(b));
 }
 
 void Wire::disconnectNodes(Node& a, Node& b) {
-    a.neighbors[directionFrom(a, b)] = -1;
-    b.neighbors[directionFrom(b, a)] = -1;
+
+    for (Dir d : {Dir::Left, Dir::Right, Dir::Up, Dir::Down}) {
+        if (a.neighbors[d] == b.id) {
+            std::cout << "\nduring disconnect, node " << a.id << "[" << dirToString(d) << "] = " << b.id;
+            a.neighbors[d] = -1;
+        }
+        if (b.neighbors[d] == a.id) {
+            std::cout << "\nduring disconnect, node " << b.id << "[" << dirToString(d) << "] = " << a.id;
+            b.neighbors[d] = -1;
+        }
+        std::cout << std::endl;
+    }
 }
 
 Dir Wire::directionFrom(int a, int b) {
@@ -472,4 +540,50 @@ sf::VertexArray Wire::getPreviewLine() const
     for (int i = 0; i < 4; ++i) line[i].color = previewColor;
 
     return line;
+}
+
+void Wire::printNodeData(Node& node) {
+
+    std::cout << "\nID: " << node.id;
+    std::cout << "\nNeighbors\n";
+    for (Dir d : {Dir::Left, Dir::Right, Dir::Up, Dir::Down}) {
+        std::cout << "[" << dirToString(d) << "] = " << node.neighbors[d] << std::endl;
+    }
+}
+
+void Wire::printGraphData() {
+    std::cout << "Graph nodes:\n";
+
+    for (const auto& [nodeID, node] : graph) {
+        std::cout << "  Node " << nodeID
+            << " at (" << node.position.x << ", " << node.position.y << ")";
+
+        bool hasNeighbors = false;
+        for (Dir d : {Dir::Left, Dir::Right, Dir::Up, Dir::Down}) {
+            int neighborID = node.neighbors[d];
+            if (neighborID != -1) {
+                if (!hasNeighbors) {
+                    std::cout << " -> Neighbors: ";
+                    hasNeighbors = true;
+                }
+                std::cout << "[" << dirToString(d) << "] = " << node.neighbors[d] << "    ";
+            }
+
+        }
+
+        if (isJunction(nodeID)) {
+            std::cout << " Junction Node ";
+        }
+        if (isAnchor(nodeID)) {
+            std::cout << "Anchor Node ";
+        }
+        std::cout << "\n";
+    }
+    std::cout << std::endl;
+}
+
+float Wire::distanceBetween(sf::Vector2f a, sf::Vector2f b) {
+    sf::Vector2f delta = a - b;
+
+    return std::sqrt(delta.x * delta.x + delta.y * delta.y);
 }
