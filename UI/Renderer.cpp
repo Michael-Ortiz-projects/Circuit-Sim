@@ -31,7 +31,7 @@ void Renderer::drawCanvas(std::vector<SchematicComponent>& components, std::unor
         if (!graph.empty()) {
             drawWireGraph(graph.begin()->first, graph, drawnEdges);
             for (const auto& [id, node] : wire.second.getGraph()) {
-                if (wire.second.isJunction(id)) {
+                if (wire.second.getGraph().at(id).neighbors.size() > 2) {
                     sf::CircleShape junctionPoint;
                     junctionPoint.setFillColor(sf::Color(63, 182, 168));
                     junctionPoint.setRadius(2.5);
@@ -66,8 +66,7 @@ sf::View& Renderer::getUIView() {
 void Renderer::drawWireGraph(int nodeID, const std::map<int, Node>& graph, std::set<std::pair<int, int>>& drawnEdges) {
     const Node& node = graph.at(nodeID);
 
-    for (Dir d : {Dir::Left, Dir::Right, Dir::Up, Dir::Down}) {
-        int neighborID = node.neighbors[d];
+    for (int neighborID : node.neighbors) {
         if (neighborID == -1) continue;
 
         int a = std::min(nodeID, neighborID);

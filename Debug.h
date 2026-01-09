@@ -94,20 +94,16 @@ public:
                 << " at (" << node.position.x << ", " << node.position.y << ")";
 
             bool hasNeighbors = false;
-            for (Dir d : {Dir::Left, Dir::Right, Dir::Up, Dir::Down}) {
-                int neighborID = node.neighbors[d];
+            for (int neighborID : node.neighbors) {
                 if (neighborID != -1) {
                     if (!hasNeighbors) {
                         std::cout << " -> Neighbors: ";
                         hasNeighbors = true;
                     }
-                    std::cout << "[" << dirToString(d) << "] = " << neighborID << "   ";
+                    std::cout << neighborID << "   ";
                 }
             }
 
-            if (wire.isJunction(nodeID)) {
-                std::cout << " Junction Node ";
-            }
             if (wire.isAnchor(nodeID)) {
                 std::cout << "Anchor Node ";
             }
@@ -116,18 +112,24 @@ public:
         std::cout << std::endl;
     }
 
-static  std::string dirToString(Dir d) {
-        switch (d) {
-        case Dir::Left:
-            return "Left";
-        case Dir::Right:
-            return "Right";
-        case Dir::Up:
-            return "Up";
-        case Dir::Down:
-            return "Down";
+    static void printElectricalNode(const ElectricalNode& node) {
+        std::cout << "ElectricalNode ID: " << node.id << '\n';
+
+        if (node.connections.empty()) {
+            std::cout << "  Connections: (none)\n";
+            return;
+        }
+
+        std::cout << "  Connections:\n";
+        for (const auto& conn : node.connections) {
+            std::cout << "    -> Component "
+                << conn.componentID
+                << ", Lead "
+                << lead_to_string(conn.lead)
+                << '\n';
         }
     }
+
 private:
     static inline bool enabled = true;
 };

@@ -284,6 +284,6 @@ WireHit Controller::findClickedSegment(const sf::Vector2f mousePixel) {
 			best.valid = true;
 		}
 	}
-
+	//if (best.valid) std::cout << "findClickedSegment returned True\n";
 	return best;
 }

@@ -21,6 +21,8 @@ public:
     Wire* getWire(int wireID);
     std::unordered_map<int, Wire>& getWires();
 
+    ElectricalNode* getElectricalNode(int nodeID);
+
     int createElectricalNode();
     void removeElectricalNode(int nodeID);
     void mergeElectricalNodes(int primary, int active);

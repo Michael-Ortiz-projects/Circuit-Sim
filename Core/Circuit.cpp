@@ -60,6 +60,10 @@ std::unordered_map<int, Wire>& Circuit::getWires() {
     return wires;
 }
 
+ElectricalNode* Circuit::getElectricalNode(int nodeID) {
+    return &nodes.at(nodeID);
+}
+
 int Circuit::createElectricalNode() {
     nodes.emplace(nextNodeID, ElectricalNode{ nextNodeID });
     return nextNodeID++;
