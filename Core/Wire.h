@@ -11,6 +11,7 @@ struct Node {
 	std::unordered_set<int> neighbors;
 	int belongsTo;
 	bool isAnchor = false;
+	bool selected = false;
 };
 
 enum class PreviewOrientation {
@@ -63,6 +64,8 @@ public:
 	bool mergeNodes(int primaryID, int merging);
 	bool mergeCollinearAtNode(int nodeID);
 	bool mergeCoincidentNodes(int nodeID);
+
+	void unselect();
 
 	SegmentHit projectOntoSegment(sf::Vector2f& point);
 

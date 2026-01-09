@@ -8,7 +8,7 @@
 
 enum class WireState {
 	Creating,
-	Editing,
+	Selecting,
 	DraggingNode,
 	Null
 };
@@ -27,6 +27,7 @@ struct WireInteraction {
 
 	bool hasLead() const { return connection.lead != Lead::Null; }
 	bool hasWireNode() const { return wire_node.isValid(); }
+	bool invalid() const { return !hasLead() && !hasWireNode(); }
 };
 
 class WireHandler : public InputHandler {

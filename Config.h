@@ -10,3 +10,4 @@ inline constexpr float minZoom = 0.25f;
 inline constexpr float maxZoom = 1.5f;
 inline constexpr float nodeSelectionRadius = 10;
 inline constexpr float wireSelectionRadius = 10;
+inline sf::Color wireDefaultColor = sf::Color(154, 159, 166, 255);

@@ -161,6 +161,11 @@ bool Wire::mergeNodes(int primaryID, int merging) {
     removeNode(merging);
 }
 
+void Wire::unselect() {
+    for (auto& [id, node] : graph) {
+        node.selected = false;
+    }
+}
 sf::Vector2f Wire::snapPositionToGrid(const sf::Vector2f& position) {
     return {
         std::round(position.x / gridSize) * gridSize,

@@ -78,11 +78,17 @@ void Renderer::drawWireGraph(int nodeID, const std::map<int, Node>& graph, std::
         drawnEdges.insert({ a, b });
 
         const Node& neighbor = graph.at(neighborID);
+        sf::Color edgeColor;
+
+        if (node.selected && neighbor.selected) edgeColor = sf::Color(89, 190, 194);
+        else edgeColor = wireDefaultColor;
 
         sf::Vertex line[] = {
-            sf::Vertex(node.position, sf::Color(154, 159, 166, 255)),
-            sf::Vertex(neighbor.position, sf::Color(154, 159, 166, 255))
+            sf::Vertex(node.position, edgeColor),
+            sf::Vertex(neighbor.position, edgeColor)
         };
+
+        
         window.draw(line, 2, sf::Lines);
 
         drawWireGraph(neighborID, graph, drawnEdges);

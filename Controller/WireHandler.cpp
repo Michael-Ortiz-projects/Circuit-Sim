@@ -15,9 +15,43 @@ void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
         else if (interaction.hasWireNode()) {
             std::cout << "Beginning Drag on node " << interaction.wire_node.nodeID << std::endl;
             beginNodeDrag(interaction.wire_node);
+            Node& clickedNode = activeWire->getNode(interaction.wire_node.nodeID);
+
+            clickedNode.selected = true;
+            for (int neighborID : clickedNode.neighbors) {
+                activeWire->getNode(neighborID).selected = true;
+            }
+        }
+        else if (wireSegment.valid) {
+            activeWire = circuit.getWire(wireSegment.wireID);
+            activeWire->getNode(wireSegment.segment.nodeA).selected = true;
+            activeWire->getNode(wireSegment.segment.nodeB).selected = true;
+            wireState = WireState::Selecting;
         }
         break;
     
+    case WireState::Selecting:
+        if (interaction.invalid() && !wireSegment.valid) {
+            activeWire->unselect();
+            wireState = WireState::Null;
+        }
+        else if (interaction.hasWireNode()) {
+            std::cout << "Beginning Drag on node " << interaction.wire_node.nodeID << std::endl;
+            beginNodeDrag(interaction.wire_node);
+            Node& clickedNode = activeWire->getNode(interaction.wire_node.nodeID);
+
+            clickedNode.selected = true;
+            for (int neighborID : clickedNode.neighbors) {
+                activeWire->getNode(neighborID).selected = true;
+            }
+        }
+        else if (wireSegment.valid) {
+            activeWire = circuit.getWire(wireSegment.wireID);
+            activeWire->getNode(wireSegment.segment.nodeA).selected = true;
+            activeWire->getNode(wireSegment.segment.nodeB).selected = true;
+        }
+        break;
+
     case WireState::Creating:
         if (activeWire && snapPositionToGrid(worldPos) != activeWire->getGraph().at(activeWire->getStemNode()).position) {
             if (interaction.hasLead()) {
@@ -97,7 +131,7 @@ void WireHandler::onMouseRelease(const sf::Vector2f& worldPos) {
 
     if (wireState == WireState::DraggingNode) {
         interaction.wire_node = { -1, -1 };
-        wireState = WireState::Null;
+        wireState = WireState::Selecting;
     }
     
 }

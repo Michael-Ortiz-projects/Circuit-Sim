@@ -70,18 +70,13 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 		wireHandler.setSegmentContext(clickedWireSegment);
 
 
-		if (interaction.hasLead() || interaction.hasWireNode()) {
+		if (interaction.hasLead() || interaction.hasWireNode() || clickedWireSegment.valid) {
 			std::cout << "Clicked Component " << clickedLead.componentID << ", Lead "
 				<< Debug::lead_to_string(clickedLead.lead) << std::endl;
 			std::cout << "Clicked Wire " << clickedNodeReference.wireID << ", Node " << clickedNodeReference.nodeID << std::endl;
 			currentHandler = &wireHandler;
 			Debug::setHandler("Wire Handler");
 		}
-
-		if (clickedWireSegment.valid && currentHandler == &wireHandler) {
-			std::cout << "Clicked Wire " << clickedWireSegment.wireID << ", Segment: " << clickedWireSegment.segment.nodeA << ", " << clickedWireSegment.segment.nodeB << "\n\n";
-		}
-
 		
 
 		else if (!currentHandler) {
