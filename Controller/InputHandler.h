@@ -9,6 +9,8 @@ public:
     virtual void onMouseMove(const sf::Vector2f& worldPos) {}
     virtual void onScroll(const sf::Event::MouseWheelScrollEvent& event) {}
     virtual void onKeyPress(const sf::Event::KeyEvent& event) {}
+    virtual bool consumesEmptyClicks() const { return true; }
+
 
     virtual bool shouldRelease() const { return false; }
 };

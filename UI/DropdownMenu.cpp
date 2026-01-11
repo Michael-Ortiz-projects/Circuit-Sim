@@ -50,8 +50,8 @@ bool DropdownMenu::poll(UICommand& outputCommand) {
 	if (parentButton.consumed(outputCommand)) {
 		if (outputCommand == UICommand::ToggleMenu) {
 			open = !open;
-			std::cout << "Menu ";
-			open ? std::cout << "Open\n\n" : std::cout << "Closed\n\n";
+			//std::cout << "Menu ";
+			//open ? std::cout << "Open\n\n" : std::cout << "Closed\n\n";
 			return false;
 		}
 	}

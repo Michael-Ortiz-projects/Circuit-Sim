@@ -87,7 +87,6 @@ int main()
 
         renderer.drawCanvas(schematic_components, circuit.getWires());
         renderer.drawUI(UI.menu_map);
-
         window.display();
     }
     return 0;

@@ -113,13 +113,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\morti\source\SFML-2.6.1\include;C:\Libraries\eigen-3.4.0</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Mike\source\SFML-2.6.1\include;C:\Libraries\eigen-3.4.0</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Libraries\eigen-3.4.0;C:\Users\morti\source\SFML-2.6.1\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Libraries\eigen-3.4.0;C:\Users\Mike\source\SFML-2.6.1\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-window-d.lib;sfml-graphics-d.lib;sfml-system-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -146,10 +146,12 @@
   <ItemGroup>
     <ClCompile Include="Controller\CameraController.cpp" />
     <ClCompile Include="Controller\PlaceHandler.cpp" />
+    <ClCompile Include="Controller\SelectionBoxHandler.cpp" />
     <ClCompile Include="Controller\WireHandler.cpp" />
     <ClCompile Include="Core\ElectricalNode.cpp" />
     <ClCompile Include="Core\Wire.cpp" />
     <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="UI\DropdownMenu.cpp" />
     <ClCompile Include="UI\Button.cpp" />
     <ClCompile Include="Controller\DragHandler.cpp" />
@@ -167,10 +169,12 @@
   <ItemGroup>
     <ClInclude Include="Controller\CameraController.h" />
     <ClInclude Include="Controller\PlaceHandler.h" />
+    <ClInclude Include="Controller\SelectionBoxHandler.h" />
     <ClInclude Include="Controller\WireHandler.h" />
     <ClInclude Include="Core\ElectricalNode.h" />
     <ClInclude Include="Core\Wire.h" />
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="Geometry.h" />
     <ClInclude Include="UI\DropdownMenu.h" />
     <ClInclude Include="UI\Button.h" />
     <ClInclude Include="Controller\DragHandler.h" />

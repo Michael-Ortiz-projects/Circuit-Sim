@@ -161,6 +161,9 @@ bool Wire::mergeNodes(int primaryID, int merging) {
     removeNode(merging);
 }
 
+void Wire::selectNode(int nodeID) {
+    graph.at(nodeID).selected = true;
+}
 void Wire::unselect() {
     for (auto& [id, node] : graph) {
         node.selected = false;
@@ -316,4 +319,20 @@ void Wire::printGraphData() {
     std::cout << std::endl;
 }
 
+std::vector<WireSegment> Wire::getSegments() const {
+    std::vector<WireSegment> segments;
 
+    for (const auto& [id, node] : graph) {
+        for (int neighborID : node.neighbors) {
+            // Only add each segment once (nodeA < nodeB)
+            if (id < neighborID && graph.contains(neighborID)) {
+                const sf::Vector2f& startPos = node.position;
+                const sf::Vector2f& endPos = graph.at(neighborID).position;
+
+                segments.push_back({ id, neighborID, startPos, endPos });
+            }
+        }
+    }
+
+    return segments;
+}

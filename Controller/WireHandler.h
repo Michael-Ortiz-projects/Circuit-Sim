@@ -30,6 +30,30 @@ struct WireInteraction {
 	bool invalid() const { return !hasLead() && !hasWireNode(); }
 };
 
+struct WireHit {
+	int wireID = -1;
+	SegmentHit segment;
+	float distance = FLT_MAX;
+	bool valid = false;
+};
+
+struct HitResult {
+	enum class Type {
+		None,
+		Lead,
+		WireNode,
+		WireSegment,
+		Component
+	} type = Type::None;
+
+	ElectricalConnection lead;
+	WireNodeReference wireNode;
+	WireHit wireSegment;
+	Component* component = nullptr;
+
+	bool isNone() const { return type == Type::None; }
+};
+
 class WireHandler : public InputHandler {
 public:
 	WireHandler(Circuit& Circuit, std::vector<SchematicComponent>& components);
@@ -45,15 +69,17 @@ public:
 
 	void beginWireFromConnection(ElectricalConnection& connection);
 
+	void handleWireCreationClick(const sf::Vector2f& worldPos);
+
 	void finishWireAtConnection(ElectricalConnection& end);
 	void finishWireAtNode(WireNodeReference wire_node);
 	void finishWireAtSegment(WireHit wireSegment);
 
+
 	void mergeActiveWireIntoPrimary(Wire& primaryWire, Wire& activeWire);
 
-
-	void setInteractionContext(WireInteraction context);
-	void setSegmentContext(WireHit context);
+	void setHitResult(const HitResult& h);
+	void selectNodeWithNeighbors(int nodeID);
 private:
 
 	sf::Vector2f snapPositionToGrid(const sf::Vector2f& position);
@@ -67,8 +93,7 @@ private:
 	Wire* activeWire;
 	WireState wireState = WireState::Null;
 
-	WireInteraction interaction;
-	WireHit wireSegment;
+	HitResult hit;
 
 	int activeElectricalNodeID = -1;
 };

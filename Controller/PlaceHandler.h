@@ -28,6 +28,7 @@ public:
 
 	bool shouldRelease() const override;
 
+
 	void placeComponent(const sf::Vector2f& worldPos);
 
 	void deleteComponents();

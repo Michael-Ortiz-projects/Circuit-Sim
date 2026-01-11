@@ -3,7 +3,7 @@
 
 Controller::Controller(Circuit& Circuit, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer)
 	: circuit(Circuit), components(Components), cameraController(Window, Renderer.getCanvasView()), dragHandler(Components, Circuit.getWires()), placeHandler(Components, Circuit, Assets),
-	wireHandler(Circuit, Components), currentHandler(nullptr), command(UICommand::None), window(Window), renderer(Renderer), assets(Assets) { }
+	wireHandler(Circuit, Components), selectionBoxHandler(Components, Circuit, selection, shiftHeld), currentHandler(nullptr), command(UICommand::None), window(Window), renderer(Renderer), assets(Assets) { }
 
 void Controller::handleEvent(const sf::Event& event) {
 	switch (event.type) {
@@ -58,42 +58,40 @@ void Controller::handleEvent(const sf::Event& event) {
 }
 
 void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
+	if (event.button != sf::Mouse::Left) return;
 	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y }, renderer.getCanvasView());
+	HitResult hit = hitTest(sf::Vector2f(event.x, event.y));
 
-	if (event.button == sf::Mouse::Button::Left) {
-		ElectricalConnection clickedLead = findClickedLead(sf::Vector2f(event.x, event.y));
-		WireNodeReference clickedNodeReference = findClickedNode(sf::Vector2f(event.x, event.y));
-		WireHit clickedWireSegment = findClickedSegment(sf::Vector2f(event.x, event.y));
-		WireInteraction interaction = { clickedLead, clickedNodeReference };
+	switch (hit.type) {
+	case HitResult::Type::Lead:
+	case HitResult::Type::WireNode:
+	case HitResult::Type::WireSegment:
+		currentHandler = &wireHandler;
+		wireHandler.setHitResult(hit);
+		Debug::setHandler("WireHandler");
+		break;
 
-		wireHandler.setInteractionContext(interaction);
-		wireHandler.setSegmentContext(clickedWireSegment);
+	case HitResult::Type::Component:
+		currentHandler = &dragHandler;
+		Debug::setHandler("DragHandler");
+		dragHandler.setDraggedComponent(*hit.component);
+		break;
 
-
-		if (interaction.hasLead() || interaction.hasWireNode() || clickedWireSegment.valid) {
-			std::cout << "Clicked Component " << clickedLead.componentID << ", Lead "
-				<< Debug::lead_to_string(clickedLead.lead) << std::endl;
-			std::cout << "Clicked Wire " << clickedNodeReference.wireID << ", Node " << clickedNodeReference.nodeID << std::endl;
-			currentHandler = &wireHandler;
-			Debug::setHandler("Wire Handler");
+	case HitResult::Type::None:
+		if (currentHandler == &wireHandler || currentHandler == &dragHandler || currentHandler == &placeHandler) {
+			// let the current handler handle the empty-space click
+			wireHandler.setHitResult(hit);
+			currentHandler->onMousePress(worldMousePosition);
+			return;
+		}
+		else {
+			if (!shiftHeld) selection.clear();		// If shift is held, continue adding to selection; otherwise start fresh
+			currentHandler = &selectionBoxHandler;
+			selectionBoxHandler.onMousePress(worldMousePosition);
+			Debug::setHandler("SelectionBoxHandler");
+			return; // SelectionBoxHandler handles dragging
 		}
 		
-
-		else if (!currentHandler) {
-			Component* clickedComponent = findComponentAt(worldMousePosition);
-			if (clickedComponent) {
-				currentHandler = &dragHandler;
-				Debug::setHandler("Drag Handler");
-				dragHandler.setDraggedComponent(*clickedComponent);
-			
-			}
-			else {
-				for (auto& c : circuit.getComponents()) {
-					c.selected = false;
-				}
-			}
-
-		}
 	}
 	if (currentHandler) currentHandler->onMousePress(worldMousePosition);
 }
@@ -108,20 +106,23 @@ void Controller::onScroll(const sf::Event::MouseWheelScrollEvent& event) {
 
 	currentHandler->onScroll(event);
 
-	if (currentHandler->shouldRelease()) {
-		currentHandler = nullptr;
-		Debug::setHandler("None");
-
+	if (currentHandler) {
+		currentHandler->onScroll(event);
+		if (currentHandler->shouldRelease()) {
+			currentHandler = nullptr;
+			Debug::setHandler("None");
+		}
 	}
 }
 
 void Controller::onMouseRelease(const sf::Event::MouseButtonEvent& event) {
-	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y });
+
+	sf::Vector2f worldPos =
+		window.mapPixelToCoords({ event.x, event.y }, renderer.getCanvasView());
 
 	if (currentHandler) {
-		currentHandler->onMouseRelease(worldMousePosition);
-	}
-	if (currentHandler) {
+		currentHandler->onMouseRelease(worldPos);
+
 		if (currentHandler->shouldRelease()) {
 			currentHandler = nullptr;
 			Debug::setHandler("None");
@@ -131,6 +132,8 @@ void Controller::onMouseRelease(const sf::Event::MouseButtonEvent& event) {
 
 void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 	cameraController.onKeyPress(event);
+	if (event.code == sf::Keyboard::LShift || event.code == sf::Keyboard::RShift)
+		shiftHeld = true;
 
 	for (auto& comp : components)
 		if (comp.selected) {
@@ -142,6 +145,7 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 		currentHandler->onKeyPress(event);
 		if (currentHandler->shouldRelease()) {
 			currentHandler = nullptr;
+			Debug::setHandler("None");
 		}
 	}
 
@@ -150,6 +154,12 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 			Debug::debugPrintWire(w.second);
 	}
 }
+
+void Controller::onKeyRelease(const sf::Event::KeyEvent& event) {
+	if (event.code == sf::Keyboard::LShift || event.code == sf::Keyboard::RShift)
+		shiftHeld = false;
+}
+
 
 void Controller::setHandler(InputHandler* handler, UICommand cmd) {
 	command = cmd;
@@ -209,13 +219,41 @@ void Controller::rebuildSchematicComponents() {
 InputHandler* Controller::getHandler() {
 	return currentHandler;
 }
-Component* Controller::findComponentAt(const sf::Vector2f mousePixel) {
-	for (auto& comp : components) {
-		if (comp.hitBoxContainsPoint(mousePixel)) {
-			return circuit.getComponent(comp.componentID);
-		}
+
+
+HitResult Controller::hitTest(const sf::Vector2f& mousePixel) {
+	HitResult result;
+
+	if (auto lead = findClickedLead(mousePixel); lead.lead != Lead::Null) {
+		result.type = HitResult::Type::Lead;
+		result.lead = lead;
+		std::cout << "hitTest() returned Lead hit\n";
+		return result;
 	}
-	return nullptr;
+
+	if (auto node = findClickedNode(mousePixel); node.isValid()) {
+		result.type = HitResult::Type::WireNode;
+		result.wireNode = node;
+		std::cout << "hitTest() returned Node hit\n";
+		return result;
+	}
+
+	if (auto seg = findClickedSegment(mousePixel); seg.valid) {
+		result.type = HitResult::Type::WireSegment;
+		result.wireSegment = seg;
+		std::cout << "hitTest() returned Segment hit\n";
+		return result;
+	}
+
+	if (auto* comp = findComponentAt(mousePixel)) {
+		result.type = HitResult::Type::Component;
+		result.component = comp;
+		std::cout << "hitTest() returned component hit\n";
+		return result;
+	}
+
+	std::cout << "hitTest() returned no hit\n";
+	return result;
 }
 
 ElectricalConnection Controller::findClickedLead(const sf::Vector2f mousePixel) { // parameter is in pixel space, converts lead position to pixel space
@@ -249,7 +287,7 @@ WireNodeReference Controller::findClickedNode(const sf::Vector2f mousePixel) {//
 			}
 		}
 	}
-	std::cout << "findClickedNode returned NULL\n\n";
+	//std::cout << "findClickedNode returned NULL\n\n";
 	return { -1, -1 };
 }
 
@@ -281,4 +319,15 @@ WireHit Controller::findClickedSegment(const sf::Vector2f mousePixel) {
 	}
 	//if (best.valid) std::cout << "findClickedSegment returned True\n";
 	return best;
+}
+
+Component* Controller::findComponentAt(const sf::Vector2f mousePixel) {
+	sf::Vector2f mouseWorld = window.mapPixelToCoords(sf::Vector2i(mousePixel), renderer.getCanvasView());
+
+	for (auto& comp : components) {
+		if (comp.hitBoxContainsPoint(mouseWorld)) {
+			return circuit.getComponent(comp.componentID);
+		}
+	}
+	return nullptr;
 }

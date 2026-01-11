@@ -4,16 +4,23 @@
 #include "DragHandler.h"
 #include "PlaceHandler.h"
 #include "WireHandler.h"
+#include "SelectionBoxHandler.h"
 #include "../Debug.h"
 #include "../UI/Renderer.h"
 #include "CameraController.h"
+#include "../Geometry.h"
 class InputHandler;
+
+
+
 
 class Controller {
 public:
     DragHandler dragHandler;
     PlaceHandler placeHandler;
     WireHandler wireHandler;
+    SelectionBoxHandler selectionBoxHandler;
+    Selection selection;
 
     Controller(Circuit& circ, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer);
 
@@ -27,6 +34,8 @@ public:
 
     void onKeyPress(const sf::Event::KeyEvent& event);
 
+    void onKeyRelease(const sf::Event::KeyEvent& event);
+
     void onScroll(const sf::Event::MouseWheelScrollEvent& event);
 
     void setHandler(InputHandler* handler, UICommand cmd);
@@ -35,6 +44,8 @@ public:
 
     InputHandler* getHandler();
 
+    HitResult hitTest(const sf::Vector2f& mousePixel);
+    
     Component* findComponentAt(const sf::Vector2f mousePixel);
 
     ElectricalConnection findClickedLead(const sf::Vector2f mousePixel);
@@ -55,5 +66,6 @@ private:
     sf::RenderWindow& window;
     Renderer& renderer;
     AssetManager& assets;
+    bool shiftHeld = false;
 };
 

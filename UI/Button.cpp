@@ -55,7 +55,7 @@ bool Button::consumed(UICommand& outputCommand) {
 	if (triggered) {
 		outputCommand = command;
 		triggered = false;
-		std::cout << name + " Button Triggered\n\n";
+		//std::cout << name + " Button Triggered\n\n";
 		return true;
 	}
 	return false;

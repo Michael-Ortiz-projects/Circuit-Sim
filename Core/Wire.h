@@ -26,6 +26,13 @@ enum class WireMoveResult {
 	NodeRemoved
 };
 
+struct WireSegment {
+	int nodeA;
+	int nodeB;
+	sf::Vector2f start;
+	sf::Vector2f end;
+};
+
 struct SegmentHit {
 	int nodeA = -1;
 	int nodeB = -1;
@@ -35,12 +42,6 @@ struct SegmentHit {
 	bool isValid() const { return valid; }
 };
 
-struct WireHit {
-	int wireID = -1;
-	SegmentHit segment;
-	float distance = FLT_MAX;
-	bool valid = false;
-};
 
 class Wire {
 public:
@@ -65,6 +66,7 @@ public:
 	bool mergeCollinearAtNode(int nodeID);
 	bool mergeCoincidentNodes(int nodeID);
 
+	void selectNode(int nodeID);
 	void unselect();
 
 	SegmentHit projectOntoSegment(sf::Vector2f& point);
@@ -73,8 +75,13 @@ public:
 
 	std::map<int, Node>& getGraph() { return graph; }	
 	Node& getNode(int nodeID) { if (graph.contains(nodeID)) return graph.at(nodeID); }
+	std::vector<WireSegment> getSegments() const;
 	int getNextNodeID() const { return nextNodeID; }
-	int getStemNode() const { return currentStemNode; }
+	int getStemNode() const { 
+		if (!graph.contains(currentStemNode))
+			throw std::runtime_error("Invalid stem node!");
+		return currentStemNode;
+	}
 	sf::Vector2f getFirstPreview() const { return firstPreview; }
 	sf::Vector2f getSecondPreview() const { return secondPreview; }
 	sf::VertexArray getPreviewLine() const;
