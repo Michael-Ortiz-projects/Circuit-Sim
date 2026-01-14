@@ -27,6 +27,8 @@ public:
 	bool shouldRelease() const override { return released; }
 
 	void updateSelection();
+
+	sf::FloatRect& getRect() { return selectionRect; }
 private:
 
 

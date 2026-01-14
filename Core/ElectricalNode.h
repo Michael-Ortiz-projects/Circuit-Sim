@@ -99,6 +99,10 @@ struct Selection {
 	}
 };
 
+struct Wirecoverage {
+	int segmentCount = 0;
+	int coveredSegments = 0;
+};
 class ElectricalNode {
 public:
 	ElectricalNode();

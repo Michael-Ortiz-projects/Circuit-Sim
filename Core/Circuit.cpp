@@ -136,18 +136,17 @@ int Circuit::createWire(sf::Vector2f position) {
 
 void Circuit::eraseWire(int wireID) {
     auto wireIt = wires.find(wireID);
-    if (wireIt == wires.end()) return; // wire doesn't exist
+    if (wireIt == wires.end()) return;  
 
     Wire& wire = wireIt->second;
 
-    // Get electrical node safely
     auto enIt = wireIDToElectricalNode.find(wireID);
     int eNodeID = -1;
     if (enIt != wireIDToElectricalNode.end()) {
         eNodeID = enIt->second;
     }
 
-    // Collect anchor connections first to avoid invalidating graph iteration
+    // get anchor connections to avoid invalidating graph during traversal
     std::vector<ElectricalConnection> connectionsToRemove;
     for (auto& [id, node] : wire.getGraph()) {
         if (node.isAnchor) {
@@ -163,7 +162,7 @@ void Circuit::eraseWire(int wireID) {
     }
 
 
-    // Remove electrical connections
+    // remove electrical connections
     for (auto& conn : connectionsToRemove) {
         if (eNodeID != -1 && nodes.find(eNodeID) != nodes.end()) {
             removeConnectionFromNode(eNodeID, conn);
@@ -172,16 +171,16 @@ void Circuit::eraseWire(int wireID) {
     }
 
 
-    // Remove electrical node if empty
+    // remove electrical node if empty
     if (eNodeID != -1 && nodes.find(eNodeID) != nodes.end() && nodes.at(eNodeID).connections.empty()) {
         removeElectricalNode(eNodeID);
     }
 
 
-    // Erase wire ID mapping first
+    // erase wire ID mapping
     wireIDToElectricalNode.erase(wireID);
 
-    // Finally erase the wire itself
+    // erase the wire itself
     wires.erase(wireIt);
 }
 

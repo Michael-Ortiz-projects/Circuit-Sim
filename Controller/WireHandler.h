@@ -8,7 +8,6 @@
 
 enum class WireState {
 	Creating,
-	Selecting,
 	DraggingNode,
 	Null
 };
@@ -50,6 +49,7 @@ struct HitResult {
 	WireNodeReference wireNode;
 	WireHit wireSegment;
 	Component* component = nullptr;
+	bool shiftHeld;
 
 	bool isNone() const { return type == Type::None; }
 };
@@ -79,7 +79,8 @@ public:
 	void mergeActiveWireIntoPrimary(Wire& primaryWire, Wire& activeWire);
 
 	void setHitResult(const HitResult& h);
-	void selectNodeWithNeighbors(int nodeID);
+
+	WireState getState() { return wireState; }
 private:
 
 	sf::Vector2f snapPositionToGrid(const sf::Vector2f& position);

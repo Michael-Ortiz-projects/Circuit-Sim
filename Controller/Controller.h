@@ -5,6 +5,7 @@
 #include "PlaceHandler.h"
 #include "WireHandler.h"
 #include "SelectionBoxHandler.h"
+#include "DeleteHandler.h"
 #include "../Debug.h"
 #include "../UI/Renderer.h"
 #include "CameraController.h"
@@ -20,6 +21,7 @@ public:
     PlaceHandler placeHandler;
     WireHandler wireHandler;
     SelectionBoxHandler selectionBoxHandler;
+    DeleteHandler deleteHandler;
     Selection selection;
 
     Controller(Circuit& circ, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer);

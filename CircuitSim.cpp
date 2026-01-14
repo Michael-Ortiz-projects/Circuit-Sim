@@ -85,7 +85,7 @@ int main()
         }
         
 
-        renderer.drawCanvas(schematic_components, circuit.getWires());
+        renderer.drawCanvas(schematic_components, circuit.getWires(), controller.selectionBoxHandler.getRect());
         renderer.drawUI(UI.menu_map);
         window.display();
     }

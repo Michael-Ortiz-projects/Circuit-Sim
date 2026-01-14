@@ -22,6 +22,7 @@
     <ClCompile Include="Controller\WireHandler.cpp" />
     <ClCompile Include="Controller\SelectionBoxHandler.cpp" />
     <ClCompile Include="Geometry.cpp" />
+    <ClCompile Include="Controller\DeleteHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UI\DropdownMenu.h" />
@@ -46,6 +47,7 @@
     <ClInclude Include="Controller\WireHandler.h" />
     <ClInclude Include="Controller\SelectionBoxHandler.h" />
     <ClInclude Include="Geometry.h" />
+    <ClInclude Include="Controller\DeleteHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="UI\Fonts\AnonymousPro-Regular.ttf" />

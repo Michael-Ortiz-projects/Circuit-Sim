@@ -145,6 +145,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Controller\CameraController.cpp" />
+    <ClCompile Include="Controller\DeleteHandler.cpp" />
     <ClCompile Include="Controller\PlaceHandler.cpp" />
     <ClCompile Include="Controller\SelectionBoxHandler.cpp" />
     <ClCompile Include="Controller\WireHandler.cpp" />
@@ -168,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Controller\CameraController.h" />
+    <ClInclude Include="Controller\DeleteHandler.h" />
     <ClInclude Include="Controller\PlaceHandler.h" />
     <ClInclude Include="Controller\SelectionBoxHandler.h" />
     <ClInclude Include="Controller\WireHandler.h" />

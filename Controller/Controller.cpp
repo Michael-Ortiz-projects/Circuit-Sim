@@ -3,7 +3,8 @@
 
 Controller::Controller(Circuit& Circuit, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer)
 	: circuit(Circuit), components(Components), cameraController(Window, Renderer.getCanvasView()), dragHandler(Components, Circuit.getWires()), placeHandler(Components, Circuit, Assets),
-	wireHandler(Circuit, Components), selectionBoxHandler(Components, Circuit, selection, shiftHeld), currentHandler(nullptr), command(UICommand::None), window(Window), renderer(Renderer), assets(Assets) { }
+	wireHandler(Circuit, Components), selectionBoxHandler(Components, Circuit, selection, shiftHeld), deleteHandler(Circuit, selection), currentHandler(nullptr),
+	command(UICommand::None), window(Window), renderer(Renderer), assets(Assets) { }
 
 void Controller::handleEvent(const sf::Event& event) {
 	switch (event.type) {
@@ -52,6 +53,10 @@ void Controller::handleEvent(const sf::Event& event) {
 		onKeyPress(event.key);
 		break;
 
+	case sf::Event::KeyReleased:
+		onKeyRelease(event.key);
+		break;
+
 	default:
 		break;
 	}
@@ -61,14 +66,24 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 	if (event.button != sf::Mouse::Left) return;
 	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y }, renderer.getCanvasView());
 	HitResult hit = hitTest(sf::Vector2f(event.x, event.y));
-
+	hit.shiftHeld = shiftHeld;
 	switch (hit.type) {
 	case HitResult::Type::Lead:
 	case HitResult::Type::WireNode:
-	case HitResult::Type::WireSegment:
 		currentHandler = &wireHandler;
 		wireHandler.setHitResult(hit);
 		Debug::setHandler("WireHandler");
+		break;
+
+	case HitResult::Type::WireSegment:
+		if (wireHandler.getState() == WireState::Creating) {
+			currentHandler = &wireHandler;
+			wireHandler.setHitResult(hit);
+			Debug::setHandler("WireHandler");
+			break;
+		}
+		currentHandler = &selectionBoxHandler;
+		Debug::setHandler("selectionBoxHandler");
 		break;
 
 	case HitResult::Type::Component:
@@ -79,6 +94,7 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 
 	case HitResult::Type::None:
 		if (currentHandler == &wireHandler || currentHandler == &dragHandler || currentHandler == &placeHandler) {
+			
 			// let the current handler handle the empty-space click
 			wireHandler.setHitResult(hit);
 			currentHandler->onMousePress(worldMousePosition);
@@ -86,6 +102,7 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 		}
 		else {
 			if (!shiftHeld) selection.clear();		// If shift is held, continue adding to selection; otherwise start fresh
+			
 			currentHandler = &selectionBoxHandler;
 			selectionBoxHandler.onMousePress(worldMousePosition);
 			Debug::setHandler("SelectionBoxHandler");
@@ -134,12 +151,17 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 	cameraController.onKeyPress(event);
 	if (event.code == sf::Keyboard::LShift || event.code == sf::Keyboard::RShift)
 		shiftHeld = true;
+	if (event.code == sf::Keyboard::Delete) { 
+		currentHandler = &deleteHandler;
+		Debug::setHandler("DeleteHandler");
+		currentHandler->onKeyPress(event);
+		return;
+	}
 
-	for (auto& comp : components)
-		if (comp.selected) {
-			currentHandler = &placeHandler;
-			Debug::setHandler("PlaceHandler");
-		}
+	if (event.code == sf::Keyboard::F1) {
+		for (auto& w : circuit.getWires())
+			Debug::debugPrintWire(w.second);
+	}
 
 	if (currentHandler) {
 		currentHandler->onKeyPress(event);
@@ -149,15 +171,15 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 		}
 	}
 
-	if (event.code == sf::Keyboard::F1) {
-		for (auto& w : circuit.getWires())
-			Debug::debugPrintWire(w.second);
-	}
 }
 
 void Controller::onKeyRelease(const sf::Event::KeyEvent& event) {
 	if (event.code == sf::Keyboard::LShift || event.code == sf::Keyboard::RShift)
 		shiftHeld = false;
+	if (event.code == sf::Keyboard::Delete) {
+		currentHandler = nullptr;
+		Debug::setHandler("None");
+	}
 }
 
 

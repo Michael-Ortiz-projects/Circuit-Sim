@@ -31,7 +31,7 @@ public:
     double voltage;
     bool isClosed = true;
 
-    bool selected;
+    bool selected = false;
 
     WireNodeReference A_WireNodeReference;
     WireNodeReference B_WireNodeReference;

@@ -15,7 +15,7 @@ Renderer::Renderer(sf::RenderWindow& Window, AssetManager& Assets, Grid& Grid)
     UIView.setCenter(windowSize * 0.5f);
 }
 
-void Renderer::drawCanvas(std::vector<SchematicComponent>& components, std::unordered_map<int, Wire>& wires) {
+void Renderer::drawCanvas(std::vector<SchematicComponent>& components, std::unordered_map<int, Wire>& wires, sf::FloatRect selectionRect) {
     window.setView(canvasView);
     grid.draw(window, canvasView);
     for (auto& c : components) {
@@ -46,6 +46,12 @@ void Renderer::drawCanvas(std::vector<SchematicComponent>& components, std::unor
             window.draw(wire.second.getPreviewLine());
         }
     }
+    sf::RectangleShape selectionBox(selectionRect.getSize());
+    selectionBox.setFillColor(sf::Color::Transparent);
+    selectionBox.setPosition(selectionRect.getPosition());
+    selectionBox.setOutlineThickness(1);
+    selectionBox.setOutlineColor(sf::Color::Yellow);
+    window.draw(selectionBox);
 }
 
 void Renderer::drawUI(std::unordered_map<MenuID, DropdownMenu> menu_map) {

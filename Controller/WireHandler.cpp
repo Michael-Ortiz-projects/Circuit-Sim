@@ -7,7 +7,6 @@ void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
     switch (wireState) {
 
     case WireState::Null:
-    case WireState::Selecting:
 
         if (hit.type == HitResult::Type::Lead &&
             circuit.leadIsEmpty(hit.lead)) {
@@ -20,27 +19,8 @@ void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
 
         if (hit.type == HitResult::Type::WireNode) {
             beginNodeDrag(hit.wireNode);
-            //selectNodeWithNeighbors(hit.wireNode.nodeID);
             wireState = WireState::DraggingNode;
             return;
-        }
-
-        if (hit.type == HitResult::Type::WireSegment) {
-            activeWire = circuit.getWire(hit.wireSegment.wireID);
-            activeWire->unselect();
-            activeWire->getNode(hit.wireSegment.segment.nodeA).selected = true;
-            activeWire->getNode(hit.wireSegment.segment.nodeB).selected = true;
-
-            wireState = WireState::Selecting;
-            return;
-        }
-
-        // Clicked empty space
-        if (wireState == WireState::Selecting) {
-            activeWire->unselect();
-            wireState = WireState::Null;
-            std::cout << "WireState = Null in onMousePress()\n\n";
-
         }
         return;
 
@@ -90,7 +70,7 @@ void WireHandler::onMouseRelease(const sf::Vector2f& worldPos) {
     switch(wireState) {
 
     case WireState::DraggingNode:
-        wireState = WireState::Selecting;
+        wireState = WireState::Null;
         break;
 
     default:
@@ -100,7 +80,7 @@ void WireHandler::onMouseRelease(const sf::Vector2f& worldPos) {
 
 bool WireHandler::shouldRelease() const {
     bool null = wireState == WireState::Null;
-    std::cout << "shouldRelease() says WireState == Null " << null << std::endl;
+    //std::cout << "shouldRelease() says WireState == Null " << null << std::endl;
 	return wireState == WireState::Null;
 }
 
@@ -327,12 +307,4 @@ void WireHandler::beginNodeDrag(WireNodeReference& ref) {
 
 void WireHandler::setHitResult(const HitResult& h) {
     hit = h;
-}
-
-void WireHandler::selectNodeWithNeighbors(int nodeID) {
-    Node& node = activeWire->getNode(nodeID);
-    node.selected = true;
-
-    for (int n : node.neighbors)
-        activeWire->getNode(n).selected = true;
 }

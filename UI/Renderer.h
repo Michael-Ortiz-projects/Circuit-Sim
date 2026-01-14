@@ -8,13 +8,14 @@
 #include <unordered_map>
 #include "DropdownMenu.h"
 #include "../Core/Wire.h"
+#include "../Core/ElectricalNode.h"
 #include <set>
 
 class Renderer {
 public:
     Renderer(sf::RenderWindow& Window, AssetManager& Assets, Grid& Grid);
 
-    void drawCanvas(std::vector<SchematicComponent>& components, std::unordered_map<int, Wire>& wires);
+    void drawCanvas(std::vector<SchematicComponent>& components, std::unordered_map<int, Wire>& wires, sf::FloatRect selectionRect);
 
     void drawWireGraph(int nodeID, const std::map<int, Node>& graph, std::set<std::pair<int, int>>& drawnEdges);
 
@@ -25,7 +26,6 @@ public:
 
     sf::View& getUIView();
 private:
-
 
     AssetManager& assets;
     sf::RenderWindow& window;

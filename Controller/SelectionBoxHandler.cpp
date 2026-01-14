@@ -8,7 +8,8 @@ void SelectionBoxHandler::onMousePress(const sf::Vector2f& worldPos) {
     startPos = worldPos;
     dragging = true;
     released = false;
-    selectionRect = { worldPos.x, worldPos.y, 0.f, 0.f };
+    selectionRect = { worldPos.x - 2.5f, worldPos.y - 2.5f, 5.f, 5.f };
+    updateSelection();
 }
 
 void SelectionBoxHandler::onMouseMove(const sf::Vector2f& worldPos) {
@@ -18,15 +19,15 @@ void SelectionBoxHandler::onMouseMove(const sf::Vector2f& worldPos) {
     selectionRect.top = std::min(startPos.y, worldPos.y);
     selectionRect.width = std::abs(worldPos.x - startPos.x);
     selectionRect.height = std::abs(worldPos.y - startPos.y);
-
     updateSelection();
 }
 
 void SelectionBoxHandler::onMouseRelease(const sf::Vector2f& worldPos) {
     dragging = false;
     released = true;
-    selectionRect = computeRect();
     updateSelection();
+
+    selectionRect = sf::FloatRect();
 }
 
 sf::FloatRect SelectionBoxHandler::computeRect() const {
@@ -40,25 +41,23 @@ sf::FloatRect SelectionBoxHandler::computeRect() const {
 
 void SelectionBoxHandler::updateSelection() {
     if (!shiftHeld) {
-        // Clear Selection struct
         selection.clear();
 
-        // Unselect all components
         for (auto& comp : components) {
             auto* circuitComp = circuit.getComponent(comp.componentID);
-            if (circuitComp) circuitComp->selected = false;
+            if (circuitComp) {
+                circuitComp->selected = false;
+            }
         }
 
-        // Unselect all wires and their nodes
         for (auto& [wireID, wire] : circuit.getWires()) {
-            wire.unselect(); // this should reset wire.selected
+            wire.unselect();
             for (auto& [nodeID, node] : wire.getGraph()) {
                 node.selected = false;
             }
         }
     }
-
-    // --- Components ---
+   
     for (auto& comp : components) {
         if (selectionRect.intersects(comp.getHitBox().getGlobalBounds())) {
             selection.componentIDs.insert(comp.componentID);
@@ -66,7 +65,6 @@ void SelectionBoxHandler::updateSelection() {
         }
     }
 
-    // --- Wire nodes ---
     for (auto& [wireID, wire] : circuit.getWires()) {
         for (const auto& [nodeID, node] : wire.getGraph()) {
             if (selectionRect.contains(node.position)) {
@@ -77,12 +75,13 @@ void SelectionBoxHandler::updateSelection() {
         }
     }
 
-    // --- Wire segments ---
     for (auto& [wireID, wire] : circuit.getWires()) {
         for (const auto& segment : wire.getSegments()) {
             if (segmentIntersectsRect(segment.start, segment.end, selectionRect)) {
                 WireSegmentReference ref{ wireID, segment.nodeA, segment.nodeB };
                 selection.segments.insert(ref);
+                wire.getNode(segment.nodeA).selected = true;
+                wire.getNode(segment.nodeB).selected = true;
             }
         }
     }
