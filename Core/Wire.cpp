@@ -6,6 +6,7 @@ Wire::Wire(sf::Vector2f initialPosition, int id) {
 	nextNodeID = 1;
     currentStemNode = 0;
     previewOrientation = PreviewOrientation::None;
+    selected = false;
 }
 
 int Wire::createNode(sf::Vector2f pos) {
@@ -94,6 +95,11 @@ void Wire::updatePreview(sf::Vector2f pos) {
     }
 }
 
+bool Wire::setStem(int nodeID) {
+    if (!graph.contains(nodeID)) return false;
+    currentStemNode = nodeID;
+    return true;
+}
 int Wire::appendNodeFromStem(sf::Vector2f pos) {//fix this pls
     int newID = createNode(pos);
     connectNodes(newID, currentStemNode);
@@ -103,6 +109,31 @@ int Wire::appendNodeFromStem(sf::Vector2f pos) {//fix this pls
 
 int Wire::commitPreview() {
     int committedNode = -1;
+
+    Node& stemNode = graph.at(currentStemNode);
+    for (const auto& n : stemNode.neighbors) {
+        
+        Node& stemNodeNeighbor = graph.at(n);
+
+        std::cout << "Current StemNode: " << currentStemNode << " (" << graph.at(currentStemNode).position.x << ", " << graph.at(currentStemNode).position.y << ")\n";
+        std::cout << "StemNode Neighbor: " << n << "(" << graph.at(n).position.x << ", " << graph.at(n).position.y << ")\n";
+        std::cout << "First Preview: (" << firstPreview.x << ", " << firstPreview.y << ")\n";
+
+        if (areCollinear(stemNodeNeighbor.position, stemNode.position, firstPreview)) {
+            std::cout << "this ran\n";
+            moveNode(stemNode.id, firstPreview);
+            sf::Vector2f stemPos = graph.at(currentStemNode).position;
+            if (previewOrientation == PreviewOrientation::HorizontalFirst) {
+                firstPreview = { stemPos.x, secondPreview.y };
+            }
+            else if (previewOrientation == PreviewOrientation::VerticalFirst) {
+                firstPreview = { secondPreview.x, stemPos.y };
+            }
+        }
+    }
+    
+
+
     if (firstPreview != graph[currentStemNode].position) {
         committedNode = appendNodeFromStem(firstPreview);
     }
@@ -275,12 +306,30 @@ float Wire::distanceBetween(sf::Vector2f a, sf::Vector2f b) {
     return std::sqrt(delta.x * delta.x + delta.y * delta.y);
 }
 
-bool Wire::areCollinear(sf::Vector2f& A, sf::Vector2f& B, sf::Vector2f& C) {
-    sf::Vector2f AB = B - A;
-    sf::Vector2f BC = C - B;
 
-    float cross = AB.x * BC.y - AB.y * BC.x;
-    return std::abs(cross) < 0;
+bool Wire::hasNodeAt(const sf::Vector2f& pos) const {
+    for (const auto& [id, node] : graph) {
+        if (node.position == pos) {
+            return true;
+        }
+    }
+    return false;
+}
+
+int Wire::getNodeAt(const sf::Vector2f& pos) const {
+    for (const auto& [id, node] : graph) {
+        if (node.position == pos) {
+            return id;
+        }
+    }
+    return -1;
+}
+
+
+
+bool Wire::areCollinear(sf::Vector2f& A, sf::Vector2f& B, sf::Vector2f& C) {
+    if ((A.x == B.x && A.x == C.x) || (A.y == B.y && A.y == C.y)) return true;
+    return false;
 }
 
 void Wire::printNodeData(Node& node) {

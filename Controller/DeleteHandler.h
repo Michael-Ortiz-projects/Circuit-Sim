@@ -1,6 +1,15 @@
 #pragma once
 #include "../Core/Circuit.h"
 #include "InputHandler.h"
+#include <stack>
+#include "../debug.h"
+using WireSection = std::vector<int>; // old node IDs
+
+struct ComponentAttachment {
+	int componentID;
+	Lead lead;
+	int oldNodeID;
+};
 
 class DeleteHandler : public InputHandler {
 public:
@@ -18,8 +27,14 @@ public:
 
 	Selection simplifySelection();
 
+	void updateWires();
+	void dfsSection(int start, const std::map<int, Node>& graph, std::unordered_set<int>& visited, WireSection& out);
+	std::vector<WireSection> findWireSections(Wire& wire);
+	void rebuildWireFromSection(WireSection& section, std::vector<ComponentAttachment>& attachments, std::map<int, Node> graph);
+
 private:
 	Circuit& circuit;
 	Selection& selection;
+	std::unordered_set<int> modifiedWires;
 	bool release = false;
 };

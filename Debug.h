@@ -26,13 +26,15 @@ public:
     static void componentData(Component component) {
         std::cout
             << "Component {\n"
-            << "  ID:        " << '\n'
-            << "  Type:      " << ComponentType_to_String(component.type) << '\n'
-            << "  Nodes:     " << component.nodeA << " -> " << component.nodeB << '\n'
-            << "  Value:     " << component.value << '\n'
-            << "  Voltage:   " << std::fixed << std::setprecision(4) << component.voltage << " V\n"
-            << "  Current:   " << std::fixed << std::setprecision(6) << component.current << " A\n"
-            << "  Closed:    " << (component.isClosed ? "true" : "false") << '\n'
+            << "  ID:           " << component.id << '\n'
+            //<< "  Type:      " << ComponentType_to_String(component.type) << '\n'
+            << "  Nodes:        " << component.nodeA << " -> " << component.nodeB << '\n'
+            << "  WNReferenceA: [" << component.A_WireNodeReference.wireID << ", " << component.A_WireNodeReference.nodeID << "]        "
+            << "  WNReferenceB: [" << component.B_WireNodeReference.wireID << ", " << component.B_WireNodeReference.nodeID << "]\n"
+            //<< "  Value:     " << component.value << '\n'
+            //<< "  Voltage:   " << std::fixed << std::setprecision(4) << component.voltage << " V\n"
+            //<< "  Current:   " << std::fixed << std::setprecision(6) << component.current << " A\n"
+            //<< "  Closed:    " << (component.isClosed ? "true" : "false") << '\n'
             << "}\n";
     }
 
@@ -128,6 +130,10 @@ public:
                 << lead_to_string(conn.lead)
                 << '\n';
         }
+    }
+
+    static void printComponentData(const Component& component) {
+        
     }
 
 private:

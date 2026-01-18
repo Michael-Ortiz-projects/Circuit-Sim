@@ -163,6 +163,18 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 			Debug::debugPrintWire(w.second);
 	}
 
+	if (event.code == sf::Keyboard::F2) {
+		for (auto& [id, eNode] : circuit.getElectricalNodes()) {
+			Debug::printElectricalNode(eNode);
+		}
+	}
+
+	if (event.code == sf::Keyboard::F3) {
+		for (auto& c : circuit.getComponents()) {
+			Debug::componentData(c);
+		}
+	}
+
 	if (currentHandler) {
 		currentHandler->onKeyPress(event);
 		if (currentHandler->shouldRelease()) {

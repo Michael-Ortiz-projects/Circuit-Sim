@@ -56,6 +56,8 @@ public:
 
 	void updatePreview(sf::Vector2f pos);
 
+	bool setStem(int nodeID);
+
 	int appendNodeFromStem(sf::Vector2f pos);
 
 	int commitPreview();
@@ -77,11 +79,18 @@ public:
 	Node& getNode(int nodeID) { if (graph.contains(nodeID)) return graph.at(nodeID); }
 	std::vector<WireSegment> getSegments() const;
 	int getNextNodeID() const { return nextNodeID; }
-	int getStemNode() const { 
-		if (!graph.contains(currentStemNode))
-			throw std::runtime_error("Invalid stem node!");
+	//getstemNode needs fixing, when deleting the current stem node, it is invalid and should be set to a value, for now im doing the first available key in the graph
+	int getStemNode() { 
+		if (!graph.contains(currentStemNode)) {
+			currentStemNode = graph.begin()->first;
+		}
 		return currentStemNode;
 	}
+
+	bool hasNodeAt(const sf::Vector2f& pos) const;
+	int getNodeAt(const sf::Vector2f& pos) const;
+
+
 	sf::Vector2f getFirstPreview() const { return firstPreview; }
 	sf::Vector2f getSecondPreview() const { return secondPreview; }
 	sf::VertexArray getPreviewLine() const;

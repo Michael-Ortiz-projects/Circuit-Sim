@@ -15,29 +15,28 @@ public:
     int addComponent(const Component& comp, const sf::Vector2f& canvasPos);
     bool removeComponent(int compID);
 
+    int createWire(sf::Vector2f position);
+    void eraseWire(int wireID, bool updateConnectedComponents);
+
+    int createElectricalNode();
+    void absorbElectricalNode(int primaryID, int absorbedID);
+
+    void addConnectionToElectricalNode(int nodeID, ElectricalConnection& connection);
+    void removeConnectionFromElectricalNode(int nodeID, ElectricalConnection& connection);
+
+    void updateComponentLead(int wireID, int wireNodeID, int ElectricalNodeID, const ElectricalConnection& connection);
+
+
     Component* getComponent(int compID);
     std::vector<Component>& getComponents();
 
     Wire* getWire(int wireID);
     std::unordered_map<int, Wire>& getWires();
 
-    ElectricalNode* getElectricalNode(int nodeID);
-
-    int createElectricalNode();
-    void removeElectricalNode(int nodeID);
-    void mergeElectricalNodes(int primary, int active);
-
-    void addConnectionToNode(int nodeID, ElectricalConnection& connection);
-    void removeConnectionFromNode(int nodeID, ElectricalConnection& connection);
-
-    void updateComponentLead(int wireID, int wireNodeID, int ElectricalNodeID, ElectricalConnection& connection);
-
-    int createWire(sf::Vector2f position);
-    void eraseWire(int wireID);
+    ElectricalNode* getElectricalNode(int electricalNodeID);
+    std::unordered_map<int, ElectricalNode>& getElectricalNodes();
 
     bool leadIsEmpty(ElectricalConnection& connection);
-
-    std::unordered_map<int, int> wireIDToElectricalNode;
 
 private:
 
@@ -50,8 +49,8 @@ private:
     bool isSimulating = false;
 
     std::vector<Component> components;
-    std::unordered_map<int, ElectricalNode> nodes;
     std::unordered_map<int, Wire> wires;
+    std::unordered_map<int, ElectricalNode> electricalNodes;
 
     std::unordered_map<int, int> componentIDToIndex;
 };

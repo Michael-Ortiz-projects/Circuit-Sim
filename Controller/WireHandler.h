@@ -68,11 +68,12 @@ public:
 
 
 	void beginWireFromConnection(ElectricalConnection& connection);
+	void editWireFromHangingNode(WireNodeReference reference);
 
 	void handleWireCreationClick(const sf::Vector2f& worldPos);
 
 	void finishWireAtConnection(ElectricalConnection& end);
-	void finishWireAtNode(WireNodeReference wire_node);
+	void finishWireAtNode(WireNodeReference reference);
 	void finishWireAtSegment(WireHit wireSegment);
 
 
@@ -85,7 +86,6 @@ private:
 
 	sf::Vector2f snapPositionToGrid(const sf::Vector2f& position);
 	sf::Vector2f positionOfConnection(ElectricalConnection& connection);
-	void beginNodeDrag(WireNodeReference& ref);
 
 
 	Circuit& circuit;
