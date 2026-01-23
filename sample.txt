@@ -1,0 +1,2 @@
+Hello from C++
+This file was written at program end.

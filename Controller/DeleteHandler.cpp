@@ -111,6 +111,11 @@ void DeleteHandler::updateWires() {
 		Wire* oldWire = circuit.getWire(wireID);
 		if (!oldWire) continue;
 
+		if (oldWire->getGraph().empty()) {
+			circuit.eraseWire(wireID, true);
+			continue;
+		}
+
 		auto sections = findWireSections(*oldWire);
 		if (sections.size() <= 1) {
 			std::cout << "only 1 section\n";
@@ -119,7 +124,6 @@ void DeleteHandler::updateWires() {
 
 		//capture components attached to this section of the wire
 		std::vector < ComponentAttachment > attachments;
-		std::cout << "this ran\n";
 		const ElectricalNode* eNode = circuit.getElectricalNode(wireID);
 		
 		for (const ElectricalConnection& connection : eNode->connections) {

@@ -1,34 +1,31 @@
 #include "SchematicComponent.h"
 #include <cmath>
+#include <sstream>
 
-SchematicComponent::SchematicComponent(int id, sf::Vector2f pos, float rot, ComponentType t)
-    : componentID(id), position(pos), rotation(rot), type(t)
+
+
+
+SchematicComponent::SchematicComponent(const Component& comp, sf::Font& font)
+    : componentID(comp.id), position(comp.position), rotation(comp.rotation), type(comp.type), value(comp.value), display(font, sf::Vector2f(comp.position.x, comp.position.y - 100), sf::Vector2f(100.f, 20.f), false)
 {
+    // Initialize display text
+    label = "sample label";
+    display.setLabel(label);
+    std::ostringstream ss;
+    ss << std::fixed << std::setprecision(2) << value;
+    display.setValue(ss.str());
+
     sprite.setPosition(position);
     sprite.setOrigin({ 360.f, 240.f });
     sprite.setRotation(rotation);
 
-    hitBox.setPosition(position);
+    // Initialize hitbox (optional)
     hitBox.setSize({ 105.f, 70.f });
-    hitBox.setOrigin(hitBox.getSize() * 0.5f);
     hitBox.setFillColor(sf::Color::Transparent);
-    hitBox.setOutlineThickness(1.f);
-    hitBox.setOutlineColor(sf::Color::Blue);
-}
-
-SchematicComponent::SchematicComponent(const Component& comp)
-    : componentID(comp.id), position(comp.position), rotation(comp.rotation), type(comp.type), selected(comp.selected)
-{
-    sprite.setPosition(position);
-    sprite.setOrigin({ 360.f, 240.f });
-    sprite.setRotation(rotation);
-
-    hitBox.setPosition(position);
-    hitBox.setSize({ 105.f, 70.f });
-    hitBox.setOrigin(hitBox.getSize() * 0.5f);
-    hitBox.setFillColor(sf::Color::Transparent);
-    hitBox.setOutlineThickness(1.f);
     hitBox.setOutlineColor(sf::Color(63, 182, 168));
+    hitBox.setOutlineThickness(1.f);
+    hitBox.setOrigin(hitBox.getSize() * 0.5f);
+    hitBox.setPosition(position);
 }
 void SchematicComponent::setPosition(const sf::Vector2f& pos) {
     position = pos;
@@ -39,6 +36,18 @@ void SchematicComponent::setPosition(const sf::Vector2f& pos) {
 void SchematicComponent::setRotation(float rot) {
     rotation = rot;
     sprite.setRotation(rot);
+}
+
+void SchematicComponent::setLabel(std::string string) {
+    label = string;
+}
+
+void SchematicComponent::setValue(double val) {
+    value = val;
+    std::ostringstream ss;
+    ss << std::fixed << std::setprecision(2) << value;
+    display.setValue(ss.str());
+    
 }
 
 void SchematicComponent::startDrag(const sf::Vector2f& worldPos) {
@@ -79,6 +88,8 @@ ComponentType SchematicComponent::getType() const { return type; }
 
 sf::Vector2f SchematicComponent::getLeadPositionA() const {
     float rad = rotation * 3.14159265f / 180.f;
+    std::cout << rotation;
+
     return position + sf::Vector2f(
         leadOffsetA.x * cos(rad) - leadOffsetA.y * sin(rad),
         leadOffsetA.x * sin(rad) + leadOffsetA.y * cos(rad)
@@ -93,6 +104,10 @@ sf::Vector2f SchematicComponent::getLeadPositionB() const {
     );
 }
 
+ComponentInfoDisplay& SchematicComponent::getComponentInfoDisplay() {
+    return display;
+}
+
 bool SchematicComponent::nearLeadA(sf::Vector2f& point) {
     sf::Vector2f distance = point - getLeadPositionA();
     float r = nodeSelectionRadius;
@@ -103,4 +118,8 @@ bool SchematicComponent::nearLeadB(sf::Vector2f& point) {
     sf::Vector2f distance = point - getLeadPositionB();
     float r = nodeSelectionRadius;
     return (distance.x * distance.x + distance.y * distance.y) <= r * r;
+}
+
+void SchematicComponent::updateDisplay() {
+
 }

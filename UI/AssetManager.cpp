@@ -16,7 +16,7 @@ AssetManager::AssetManager() {
 	loadTexture("normal_SO", "UI/Assets/Schematic_Open_Switch.png");
 
 	loadTexture("normal_SC", "UI/Assets/Schematic_Closed_Switch.png");
-	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
 	mainFont.loadFromFile("UI/Fonts/RobotoSlab-Regular.ttf");
 }
 

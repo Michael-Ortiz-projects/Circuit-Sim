@@ -9,7 +9,7 @@ void SelectionBoxHandler::onMousePress(const sf::Vector2f& worldPos) {
     dragging = true;
     released = false;
     selectionRect = { worldPos.x - 2.5f, worldPos.y - 2.5f, 5.f, 5.f };
-    updateSelection();
+    updateSelection(worldPos);
 }
 
 void SelectionBoxHandler::onMouseMove(const sf::Vector2f& worldPos) {
@@ -19,13 +19,13 @@ void SelectionBoxHandler::onMouseMove(const sf::Vector2f& worldPos) {
     selectionRect.top = std::min(startPos.y, worldPos.y);
     selectionRect.width = std::abs(worldPos.x - startPos.x);
     selectionRect.height = std::abs(worldPos.y - startPos.y);
-    updateSelection();
+    updateSelection(worldPos);
 }
 
 void SelectionBoxHandler::onMouseRelease(const sf::Vector2f& worldPos) {
     dragging = false;
     released = true;
-    updateSelection();
+    updateSelection(worldPos);
 
     selectionRect = sf::FloatRect();
 }
@@ -39,7 +39,7 @@ sf::FloatRect SelectionBoxHandler::computeRect() const {
     };
 }
 
-void SelectionBoxHandler::updateSelection() {
+void SelectionBoxHandler::updateSelection(sf::Vector2f position) {
     if (!shiftHeld) {
         selection.clear();
 
@@ -59,9 +59,10 @@ void SelectionBoxHandler::updateSelection() {
     }
    
     for (auto& comp : components) {
-        if (selectionRect.intersects(comp.getHitBox().getGlobalBounds())) {
+        if (selectionRect.intersects(comp.getHitBox().getGlobalBounds()) || comp.hitBoxContainsPoint(position)) {
             selection.componentIDs.insert(comp.componentID);
             circuit.getComponent(comp.componentID)->selected = true;
+            std::cout << "this ran\n";
         }
     }
 

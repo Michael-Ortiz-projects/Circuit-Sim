@@ -23,8 +23,8 @@ void PlaceHandler::onKeyPress(const sf::Event::KeyEvent& event) {
 }
 
 void PlaceHandler::placeComponent(const sf::Vector2f& worldPos) {
-	int newID = circuit.addComponent(Component(-1, -1, type), worldPos);
-
+	int newID = circuit.addComponent(Component(-1, -1, type, 100), worldPos);
+	std::cout << "placed component\n";
 }
 
 void PlaceHandler::deleteComponents() {

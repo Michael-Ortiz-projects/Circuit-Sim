@@ -6,10 +6,12 @@
 #include "WireHandler.h"
 #include "SelectionBoxHandler.h"
 #include "DeleteHandler.h"
+#include "EditComponentHandler.h"
 #include "../Debug.h"
 #include "../UI/Renderer.h"
 #include "CameraController.h"
 #include "../Geometry.h"
+#include "../UI/ComponentInfoDisplay.h"
 class InputHandler;
 
 
@@ -22,9 +24,11 @@ public:
     WireHandler wireHandler;
     SelectionBoxHandler selectionBoxHandler;
     DeleteHandler deleteHandler;
+    EditComponentHandler editComponentHandler;
+
     Selection selection;
 
-    Controller(Circuit& circ, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer);
+    Controller(Circuit& circ, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer, UI_Manager& UI);
 
     void handleEvent(const sf::Event& event);
 

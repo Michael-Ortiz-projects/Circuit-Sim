@@ -4,7 +4,10 @@
 #include "DropdownMenu.h"
 #include "AssetManager.h"
 #include <optional>
-#include "../Controller/Controller.h"
+#include "Renderer.h"
+#include "../Config.h"
+#include <queue>
+#include "Dialog.h"
 
 class UI_Manager
 {
@@ -12,7 +15,7 @@ public:
 
 	std::unordered_map<MenuID, DropdownMenu> menu_map;
 
-	UI_Manager(Controller& Controller);
+	UI_Manager(Renderer& rend);
 
 	void initialize(AssetManager& assets);
 
@@ -26,8 +29,25 @@ public:
 
 	bool onMouseRelease(const sf::Vector2f& pixelPos);
 
-	void draw(sf::RenderWindow& window);
+	void draw();
+	
+
+	// modal control
+
+	void openEditDialog(Component* target);
+	void closeEditDialog();
+
+	bool hasActiveDialog() const;
+	const std::string getEditDialogText() const;
+
 private:
-	Controller& controller;
+	std::unique_ptr<Dialog> activeDialog;
+
+
+	Renderer& renderer;
+	bool modalActive = false;
+	std::queue<UICommand> modalCommands;
+
+
 };
 

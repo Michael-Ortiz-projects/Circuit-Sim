@@ -32,6 +32,11 @@ void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
 
             return;
         }
+
+        if (hit.type == HitResult::Type::None) {
+            beginWireFromNull(worldPos);
+            activeWire->updatePreview(worldPos);
+        }
         return;
 
     case WireState::Creating:
@@ -137,6 +142,18 @@ void WireHandler::beginWireFromConnection(ElectricalConnection& connection) {
     std::cout << "WireState = Creating\n\n";
 }
 
+void WireHandler::beginWireFromNull(sf::Vector2f worldPos) {
+    if (wireState != WireState::Null) return;
+
+    sf::Vector2f snappedPosition = snapPositionToGrid(worldPos);
+    int wireID = circuit.createWire(snappedPosition);
+    activeElectricalNodeID = wireID;
+
+    activeWire = circuit.getWire(wireID);
+    activeWire->selected = true;
+    wireState = WireState::Creating;
+    std::cout << "Wirestate = Creating\n";
+}
 void WireHandler::editWireFromHangingNode(WireNodeReference reference) {
     wireState = WireState::Creating;
     activeWire->selected = true;

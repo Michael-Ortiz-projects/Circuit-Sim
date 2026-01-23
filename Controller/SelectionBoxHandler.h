@@ -26,7 +26,7 @@ public:
 
 	bool shouldRelease() const override { return released; }
 
-	void updateSelection();
+	void updateSelection(sf::Vector2f position);
 
 	sf::FloatRect& getRect() { return selectionRect; }
 private:

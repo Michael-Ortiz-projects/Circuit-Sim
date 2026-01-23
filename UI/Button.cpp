@@ -1,5 +1,4 @@
 #include "Button.h"
-#include "../Config.h"
 
 
 Button::Button(sf::Font& fnt, const std::string& label, const sf::Vector2f& pos, const sf::Vector2f& size, UICommand cmd)
@@ -30,11 +29,23 @@ void Button::draw(sf::RenderWindow& window) {
 }
 
 bool Button::contains(const sf::Vector2f mousePos) {
-	return box.getGlobalBounds().contains(mousePos);
+	const sf::FloatRect b = box.getGlobalBounds();
+	/*std::cout
+		<< "Point: (" << mousePos.x << ", " << mousePos.y << ")\n"
+		<< "Bounds: ["
+		<< "L=" << b.left
+		<< ", T=" << b.top
+		<< ", R=" << b.left + b.width
+		<< ", B=" << b.top + b.height
+		<< "]\n"
+		<< "Contains: " << b.contains(mousePos)
+		<< "\n\n";*/
+	return b.contains(mousePos);
 }
 
 void Button::onMousePress(const sf::Vector2f& point) {
 	clicked = contains(point);
+	//std::cout << "Clicked = " << clicked << std::endl;
 }
 
 void Button::onMouseMove(const sf::Vector2f& point) {
@@ -46,6 +57,7 @@ void Button::onMouseMove(const sf::Vector2f& point) {
 void Button::onMouseRelease(const sf::Vector2f& point) {
 	if (clicked && contains(point)) {
 		triggered = true;
+		//std::cout << "triggered\n";
 	}
 
 	clicked = false;
@@ -55,7 +67,7 @@ bool Button::consumed(UICommand& outputCommand) {
 	if (triggered) {
 		outputCommand = command;
 		triggered = false;
-		//std::cout << name + " Button Triggered\n\n";
+		std::cout << name + " Button Triggered\n\n";
 		return true;
 	}
 	return false;

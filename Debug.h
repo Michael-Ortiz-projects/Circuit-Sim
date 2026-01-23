@@ -16,6 +16,9 @@ public:
         case UICommand::ToggleMenu: std::cout << "UI Command = ToggleMenu\n\n"; break;
         case UICommand::PlaceVoltageSource: std::cout << "UI Command = PlaceVoltageSource\n\n"; break;
         case UICommand::PlaceResistor: std::cout << "UI Command = PlaceResistor\n\n"; break;
+
+        case UICommand::ApplyEdit: std::cout << "UI Command = ApplyEdit\n\n"; break;
+        case UICommand::CancelEdit: std::cout << "UI Command = CancelEdit\n\n"; break;
         }
     }
 
@@ -31,10 +34,12 @@ public:
             << "  Nodes:        " << component.nodeA << " -> " << component.nodeB << '\n'
             << "  WNReferenceA: [" << component.A_WireNodeReference.wireID << ", " << component.A_WireNodeReference.nodeID << "]        "
             << "  WNReferenceB: [" << component.B_WireNodeReference.wireID << ", " << component.B_WireNodeReference.nodeID << "]\n"
-            //<< "  Value:     " << component.value << '\n'
+            << "  Value:     " << component.value << '\n'
             //<< "  Voltage:   " << std::fixed << std::setprecision(4) << component.voltage << " V\n"
             //<< "  Current:   " << std::fixed << std::setprecision(6) << component.current << " A\n"
             //<< "  Closed:    " << (component.isClosed ? "true" : "false") << '\n'
+            << "  Position: " << printVector2f(component.position) << "\n"
+            
             << "}\n";
     }
 

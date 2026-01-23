@@ -19,12 +19,15 @@ public:
 
     void drawWireGraph(int nodeID, const std::map<int, Node>& graph, std::set<std::pair<int, int>>& drawnEdges);
 
-
     void drawUI(std::unordered_map<MenuID, DropdownMenu> menu_map);
 
     sf::View& getCanvasView();
 
     sf::View& getUIView();
+
+    sf::RenderWindow& getWindow() { return window; }
+
+    AssetManager& getAssets() { return assets; }
 private:
 
     AssetManager& assets;

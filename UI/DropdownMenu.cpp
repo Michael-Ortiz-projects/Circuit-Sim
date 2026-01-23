@@ -7,8 +7,10 @@ void DropdownMenu::addOption(const std::string& label, UICommand cmd) {
 
 	Button temp(parentButton.font, label, parentButton.box.getPosition(), parentButton.box.getSize(), cmd);
 	float textWidth = temp.text.getLocalBounds().width + margin * 2.f;
+	//std::cout << label << " width " << textWidth << " max width = " << maxWidth << std::endl;
+	
 	if (textWidth > maxWidth)
-		maxWidth = textWidth / parentButton.textResolutionFactor;
+		maxWidth = textWidth;
 	options.push_back(std::move(temp));
 	updateMenuLayout();
 }
@@ -76,7 +78,7 @@ void DropdownMenu::updateMenuLayout() {
 	float y = y_initial + panelMargin;
 
 	for (auto& opt : options) {
-		opt.box.setSize({ maxWidth, buttonHeight });
+		opt.box.setSize({ maxWidth / fontFactor, buttonHeight });
 		opt.box.setPosition(x, y);
 		opt.alignTextOnLeft(margin);
 
@@ -85,7 +87,7 @@ void DropdownMenu::updateMenuLayout() {
 
 	float panelHeight = options.size() * buttonHeight + (options.size() - 1) * rowGap + panelMargin * 2;
 	panel.setPosition(x - panelMargin, y_initial);
-	panel.setSize({ maxWidth + panelMargin * 2, panelHeight });
+	panel.setSize({ maxWidth / fontFactor + panelMargin * 2, panelHeight });
 
 	panel.setFillColor(sf::Color(35, 35, 45));
 	panel.setOutlineThickness(1.f);

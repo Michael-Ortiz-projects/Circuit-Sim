@@ -68,6 +68,8 @@ public:
 
 
 	void beginWireFromConnection(ElectricalConnection& connection);
+	void beginWireFromNull(sf::Vector2f worldPos);
+
 	void editWireFromHangingNode(WireNodeReference reference);
 
 	void handleWireCreationClick(const sf::Vector2f& worldPos);

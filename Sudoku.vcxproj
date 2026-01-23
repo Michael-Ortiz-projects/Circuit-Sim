@@ -146,6 +146,7 @@
   <ItemGroup>
     <ClCompile Include="Controller\CameraController.cpp" />
     <ClCompile Include="Controller\DeleteHandler.cpp" />
+    <ClCompile Include="Controller\EditComponentHandler.cpp" />
     <ClCompile Include="Controller\PlaceHandler.cpp" />
     <ClCompile Include="Controller\SelectionBoxHandler.cpp" />
     <ClCompile Include="Controller\WireHandler.cpp" />
@@ -153,6 +154,8 @@
     <ClCompile Include="Core\Wire.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="Geometry.cpp" />
+    <ClCompile Include="UI\ComponentInfoDisplay.cpp" />
+    <ClCompile Include="UI\Dialog.cpp" />
     <ClCompile Include="UI\DropdownMenu.cpp" />
     <ClCompile Include="UI\Button.cpp" />
     <ClCompile Include="Controller\DragHandler.cpp" />
@@ -165,11 +168,13 @@
     <ClCompile Include="Core\Component.cpp" />
     <ClCompile Include="CircuitSim.cpp" />
     <ClCompile Include="UI\Grid.cpp" />
+    <ClCompile Include="UI\TextBox.cpp" />
     <ClCompile Include="UI\UI_Manager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Controller\CameraController.h" />
     <ClInclude Include="Controller\DeleteHandler.h" />
+    <ClInclude Include="Controller\EditComponentHandler.h" />
     <ClInclude Include="Controller\PlaceHandler.h" />
     <ClInclude Include="Controller\SelectionBoxHandler.h" />
     <ClInclude Include="Controller\WireHandler.h" />
@@ -177,6 +182,8 @@
     <ClInclude Include="Core\Wire.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Geometry.h" />
+    <ClInclude Include="UI\ComponentInfoDisplay.h" />
+    <ClInclude Include="UI\Dialog.h" />
     <ClInclude Include="UI\DropdownMenu.h" />
     <ClInclude Include="UI\Button.h" />
     <ClInclude Include="Controller\DragHandler.h" />
@@ -190,6 +197,7 @@
     <ClInclude Include="Core\CircuitSolver.h" />
     <ClInclude Include="Core\Component.h" />
     <ClInclude Include="UI\Grid.h" />
+    <ClInclude Include="UI\TextBox.h" />
     <ClInclude Include="UI\UI_Manager.h" />
   </ItemGroup>
   <ItemGroup>

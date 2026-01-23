@@ -7,6 +7,7 @@ int Circuit::addComponent(const Component& comp, const sf::Vector2f& canvasPos) 
     Component c = comp;
     c.position = canvasPos;
     c.id = id;
+    c.value = -1;
     componentIDToIndex[id] = static_cast<int>(components.size());
     c.nodeA = comp.nodeA; 
     c.nodeB = comp.nodeB;
@@ -110,7 +111,8 @@ void Circuit::removeConnectionFromElectricalNode(int nodeID, ElectricalConnectio
 }
 
 void Circuit::updateComponentLead(int wireID, int wireNodeID, int ElectricalNodeID, const ElectricalConnection& connection) {
-    auto comp = getComponent(connection.componentID);
+    Component* comp = getComponent(connection.componentID);
+    if (!comp) return;
     switch (connection.lead) {
     case Lead::A:
         comp->nodeA = ElectricalNodeID;

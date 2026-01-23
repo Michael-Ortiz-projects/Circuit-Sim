@@ -1,9 +1,9 @@
 #include "Controller.h"
 #include "InputHandler.h"
 
-Controller::Controller(Circuit& Circuit, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer)
+Controller::Controller(Circuit& Circuit, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer, UI_Manager& UI)
 	: circuit(Circuit), components(Components), cameraController(Window, Renderer.getCanvasView()), dragHandler(Components, Circuit.getWires()), placeHandler(Components, Circuit, Assets),
-	wireHandler(Circuit, Components), selectionBoxHandler(Components, Circuit, selection, shiftHeld), deleteHandler(Circuit, selection), currentHandler(nullptr),
+	wireHandler(Circuit, Components), selectionBoxHandler(Components, Circuit, selection, shiftHeld), deleteHandler(Circuit, selection), editComponentHandler(UI, Components), currentHandler(nullptr),
 	command(UICommand::None), window(Window), renderer(Renderer), assets(Assets) { }
 
 void Controller::handleEvent(const sf::Event& event) {
@@ -65,6 +65,7 @@ void Controller::handleEvent(const sf::Event& event) {
 void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 	if (event.button != sf::Mouse::Left) return;
 	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y }, renderer.getCanvasView());
+	Debug::printVector2f(worldMousePosition);
 	HitResult hit = hitTest(sf::Vector2f(event.x, event.y));
 	hit.shiftHeld = shiftHeld;
 	switch (hit.type) {
@@ -95,18 +96,18 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 	case HitResult::Type::None:
 		if (currentHandler == &wireHandler || currentHandler == &dragHandler || currentHandler == &placeHandler) {
 			
-			// let the current handler handle the empty-space click
+			// let the current handler handle the empty click
 			wireHandler.setHitResult(hit);
 			currentHandler->onMousePress(worldMousePosition);
 			return;
 		}
-		else {
+		else if (currentHandler != &editComponentHandler) {
 			if (!shiftHeld) selection.clear();		// If shift is held, continue adding to selection; otherwise start fresh
 			
 			currentHandler = &selectionBoxHandler;
 			selectionBoxHandler.onMousePress(worldMousePosition);
 			Debug::setHandler("SelectionBoxHandler");
-			return; // SelectionBoxHandler handles dragging
+			return;
 		}
 		
 	}
@@ -154,6 +155,27 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 	if (event.code == sf::Keyboard::Delete) { 
 		currentHandler = &deleteHandler;
 		Debug::setHandler("DeleteHandler");
+		currentHandler->onKeyPress(event);
+		return;
+	}
+
+	if (event.code == sf::Keyboard::Enter) {
+		if (circuit.getComponents().empty()) return;
+		for (Component& comp : circuit.getComponents()) {
+			if (comp.selected) {
+				currentHandler = &editComponentHandler;
+				Debug::setHandler("EditComponentHandler");
+				editComponentHandler.begin(&comp);
+			}
+			break;
+		}
+		currentHandler->onKeyPress(event);
+		return;
+	}
+
+	if (event.code == sf::Keyboard::W) {
+		currentHandler = &wireHandler;
+		Debug::setHandler("WireHandler");
 		currentHandler->onKeyPress(event);
 		return;
 	}
@@ -237,7 +259,8 @@ void Controller::rebuildSchematicComponents() {
 	components.clear();
 
 	for (const auto& comp : circuit.getComponents()) {
-		SchematicComponent c(comp);
+
+		SchematicComponent c(comp, assets.mainFont);
 		sf::Vector2f target = comp.position;
 		sf::Vector2f snapped(
 			std::round(target.x / gridSize) * gridSize,
@@ -245,8 +268,10 @@ void Controller::rebuildSchematicComponents() {
 		);
 		c.setPosition(snapped);
 		c.setTexture(assets.getTexture(comp.type));
+		c.setValue(comp.value);
+		c.selected = comp.selected;
 		components.emplace_back(c);
-
+		//std::cout << "rebuild a component\n";
 	}
 }
 
@@ -282,18 +307,18 @@ HitResult Controller::hitTest(const sf::Vector2f& mousePixel) {
 	if (auto* comp = findComponentAt(mousePixel)) {
 		result.type = HitResult::Type::Component;
 		result.component = comp;
-		std::cout << "hitTest() returned component hit\n";
+		//std::cout << "hitTest() returned component hit\n";
 		return result;
 	}
 
-	std::cout << "hitTest() returned no hit\n";
+	//std::cout << "hitTest() returned no hit\n";
 	return result;
 }
 
 ElectricalConnection Controller::findClickedLead(const sf::Vector2f mousePixel) { // parameter is in pixel space, converts lead position to pixel space
 	for (const auto c : components) {
 		sf::Vector2i pixelPosA = window.mapCoordsToPixel(c.getLeadPositionA(), renderer.getCanvasView());
-
+		Debug::printVector2f(c.getLeadPositionA());
 		sf::Vector2f distanceA = sf::Vector2f(pixelPosA) - mousePixel;
 		if (distanceA.x * distanceA.x + distanceA.y * distanceA.y <= nodeSelectionRadius * nodeSelectionRadius) {
 			return { c.componentID, Lead::A };

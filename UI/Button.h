@@ -2,16 +2,21 @@
 #include "SFML/Graphics.hpp"
 #include <functional>
 #include <iostream>
+#include "../Config.h"
 
 enum class UICommand {
 	None,
 	ToggleMenu,
+
 	PlaceVoltageSource,
 	PlaceResistor,
 	PlaceCurrentSource,
 	PlaceCapacitor,
 	PlaceInductor,
-	PlaceSwitch
+	PlaceSwitch,
+
+	ApplyEdit,
+	CancelEdit
 };
 
 class Button {

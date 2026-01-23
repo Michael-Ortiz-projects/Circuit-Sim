@@ -13,6 +13,8 @@
 #include "Debug.h"
 #include "UI/Renderer.h"
 #include "UI/UI_Manager.h"
+#include <fstream>
+
 
 int main()
 {
@@ -27,9 +29,11 @@ int main()
 
     Renderer renderer(window, assets, grid);
 
-    Controller controller(circuit, schematic_components, window, assets, renderer);
+    UI_Manager UI(renderer);
+    
+    Controller controller(circuit, schematic_components, window, assets, renderer, UI);
 
-    UI_Manager UI(controller);
+   
 
     UI.initialize(assets);
 
@@ -39,13 +43,9 @@ int main()
             if (event.type == sf::Event::Closed)
                 window.close();
 
-            
-
-            if (!UI.handleEvent(event)) {  // only pass to controller if UI ignores it
-                controller.handleEvent(event);
-                controller.rebuildSchematicComponents();
-            }
-
+            UI.handleEvent(event);
+            controller.handleEvent(event);
+            controller.rebuildSchematicComponents();
         }
 
         UICommand cmd;
@@ -87,6 +87,7 @@ int main()
 
         renderer.drawCanvas(schematic_components, circuit.getWires(), controller.selectionBoxHandler.getRect());
         renderer.drawUI(UI.menu_map);
+        UI.draw();
         window.display();
     }
     return 0;

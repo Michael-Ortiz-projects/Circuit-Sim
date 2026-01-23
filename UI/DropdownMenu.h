@@ -16,7 +16,7 @@ public:
 	float rowGap = 3;
 
 	float margin = 4;
-	float maxWidth = 0;
+	float maxWidth = 10;
 
 	DropdownMenu(sf::Font& fnt, const std::string& label, const sf::Vector2f& pos, const sf::Vector2f& size);
 
