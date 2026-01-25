@@ -21,6 +21,7 @@ public:
     int nodeA;
     int nodeB;
     ComponentType type;
+    std::string label;
     double value;
 
 

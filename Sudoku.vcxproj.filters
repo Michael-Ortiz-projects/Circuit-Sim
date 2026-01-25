@@ -29,38 +29,97 @@
     <ClCompile Include="UI\ComponentInfoDisplay.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="UI\DropdownMenu.h" />
-    <ClInclude Include="UI\Button.h" />
-    <ClInclude Include="Controller\DragHandler.h" />
-    <ClInclude Include="Controller\InputHandler.h" />
-    <ClInclude Include="UI\AssetManager.h" />
-    <ClInclude Include="UI\SchematicComponent.h" />
-    <ClInclude Include="Config.h" />
-    <ClInclude Include="Controller\Controller.h" />
-    <ClInclude Include="Core\Circuit.h" />
-    <ClInclude Include="Core\CircuitSolver.h" />
-    <ClInclude Include="Core\Component.h" />
-    <ClInclude Include="UI\Grid.h" />
-    <ClInclude Include="UI\UI_Manager.h" />
-    <ClInclude Include="Controller\PlaceHandler.h" />
-    <ClInclude Include="Debug.h" />
-    <ClInclude Include="UI\Renderer.h" />
-    <ClInclude Include="Controller\CameraController.h" />
-    <ClInclude Include="Core\ElectricalNode.h" />
-    <ClInclude Include="Core\Wire.h" />
-    <ClInclude Include="Controller\WireHandler.h" />
-    <ClInclude Include="Controller\SelectionBoxHandler.h" />
-    <ClInclude Include="Geometry.h" />
-    <ClInclude Include="Controller\DeleteHandler.h" />
-    <ClInclude Include="Controller\EditComponentHandler.h" />
-    <ClInclude Include="UI\Dialog.h" />
-    <ClInclude Include="UI\TextBox.h" />
-    <ClInclude Include="UI\ComponentInfoDisplay.h" />
+    <ClInclude Include="UI\AssetManager.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Button.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\CameraController.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Circuit.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\CircuitSolver.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Component.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\ComponentInfoDisplay.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\Controller.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Debug.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\DeleteHandler.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Dialog.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\DragHandler.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\DropdownMenu.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\EditComponentHandler.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ElectricalNode.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Grid.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\InputHandler.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\PlaceHandler.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Renderer.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\SchematicComponent.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\SelectionBoxHandler.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\TextBox.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UI_Manager.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Wire.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\WireHandler.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Font Include="UI\Fonts\AnonymousPro-Regular.ttf" />
     <Font Include="UI\Fonts\ARIAL.TTF" />
     <Font Include="UI\Fonts\Kreon-Medium.ttf" />
     <Font Include="UI\Fonts\NotoSans-Regular.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="HeaderFiles">
+      <UniqueIdentifier>{98cd3b29-9358-4361-b7bf-0d7f4843b193}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

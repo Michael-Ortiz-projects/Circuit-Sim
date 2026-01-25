@@ -15,7 +15,7 @@
 #include "UI/UI_Manager.h"
 #include <fstream>
 
-
+//NEXT DO ROTATION AND THEN LOOK INTO HOW IM GOING TO SAVE THIS MONSTER IN A FILE
 int main()
 {
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Circuit Sim", sf::Style::None);

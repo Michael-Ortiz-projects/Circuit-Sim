@@ -17,8 +17,11 @@ bool PlaceHandler::shouldRelease() const {
 }
 
 void PlaceHandler::onKeyPress(const sf::Event::KeyEvent& event) {
-	if (event.code == sf::Keyboard::Delete) {
+	if (event.code == sf::Keyboard::Delete) {//this probably shouldnt be here
 		deleteComponents();
+	}
+	if (event.code == sf::Keyboard::R) {
+		
 	}
 }
 

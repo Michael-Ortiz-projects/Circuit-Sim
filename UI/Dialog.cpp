@@ -25,10 +25,7 @@ bool Dialog::isOpen() const {
     return active;
 }
 
-void Dialog::addLabel(const std::string& str,
-    const sf::Vector2f& pos,
-    unsigned int size)
-{
+void Dialog::addLabel(const std::string& str, const sf::Vector2f& pos, unsigned int size) {
     sf::Text t;
     t.setFont(renderer.getAssets().mainFont);
     t.setString(str);
@@ -38,11 +35,8 @@ void Dialog::addLabel(const std::string& str,
     labels.push_back(t);
 }
 
-void Dialog::addTextBox(const std::string& initial,
-    const sf::Vector2f& pos,
-    const sf::Vector2f& size)
-{
-    textboxes.emplace_back(renderer.getAssets().mainFont, panel.getPosition() + pos, size, initial);
+void Dialog::addTextBox(const std::string& initial, const sf::Vector2f& pos, const sf::Vector2f& size, int textSize, bool outline) {
+    textboxes.emplace_back(renderer.getAssets().mainFont, panel.getPosition() + pos, size, textSize, initial, outline);
 }
 
 void Dialog::addButton(const std::string& label,
@@ -114,3 +108,4 @@ void Dialog::draw() {
     for (auto& b : buttons)
         b.draw(window);
 }
+

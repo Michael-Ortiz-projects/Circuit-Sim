@@ -8,6 +8,8 @@
 #include "../Config.h"
 #include <queue>
 #include "Dialog.h"
+#include <sstream>
+#include <iomanip>
 
 class UI_Manager
 {
@@ -37,8 +39,11 @@ public:
 	void openEditDialog(Component* target);
 	void closeEditDialog();
 
+	std::string formatValue(double value);
+
+
 	bool hasActiveDialog() const;
-	const std::string getEditDialogText() const;
+	const EditDialogResult getEditDialogText() const;
 
 private:
 	std::unique_ptr<Dialog> activeDialog;

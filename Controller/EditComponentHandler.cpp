@@ -3,8 +3,11 @@
 EditComponentHandler::EditComponentHandler(UI_Manager& ui, std::vector<SchematicComponent>& schemComponents)
 	: ui(ui), schematicComponents(schemComponents) { }
 
-void EditComponentHandler::onKeyPress(const sf::Event::KeyEvent&) {
-    update();
+void EditComponentHandler::onKeyPress(const sf::Event::KeyEvent& event) {
+    if (event.code == sf::Keyboard::Enter)
+        update();
+    if (event.code == sf::Keyboard::R && !ui.hasActiveDialog())
+        rotateTarget();
 }
 
 void EditComponentHandler::onMousePress(const sf::Vector2f&) {
@@ -12,6 +15,7 @@ void EditComponentHandler::onMousePress(const sf::Vector2f&) {
 }
 
 void EditComponentHandler::onMouseRelease(const sf::Vector2f&) {
+
     update();
 }
 
@@ -19,7 +23,7 @@ bool EditComponentHandler::shouldRelease() const {
     return finished;
 }
 
-void EditComponentHandler::begin(Component* target) {
+void EditComponentHandler::setTarget(Component* target) {
     std::cout << "begin Called\n";
     component = target;
     for (auto& c : schematicComponents) {
@@ -27,28 +31,34 @@ void EditComponentHandler::begin(Component* target) {
     }
     finished = false;
 
+}
+
+void EditComponentHandler::openEditDialog() {
     ui.openEditDialog(component);
 }
 
 void EditComponentHandler::update() {
     UICommand cmd;
     while (ui.pollCommand(cmd)) {
-        std::string dialog;
+        EditDialogResult EditDialog;
         Debug::UICommand(cmd);
         switch (cmd) {
         case UICommand::ApplyEdit:
-            dialog = ui.getEditDialogText();
-
+            std::cout << "this ran\n";
+            EditDialog = ui.getEditDialogText();
+            std::cout << "got edit dialog\n";
             double parsedValue;
-            if (!parseValueWithSuffix(dialog, parsedValue)) {
-                std::cout << "[EditComponentHandler] Invalid value: " << dialog << "\n";
+            if (!parseValueWithSuffix(EditDialog.valueText, parsedValue)) {
+                std::cout << "[EditComponentHandler] Invalid value: " << EditDialog.valueText << "\n";
                 break;
             }
 
+            std::cout << "setting values\n";
             component->value = parsedValue;
+            component->label = EditDialog.labelText;
+            
             std::cout << "Component Value = " << component->value;
             std::cout << "\nClosing Edit dialog\n";
-            //schemComp->setLabel("DEFAULT LABEL");
 
             ui.closeEditDialog();
             finished = true;
@@ -109,4 +119,10 @@ bool EditComponentHandler::parseValueWithSuffix(const std::string& input, double
     catch (...) {
         return false;
     }
+}
+
+void EditComponentHandler::rotateTarget() {
+    component->rotation -= 90;
+    std::cout << "Rotated component 90 degrees counter clockwise\n";
+    finished = true;
 }

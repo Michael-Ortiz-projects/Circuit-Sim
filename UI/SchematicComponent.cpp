@@ -6,7 +6,7 @@
 
 
 SchematicComponent::SchematicComponent(const Component& comp, sf::Font& font)
-    : componentID(comp.id), position(comp.position), rotation(comp.rotation), type(comp.type), value(comp.value), display(font, sf::Vector2f(comp.position.x, comp.position.y - 100), sf::Vector2f(100.f, 20.f), false)
+    : componentID(comp.id), position(comp.position), rotation(comp.rotation), type(comp.type), value(comp.value), display(font, sf::Vector2f(comp.position.x, comp.position.y - 70), sf::Vector2f(100.f, 20.f), 12, false)
 {
     // Initialize display text
     label = "sample label";
@@ -14,7 +14,7 @@ SchematicComponent::SchematicComponent(const Component& comp, sf::Font& font)
     std::ostringstream ss;
     ss << std::fixed << std::setprecision(2) << value;
     display.setValue(ss.str());
-
+    display.centerAt(sf::Vector2f(comp.position.x, comp.position.y - 70));
     sprite.setPosition(position);
     sprite.setOrigin({ 360.f, 240.f });
     sprite.setRotation(rotation);
@@ -31,6 +31,8 @@ void SchematicComponent::setPosition(const sf::Vector2f& pos) {
     position = pos;
     sprite.setPosition(pos);
     hitBox.setPosition(pos);
+    display.centerAt(sf::Vector2f(position.x, position.y - 70));
+
 }
 
 void SchematicComponent::setRotation(float rot) {
@@ -40,6 +42,8 @@ void SchematicComponent::setRotation(float rot) {
 
 void SchematicComponent::setLabel(std::string string) {
     label = string;
+    display.setLabel(label);
+    display.centerAt(sf::Vector2f(position.x, position.y - 70));
 }
 
 void SchematicComponent::setValue(double val) {

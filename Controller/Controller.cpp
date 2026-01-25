@@ -66,50 +66,52 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 	if (event.button != sf::Mouse::Left) return;
 	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y }, renderer.getCanvasView());
 	Debug::printVector2f(worldMousePosition);
-	HitResult hit = hitTest(sf::Vector2f(event.x, event.y));
-	hit.shiftHeld = shiftHeld;
-	switch (hit.type) {
-	case HitResult::Type::Lead:
-	case HitResult::Type::WireNode:
-		currentHandler = &wireHandler;
-		wireHandler.setHitResult(hit);
-		Debug::setHandler("WireHandler");
-		break;
-
-	case HitResult::Type::WireSegment:
-		if (wireHandler.getState() == WireState::Creating) {
+	if (currentHandler != &editComponentHandler) {
+		HitResult hit = hitTest(sf::Vector2f(event.x, event.y));
+		hit.shiftHeld = shiftHeld;
+		switch (hit.type) {
+		case HitResult::Type::Lead:
+		case HitResult::Type::WireNode:
 			currentHandler = &wireHandler;
 			wireHandler.setHitResult(hit);
 			Debug::setHandler("WireHandler");
 			break;
-		}
-		currentHandler = &selectionBoxHandler;
-		Debug::setHandler("selectionBoxHandler");
-		break;
 
-	case HitResult::Type::Component:
-		currentHandler = &dragHandler;
-		Debug::setHandler("DragHandler");
-		dragHandler.setDraggedComponent(*hit.component);
-		break;
-
-	case HitResult::Type::None:
-		if (currentHandler == &wireHandler || currentHandler == &dragHandler || currentHandler == &placeHandler) {
-			
-			// let the current handler handle the empty click
-			wireHandler.setHitResult(hit);
-			currentHandler->onMousePress(worldMousePosition);
-			return;
-		}
-		else if (currentHandler != &editComponentHandler) {
-			if (!shiftHeld) selection.clear();		// If shift is held, continue adding to selection; otherwise start fresh
-			
+		case HitResult::Type::WireSegment:
+			if (wireHandler.getState() == WireState::Creating) {
+				currentHandler = &wireHandler;
+				wireHandler.setHitResult(hit);
+				Debug::setHandler("WireHandler");
+				break;
+			}
 			currentHandler = &selectionBoxHandler;
-			selectionBoxHandler.onMousePress(worldMousePosition);
-			Debug::setHandler("SelectionBoxHandler");
-			return;
+			Debug::setHandler("selectionBoxHandler");
+			break;
+
+		case HitResult::Type::Component:
+			currentHandler = &dragHandler;
+			Debug::setHandler("DragHandler");
+			dragHandler.setDraggedComponent(*hit.component);
+			break;
+
+		case HitResult::Type::None:
+			if (currentHandler == &wireHandler || currentHandler == &dragHandler || currentHandler == &placeHandler) {
+
+				// let the current handler handle the empty click
+				wireHandler.setHitResult(hit);
+				currentHandler->onMousePress(worldMousePosition);
+				return;
+			}
+			else {
+				if (!shiftHeld) selection.clear();		// If shift is held, continue adding to selection; otherwise start fresh
+
+				currentHandler = &selectionBoxHandler;
+				selectionBoxHandler.onMousePress(worldMousePosition);
+				Debug::setHandler("SelectionBoxHandler");
+				return;
+			}
+
 		}
-		
 	}
 	if (currentHandler) currentHandler->onMousePress(worldMousePosition);
 }
@@ -150,53 +152,69 @@ void Controller::onMouseRelease(const sf::Event::MouseButtonEvent& event) {
 
 void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 	cameraController.onKeyPress(event);
-	if (event.code == sf::Keyboard::LShift || event.code == sf::Keyboard::RShift)
-		shiftHeld = true;
-	if (event.code == sf::Keyboard::Delete) { 
-		currentHandler = &deleteHandler;
-		Debug::setHandler("DeleteHandler");
-		currentHandler->onKeyPress(event);
-		return;
-	}
+	if (currentHandler != &editComponentHandler) {
+		switch (event.code) {
+		case sf::Keyboard::R:
+			if (circuit.getComponents().empty()) return;
+			for (Component& comp : circuit.getComponents()) {
+				if (comp.selected) {
+					currentHandler = &editComponentHandler;
+					Debug::setHandler("EditComponentHandler");
+					editComponentHandler.setTarget(&comp);
+					break;
+				}
+			}
+			currentHandler = &editComponentHandler;
+			Debug::setHandler("EditComponentHandler");
+			break;
 
-	if (event.code == sf::Keyboard::Enter) {
-		if (circuit.getComponents().empty()) return;
-		for (Component& comp : circuit.getComponents()) {
-			if (comp.selected) {
-				currentHandler = &editComponentHandler;
-				Debug::setHandler("EditComponentHandler");
-				editComponentHandler.begin(&comp);
+		case sf::Keyboard::LShift:
+		case sf::Keyboard::RShift:
+			shiftHeld = true;
+			break;
+
+		case sf::Keyboard::Delete:
+			currentHandler = &deleteHandler;
+			Debug::setHandler("DeleteHandler");
+			break;
+
+		case sf::Keyboard::Enter:
+			if (circuit.getComponents().empty()) return;
+			for (Component& comp : circuit.getComponents()) {
+				if (comp.selected) {
+					currentHandler = &editComponentHandler;
+					Debug::setHandler("EditComponentHandler");
+					editComponentHandler.setTarget(&comp);
+					editComponentHandler.openEditDialog();
+					break;
+				}
+			}
+			break;
+
+		case sf::Keyboard::W:
+			currentHandler = &wireHandler;
+			Debug::setHandler("WireHandler");
+			currentHandler->onKeyPress(event);
+			return;
+
+		case sf::Keyboard::F1:
+			for (auto& w : circuit.getWires())
+				Debug::debugPrintWire(w.second);
+			break;
+
+		case sf::Keyboard::F2:
+			for (auto& [id, eNode] : circuit.getElectricalNodes()) {
+				Debug::printElectricalNode(eNode);
+			}
+			break;
+
+		case sf::Keyboard::F3:
+			for (auto& c : circuit.getComponents()) {
+				Debug::componentData(c);
 			}
 			break;
 		}
-		currentHandler->onKeyPress(event);
-		return;
 	}
-
-	if (event.code == sf::Keyboard::W) {
-		currentHandler = &wireHandler;
-		Debug::setHandler("WireHandler");
-		currentHandler->onKeyPress(event);
-		return;
-	}
-
-	if (event.code == sf::Keyboard::F1) {
-		for (auto& w : circuit.getWires())
-			Debug::debugPrintWire(w.second);
-	}
-
-	if (event.code == sf::Keyboard::F2) {
-		for (auto& [id, eNode] : circuit.getElectricalNodes()) {
-			Debug::printElectricalNode(eNode);
-		}
-	}
-
-	if (event.code == sf::Keyboard::F3) {
-		for (auto& c : circuit.getComponents()) {
-			Debug::componentData(c);
-		}
-	}
-
 	if (currentHandler) {
 		currentHandler->onKeyPress(event);
 		if (currentHandler->shouldRelease()) {
@@ -204,6 +222,7 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 			Debug::setHandler("None");
 		}
 	}
+	
 
 }
 
@@ -269,7 +288,9 @@ void Controller::rebuildSchematicComponents() {
 		c.setPosition(snapped);
 		c.setTexture(assets.getTexture(comp.type));
 		c.setValue(comp.value);
+		c.setLabel(comp.label);
 		c.selected = comp.selected;
+		c.setRotation(comp.rotation);
 		components.emplace_back(c);
 		//std::cout << "rebuild a component\n";
 	}

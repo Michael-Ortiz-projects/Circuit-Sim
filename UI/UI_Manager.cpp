@@ -95,16 +95,16 @@ void UI_Manager::openEditDialog(Component* target) {
 	std::cout << "openEditDialog called\n";
 	if (activeDialog) return;
 
-	activeDialog = std::make_unique<Dialog>(sf::Vector2f(800.f, 150.f), sf::Vector2f(600, 200), renderer);
+	int textSize = 16;
 
-	activeDialog->addLabel("Edit Component Value", { 20.f, 20.f }, 18);
-	activeDialog->addLabel("Value:", { 20.f, 70.f });
+	activeDialog = std::make_unique<Dialog>(sf::Vector2f(800.f, 700.f), sf::Vector2f(600, 200), renderer);
 
-	activeDialog->addTextBox(
-		std::to_string(target->value),
-		{ 100.f, 65.f },
-		{ 200.f, 30.f }
-	);
+	activeDialog->addLabel("Edit Component Value", { 20.f, 20.f }, 16);
+	activeDialog->addLabel("Label:", { 20.f, 70.f });
+	activeDialog->addLabel("Value:", { 20.f, 110.f });
+
+	activeDialog->addTextBox(target->label, { 100.f, 65.f }, { 200.f, 30.f }, textSize, true);
+	activeDialog->addTextBox(formatValue(target->value), { 100.f, 105.f }, { 200.f, 30.f }, textSize, true);
 
 	activeDialog->addButton("OK", UICommand::ApplyEdit, { 350.f, 130.f }, { 80.f, 30.f });
 	activeDialog->addButton("Cancel", UICommand::CancelEdit, { 450.f, 130.f }, { 80.f, 30.f });
@@ -120,9 +120,20 @@ bool UI_Manager::hasActiveDialog() const {
 	return activeDialog != nullptr;
 }
 
-const std::string UI_Manager::getEditDialogText() const {
-	static std::string empty = "empty text";
-	return activeDialog ? activeDialog->getText(0) : empty;
+const EditDialogResult UI_Manager::getEditDialogText() const {
+	EditDialogResult result;
+	if (!activeDialog) return { "empty", "empty" };
+	result.labelText = activeDialog->getText(0);
+	result.valueText = activeDialog->getText(1);
+	std::cout << "getEditDialogText() returns " << result.valueText << " and " << result.labelText << std::endl;
+	return result;
+}
+
+std::string UI_Manager::formatValue(double value)
+{
+	std::ostringstream oss;
+	oss << std::setprecision(6) << std::noshowpoint << value;
+	return oss.str();
 }
 
 void UI_Manager::draw() {

@@ -62,7 +62,6 @@ void SelectionBoxHandler::updateSelection(sf::Vector2f position) {
         if (selectionRect.intersects(comp.getHitBox().getGlobalBounds()) || comp.hitBoxContainsPoint(position)) {
             selection.componentIDs.insert(comp.componentID);
             circuit.getComponent(comp.componentID)->selected = true;
-            std::cout << "this ran\n";
         }
     }
 

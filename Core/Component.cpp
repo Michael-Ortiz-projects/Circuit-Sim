@@ -6,13 +6,29 @@ Component::Component(int A, int B, const ComponentType& ty, double val)
     switch (ty) {
     case ComponentType::VoltageSource:
         voltage = val;
+        label = "Voltage Source";
         break;
+
+    case ComponentType::Resistor:
+        label = "Resistor";
+        break;
+
     case ComponentType::CurrentSource:
         current = val;
         break;
+
+    case ComponentType::Capacitor:
+        label = "Capacitor";
+        break;
+
+    case ComponentType::Inductor:
+        label = "Inductor";
+
     case ComponentType::Switch:
+        label = "Switch";
         isClosed = false;
         break;
+
     default:
         break;
     }

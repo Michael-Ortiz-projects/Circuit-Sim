@@ -7,7 +7,7 @@ int Circuit::addComponent(const Component& comp, const sf::Vector2f& canvasPos) 
     Component c = comp;
     c.position = canvasPos;
     c.id = id;
-    c.value = -1;
+    c.value = 0;
     componentIDToIndex[id] = static_cast<int>(components.size());
     c.nodeA = comp.nodeA; 
     c.nodeB = comp.nodeB;

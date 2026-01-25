@@ -6,7 +6,7 @@ class EditComponentHandler : public InputHandler {
 public:
 	EditComponentHandler(UI_Manager& ui, std::vector<SchematicComponent>& schemComponents);
 
-    void onKeyPress(const sf::Event::KeyEvent&) override;
+    void onKeyPress(const sf::Event::KeyEvent& event) override;
 
     void onMousePress(const sf::Vector2f&) override;
     
@@ -14,11 +14,12 @@ public:
 
     bool shouldRelease() const override;
 
-    void begin(Component* target);
+    void setTarget(Component* target);
+
+    void openEditDialog();
 
     void update();
 
-    bool parseValueWithSuffix(const std::string& input, double& outValue);
 private:
 
     Component* component;
@@ -26,4 +27,8 @@ private:
     std::vector<SchematicComponent>& schematicComponents;
     UI_Manager& ui;
     bool finished = false;
+
+    bool parseValueWithSuffix(const std::string& input, double& outValue);
+
+    void rotateTarget();
 };

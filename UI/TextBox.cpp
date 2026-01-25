@@ -1,15 +1,21 @@
 #include "TextBox.h"
 
-TextBox::TextBox(sf::Font& font, const sf::Vector2f& pos, const sf::Vector2f& size, const std::string& initialText)
+TextBox::TextBox(sf::Font& font, const sf::Vector2f& pos, const sf::Vector2f& boxSize, int textSize, const std::string& initialText, bool outline)
     : value(initialText) {
     box.setPosition(pos);
-    box.setSize(size);
-    box.setFillColor(sf::Color(40, 40, 50));
-    box.setOutlineThickness(1.f);
-    box.setOutlineColor(sf::Color(120, 120, 120));
-
+    box.setSize(boxSize);
+    if (outline) {
+        box.setFillColor(sf::Color(40, 40, 50));
+        box.setOutlineThickness(1.f);
+        box.setOutlineColor(sf::Color(120, 120, 120));
+    }
+    else {
+        box.setFillColor(sf::Color::Transparent);
+    }
+ 
     text.setFont(font);
-    text.setCharacterSize(16);
+    text.setCharacterSize(textSize * fontFactor);
+    text.setScale(sf::Vector2f(1.0f/ fontFactor, 1.0f/ fontFactor));
     text.setFillColor(sf::Color::White);
     text.setPosition(pos.x + 5.f, pos.y + 5.f);
     text.setString(value);
@@ -67,9 +73,24 @@ bool TextBox::contains(const sf::Vector2f& point) const {
 
 void TextBox::setPosition(const sf::Vector2f& pos) {
     box.setPosition(pos);
-    text.setPosition(pos.x + 5.f, pos.y + 5.f);
+    text.setPosition(pos.x, pos.y);
 }
 
 void TextBox::setSize(const sf::Vector2f& size) {
     box.setSize(size);
+}
+
+sf::RectangleShape TextBox::getTextBoundsRect()
+{
+    sf::FloatRect bounds = text.getGlobalBounds();
+
+    sf::RectangleShape rect;
+    rect.setPosition(bounds.left, bounds.top);
+    rect.setSize({ bounds.width, bounds.height });
+
+    rect.setFillColor(sf::Color::Transparent);
+    rect.setOutlineColor(sf::Color::Red);
+    rect.setOutlineThickness(1.f);
+
+    return rect;
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include "SFML/Graphics.hpp"
 
 inline constexpr int SCR_WIDTH = 2560;
 inline constexpr int SCR_HEIGHT = 1440;
