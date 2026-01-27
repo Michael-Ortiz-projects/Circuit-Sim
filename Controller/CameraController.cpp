@@ -12,14 +12,13 @@ void CameraController::onMousePress(const sf::Vector2i& pixelPos) {
 void CameraController::onMouseMove(const sf::Vector2i& pixelPos) {
     if (!dragging) return;
 
-    sf::Vector2f currentWorld =
-        window.mapPixelToCoords(pixelPos, canvasView);
+    sf::Vector2f currentWorld = window.mapPixelToCoords(pixelPos, canvasView);
 
     sf::Vector2f delta = grabWorldPos - currentWorld;
-    std::cout << Debug::printVector2f(delta);
+    //std::cout << Debug::printVector2f(delta);
     canvasView.move(delta);
     window.setView(canvasView);
-    Debug::debugPrintView(canvasView);
+    //Debug::debugPrintView(canvasView);
 }
 
 void CameraController::onMouseRelease() {

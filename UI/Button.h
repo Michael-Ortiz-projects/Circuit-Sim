@@ -15,6 +15,12 @@ enum class UICommand {
 	PlaceInductor,
 	PlaceSwitch,
 
+	OpenNewFile,
+	OpenFile,
+	SaveFile,
+	SaveFileAs,
+	ExitProgram,
+
 	ApplyEdit,
 	CancelEdit
 };

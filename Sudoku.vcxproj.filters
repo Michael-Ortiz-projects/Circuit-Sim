@@ -27,6 +27,8 @@
     <ClCompile Include="UI\Dialog.cpp" />
     <ClCompile Include="UI\TextBox.cpp" />
     <ClCompile Include="UI\ComponentInfoDisplay.cpp" />
+    <ClCompile Include="Controller\SaveManager.cpp" />
+    <ClCompile Include="Controller\SaveCircuitHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UI\AssetManager.h">
@@ -108,6 +110,12 @@
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="Controller\WireHandler.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\SaveManager.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\SaveCircuitHandler.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
   </ItemGroup>

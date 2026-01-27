@@ -1,10 +1,11 @@
 #include "Controller.h"
 #include "InputHandler.h"
 
-Controller::Controller(Circuit& Circuit, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer, UI_Manager& UI)
-	: circuit(Circuit), components(Components), cameraController(Window, Renderer.getCanvasView()), dragHandler(Components, Circuit.getWires()), placeHandler(Components, Circuit, Assets),
-	wireHandler(Circuit, Components), selectionBoxHandler(Components, Circuit, selection, shiftHeld), deleteHandler(Circuit, selection), editComponentHandler(UI, Components), currentHandler(nullptr),
-	command(UICommand::None), window(Window), renderer(Renderer), assets(Assets) { }
+Controller::Controller(Circuit& Circuit, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer, UI_Manager& UI, std::string& workingFilePath)
+	: circuit(Circuit), components(Components), cameraController(Window, Renderer.getCanvasView()), command(UICommand::None), window(Window), renderer(Renderer), assets(Assets),
+	dragHandler(Components, Circuit.getWires()), placeHandler(Components, Circuit, Assets),	wireHandler(Circuit, Components),
+	selectionBoxHandler(Components, Circuit, selection, shiftHeld), deleteHandler(Circuit, selection), editComponentHandler(UI, Components),
+	saveCircuitHandler(UI, saveManager, Circuit, workingFilePath), currentHandler(nullptr), workingFilePath(workingFilePath) { }
 
 void Controller::handleEvent(const sf::Event& event) {
 	switch (event.type) {
@@ -65,7 +66,6 @@ void Controller::handleEvent(const sf::Event& event) {
 void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 	if (event.button != sf::Mouse::Left) return;
 	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y }, renderer.getCanvasView());
-	Debug::printVector2f(worldMousePosition);
 	if (currentHandler != &editComponentHandler) {
 		HitResult hit = hitTest(sf::Vector2f(event.x, event.y));
 		hit.shiftHeld = shiftHeld;
@@ -214,6 +214,7 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 			}
 			break;
 		}
+
 	}
 	if (currentHandler) {
 		currentHandler->onKeyPress(event);
@@ -339,7 +340,6 @@ HitResult Controller::hitTest(const sf::Vector2f& mousePixel) {
 ElectricalConnection Controller::findClickedLead(const sf::Vector2f mousePixel) { // parameter is in pixel space, converts lead position to pixel space
 	for (const auto c : components) {
 		sf::Vector2i pixelPosA = window.mapCoordsToPixel(c.getLeadPositionA(), renderer.getCanvasView());
-		Debug::printVector2f(c.getLeadPositionA());
 		sf::Vector2f distanceA = sf::Vector2f(pixelPosA) - mousePixel;
 		if (distanceA.x * distanceA.x + distanceA.y * distanceA.y <= nodeSelectionRadius * nodeSelectionRadius) {
 			return { c.componentID, Lead::A };

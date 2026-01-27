@@ -1,0 +1,50 @@
+COMPONENT_COUNT 3
+
+COMPONENT
+id 0
+nodeA 0
+nodeB 0
+type 1
+label Voltage Source
+value 0
+position 572.75 531
+rotation 0
+current 0
+voltage 100
+isClosed 1
+wireA 0 18
+wireB 0 0
+END
+
+COMPONENT
+id 1
+nodeA 1
+nodeB 0
+type 1
+label Voltage Source
+value 0
+position 1036.25 758.25
+rotation 0
+current 0
+voltage 100
+isClosed 1
+wireA 1 4
+wireB 0 16
+END
+
+COMPONENT
+id 2
+nodeA 0
+nodeB 1
+type 1
+label Voltage Source
+value 0
+position 1115 433.5
+rotation 0
+current 0
+voltage 100
+isClosed 1
+wireA 0 14
+wireB 1 0
+END
+

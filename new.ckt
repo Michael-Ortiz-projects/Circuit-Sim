@@ -1,0 +1,140 @@
+CKT_VERSION 1
+
+CIRCUIT_STATE
+nextComponentID -858993459
+nextNodeID -858993459
+nextWireID -858993459
+END
+
+COMPONENTS
+COMPONENT_COUNT 1
+
+COMPONENT
+id -858993460
+nodeA -858993460
+nodeB -858993460
+type 1
+label Voltage Source
+value 0
+position 608.75 474.75
+rotation 0
+current 0
+voltage 100
+isClosed 1
+wireA -858993460 11
+wireB -858993460 0
+END
+
+END_COMPONENTS
+
+WIRES
+WIRE_COUNT 1
+
+WIRE
+id -858993460
+nextNodeID 12
+NODE_COUNT 12
+NODE
+id 0
+pos 660 480
+belongsTo -858993460
+isAnchor 1
+neighbors 1
+END
+NODE
+id 1
+pos 660 620
+belongsTo -858993460
+isAnchor 0
+neighbors 0 2
+END
+NODE
+id 2
+pos 840 620
+belongsTo -858993460
+isAnchor 0
+neighbors 1 3
+END
+NODE
+id 3
+pos 840 500
+belongsTo -858993460
+isAnchor 0
+neighbors 2 4
+END
+NODE
+id 4
+pos 940 500
+belongsTo -858993460
+isAnchor 0
+neighbors 3 5
+END
+NODE
+id 5
+pos 940 680
+belongsTo -858993460
+isAnchor 0
+neighbors 4 6
+END
+NODE
+id 6
+pos 760 680
+belongsTo -858993460
+isAnchor 0
+neighbors 5 7
+END
+NODE
+id 7
+pos 760 540
+belongsTo -858993460
+isAnchor 0
+neighbors 6 8
+END
+NODE
+id 8
+pos 980 540
+belongsTo -858993460
+isAnchor 0
+neighbors 7 9
+END
+NODE
+id 9
+pos 980 620
+belongsTo -858993460
+isAnchor 0
+neighbors 8 10
+END
+NODE
+id 10
+pos 540 620
+belongsTo -858993460
+isAnchor 0
+neighbors 9 11
+END
+NODE
+id 11
+pos 540 480
+belongsTo -858993460
+isAnchor 1
+neighbors 10
+END
+ENDWIRE
+
+END_WIRES
+
+ELECTRICAL_NODES
+ELECTRICAL_NODE_COUNT 1
+
+ELECTRICAL_NODE
+id -858993460
+CONNECTION_COUNT 2
+CONNECTION -858993460 1
+CONNECTION -858993460 0
+END
+
+END_ELECTRICAL_NODES
+
+COMPONENT_INDEX_MAP
+MAP_COUNT 1
+MAP -858993460 0
+END_COMPONENT_INDEX_MAP

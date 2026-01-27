@@ -141,6 +141,18 @@ void Circuit::updateComponentLead(int wireID, int wireNodeID, int ElectricalNode
     }
 }
 
+void Circuit::setCircuitData(const CircuitData& data) {
+    nextComponentID = data.nextComponentID;
+    nextNodeID = data.nextNodeID;
+    nextWireID = data.nextWireID;
+    isSimulating = data.isSimulating;
+
+    components = data.components;
+    wires = data.wires;
+    electricalNodes = data.electricalNodes;
+    componentIDToIndex = data.componentIDToIndex;
+}
+
 
 Component* Circuit::getComponent(int compID) {
     auto it = componentIDToIndex.find(compID);
@@ -172,6 +184,21 @@ ElectricalNode* Circuit::getElectricalNode(int electricalNodeID) {
 }
 
 std::unordered_map<int, ElectricalNode>& Circuit::getElectricalNodes() { return electricalNodes; }
+
+std::unordered_map<int, int> Circuit::getComponentIDToIndex() {
+    return componentIDToIndex;
+}
+int Circuit::getNextWireID() const {
+    return nextWireID;
+}
+
+int Circuit::getNextNodeID() const {
+    return nextNodeID;
+}
+
+int Circuit::getNextComponentID() const {
+    return nextComponentID;
+}
 
 bool Circuit::leadIsEmpty(ElectricalConnection& connection) { // returns false if connection is not valid
     switch (connection.lead) {

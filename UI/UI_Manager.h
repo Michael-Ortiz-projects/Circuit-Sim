@@ -51,8 +51,5 @@ private:
 
 	Renderer& renderer;
 	bool modalActive = false;
-	std::queue<UICommand> modalCommands;
-
-
 };
 

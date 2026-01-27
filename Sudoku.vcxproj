@@ -148,6 +148,8 @@
     <ClCompile Include="Controller\DeleteHandler.cpp" />
     <ClCompile Include="Controller\EditComponentHandler.cpp" />
     <ClCompile Include="Controller\PlaceHandler.cpp" />
+    <ClCompile Include="Controller\SaveCircuitHandler.cpp" />
+    <ClCompile Include="Controller\SaveManager.cpp" />
     <ClCompile Include="Controller\SelectionBoxHandler.cpp" />
     <ClCompile Include="Controller\WireHandler.cpp" />
     <ClCompile Include="Core\ElectricalNode.cpp" />
@@ -176,6 +178,8 @@
     <ClInclude Include="Controller\DeleteHandler.h" />
     <ClInclude Include="Controller\EditComponentHandler.h" />
     <ClInclude Include="Controller\PlaceHandler.h" />
+    <ClInclude Include="Controller\SaveCircuitHandler.h" />
+    <ClInclude Include="Controller\SaveManager.h" />
     <ClInclude Include="Controller\SelectionBoxHandler.h" />
     <ClInclude Include="Controller\WireHandler.h" />
     <ClInclude Include="Core\ElectricalNode.h" />

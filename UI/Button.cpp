@@ -8,6 +8,7 @@ Button::Button(sf::Font& fnt, const std::string& label, const sf::Vector2f& pos,
 	box.setSize(size);
 	box.setFillColor(normalColor);
 	box.setOutlineThickness(1);
+	box.setOutlineColor(normalColor);
 
 
 	text.setFont(font);

@@ -34,10 +34,4 @@ public:
 	void deleteComponents();
 
 	void setComponentType(ComponentType comp_type);
-
-	void setMode(EditMode m);
-
-
-private:
-	EditMode mode;
 };

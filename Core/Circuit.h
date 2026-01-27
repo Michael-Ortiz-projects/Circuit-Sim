@@ -7,6 +7,17 @@
 #include "Wire.h"
 #include "ElectricalNode.h"
 #include "../Config.h"
+struct CircuitData {
+    int nextComponentID;
+    int nextNodeID;
+    int nextWireID;
+    bool isSimulating = false;
+
+    std::vector<Component> components;
+    std::unordered_map<int, Wire> wires;
+    std::unordered_map<int, ElectricalNode> electricalNodes;
+    std::unordered_map<int, int> componentIDToIndex;
+};
 
 class Circuit {
 public:
@@ -26,6 +37,8 @@ public:
 
     void updateComponentLead(int wireID, int wireNodeID, int ElectricalNodeID, const ElectricalConnection& connection);
 
+    void setCircuitData(const CircuitData& data);
+
 
     Component* getComponent(int compID);
     std::vector<Component>& getComponents();
@@ -36,11 +49,20 @@ public:
     ElectricalNode* getElectricalNode(int electricalNodeID);
     std::unordered_map<int, ElectricalNode>& getElectricalNodes();
 
+    std::unordered_map<int, int> getComponentIDToIndex();
+
+    int getNextWireID() const;
+    int getNextNodeID() const;
+    int getNextComponentID() const;
+
     bool leadIsEmpty(ElectricalConnection& connection);
 
+
+    
 private:
 
     sf::Vector2f snapPositionToGrid(const sf::Vector2f& position);
+
 
     int nextComponentID = 0;
     int nextNodeID = 0;
@@ -51,6 +73,5 @@ private:
     std::vector<Component> components;
     std::unordered_map<int, Wire> wires;
     std::unordered_map<int, ElectricalNode> electricalNodes;
-
     std::unordered_map<int, int> componentIDToIndex;
 };

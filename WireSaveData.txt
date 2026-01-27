@@ -1,0 +1,210 @@
+WIRE_COUNT 2
+
+WIRE
+id 0
+nextNodeID 23
+NODE_COUNT 23
+NODE
+id 0
+pos 640 540
+belongsTo 0
+isAnchor 1
+neighbors 1
+END
+NODE
+id 1
+pos 760 540
+belongsTo 0
+isAnchor 0
+neighbors 0 2
+END
+NODE
+id 2
+pos 760 660
+belongsTo 0
+isAnchor 0
+neighbors 1 3
+END
+NODE
+id 3
+pos 920 660
+belongsTo 0
+isAnchor 0
+neighbors 2 4
+END
+NODE
+id 4
+pos 920 500
+belongsTo 0
+isAnchor 0
+neighbors 3 5
+END
+NODE
+id 5
+pos 700 500
+belongsTo 0
+isAnchor 0
+neighbors 4 6
+END
+NODE
+id 6
+pos 700 620
+belongsTo 0
+isAnchor 0
+neighbors 5 7 22
+END
+NODE
+id 7
+pos 860 620
+belongsTo 0
+isAnchor 0
+neighbors 6 8
+END
+NODE
+id 8
+pos 860 560
+belongsTo 0
+isAnchor 0
+neighbors 7 9
+END
+NODE
+id 9
+pos 740 560
+belongsTo 0
+isAnchor 0
+neighbors 8 15
+END
+NODE
+id 10
+pos 740 440
+belongsTo 0
+isAnchor 0
+neighbors 11 15
+END
+NODE
+id 11
+pos 760 440
+belongsTo 0
+isAnchor 0
+neighbors 10 12
+END
+NODE
+id 12
+pos 760 340
+belongsTo 0
+isAnchor 0
+neighbors 11 13
+END
+NODE
+id 13
+pos 1060 340
+belongsTo 0
+isAnchor 0
+neighbors 12 14
+END
+NODE
+id 14
+pos 1060 440
+belongsTo 0
+isAnchor 1
+neighbors 13
+END
+NODE
+id 15
+pos 740 460
+belongsTo 0
+isAnchor 0
+neighbors 17 9 10
+END
+NODE
+id 16
+pos 1100 760
+belongsTo 0
+isAnchor 1
+neighbors 17
+END
+NODE
+id 17
+pos 1100 460
+belongsTo 0
+isAnchor 0
+neighbors 16 15
+END
+NODE
+id 18
+pos 520 540
+belongsTo 0
+isAnchor 1
+neighbors 19
+END
+NODE
+id 19
+pos 520 920
+belongsTo 0
+isAnchor 0
+neighbors 18 20
+END
+NODE
+id 20
+pos 960 920
+belongsTo 0
+isAnchor 0
+neighbors 19 21
+END
+NODE
+id 21
+pos 960 820
+belongsTo 0
+isAnchor 0
+neighbors 20 22
+END
+NODE
+id 22
+pos 700 820
+belongsTo 0
+isAnchor 0
+neighbors 21 6
+END
+ENDWIRE
+
+WIRE
+id 1
+nextNodeID 5
+NODE_COUNT 5
+NODE
+id 0
+pos 1180 440
+belongsTo 1
+isAnchor 1
+neighbors 1
+END
+NODE
+id 1
+pos 1180 580
+belongsTo 1
+isAnchor 0
+neighbors 0 2
+END
+NODE
+id 2
+pos 740 580
+belongsTo 1
+isAnchor 0
+neighbors 1 3
+END
+NODE
+id 3
+pos 740 760
+belongsTo 1
+isAnchor 0
+neighbors 2 4
+END
+NODE
+id 4
+pos 980 760
+belongsTo 1
+isAnchor 1
+neighbors 3
+END
+ENDWIRE
+

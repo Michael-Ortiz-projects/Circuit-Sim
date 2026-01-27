@@ -49,6 +49,7 @@ public:
 	bool selected;
 	
 	Wire(sf::Vector2f initialPosition, int id);
+	Wire(sf::Vector2f initialPosition, int id, const std::map<int, Node>& nodes, int nextNode);
 
 	int createNode(sf::Vector2f pos);
 
@@ -116,7 +117,7 @@ private:
 	sf::Vector2f firstPreview;
 	sf::Vector2f secondPreview;
 	int currentStemNode;
-	PreviewOrientation previewOrientation;
+	PreviewOrientation previewOrientation = PreviewOrientation::None;
 	float axisTriggerDistance = 6.0f;
 };
 

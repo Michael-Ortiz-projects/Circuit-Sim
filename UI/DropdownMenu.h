@@ -3,7 +3,8 @@
 #include "Button.h"
 
 enum class MenuID {
-	Place
+	Place,
+	File
 };
 
 class DropdownMenu {

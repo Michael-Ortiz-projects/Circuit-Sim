@@ -45,7 +45,3 @@ void PlaceHandler::deleteComponents() {
 void PlaceHandler::setComponentType(ComponentType comp_type) {
 	type = comp_type;
 }
-
-void PlaceHandler::setMode(EditMode m) {
-	mode = m;
-}

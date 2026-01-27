@@ -15,25 +15,24 @@
 #include "UI/UI_Manager.h"
 #include <fstream>
 
-//NEXT DO ROTATION AND THEN LOOK INTO HOW IM GOING TO SAVE THIS MONSTER IN A FILE
-int main()
-{
+//WORK ON CIRCUIT SIMULATION
+
+int main() {
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Circuit Sim", sf::Style::None);
     Grid grid(gridSize);
 
     AssetManager assets;
     Circuit circuit;
-    Wire wire(sf::Vector2f(520, 520), 0);
     
+    
+    std::string currentWorkingFilePath;
     std::vector<SchematicComponent> schematic_components;
 
     Renderer renderer(window, assets, grid);
 
     UI_Manager UI(renderer);
     
-    Controller controller(circuit, schematic_components, window, assets, renderer, UI);
-
-   
+    Controller controller(circuit, schematic_components, window, assets, renderer, UI, currentWorkingFilePath);
 
     UI.initialize(assets);
 
@@ -51,35 +50,39 @@ int main()
         UICommand cmd;
 
         while (UI.pollCommand(cmd)) {
-            
+            CircuitData data;
             switch (cmd) {
             case UICommand::PlaceVoltageSource:
-                Debug::setHandler("PlaceHandler");
-                controller.setHandler(&controller.placeHandler, cmd);
-                break;
             case UICommand::PlaceResistor:
-                Debug::setHandler("PlaceHandler");
-                controller.setHandler(&controller.placeHandler, cmd);
-                break;
             case UICommand::PlaceCurrentSource:
-                Debug::setHandler("PlaceHandler");
-                controller.setHandler(&controller.placeHandler, cmd);
-                break;
             case UICommand::PlaceCapacitor:
-                Debug::setHandler("PlaceHandler");
-                controller.setHandler(&controller.placeHandler, cmd);
-                break;
             case UICommand::PlaceInductor:
-                Debug::setHandler("PlaceHandler");
-                controller.setHandler(&controller.placeHandler, cmd);
-                break;
             case UICommand::PlaceSwitch:
                 Debug::setHandler("PlaceHandler");
                 controller.setHandler(&controller.placeHandler, cmd);
                 break;
-            case UICommand::ToggleMenu:
+
+            case UICommand::OpenNewFile:
+                circuit.setCircuitData(data);
+                currentWorkingFilePath.clear();
                 break;
-            case UICommand::None:
+            case UICommand::OpenFile:
+                controller.saveCircuitHandler.loadDialog();
+                break;
+            case UICommand::SaveFile:
+                if (currentWorkingFilePath.empty())
+                    controller.saveCircuitHandler.saveDialog();
+                else {
+                    controller.saveCircuitHandler.saveCurrentWorkingFile();
+                }
+                break;
+            case UICommand::SaveFileAs:
+                controller.saveCircuitHandler.saveDialog();
+                break;
+            case UICommand::ExitProgram:
+                window.close();
+                break;
+            default:
                 break;
             }
         }

@@ -9,6 +9,10 @@ Wire::Wire(sf::Vector2f initialPosition, int id) {
     selected = false;
 }
 
+Wire::Wire(sf::Vector2f initialPosition, int id, const std::map<int, Node>& nodes, int nextNode)
+    : ID(id), graph(nodes), nextNodeID(nextNode), currentStemNode(0), selected(false) { }
+
+
 int Wire::createNode(sf::Vector2f pos) {
     int id = nextNodeID++;
     Node n;

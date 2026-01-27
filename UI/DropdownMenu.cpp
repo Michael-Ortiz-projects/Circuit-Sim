@@ -73,7 +73,7 @@ bool DropdownMenu::poll(UICommand& outputCommand) {
 void DropdownMenu::updateMenuLayout() {
 	float buttonHeight = parentButton.box.getSize().y;
 
-	float x = parentButton.box.getPosition().x;
+	float x = parentButton.box.getPosition().x + 5;
 	float y_initial = parentButton.box.getPosition().y + buttonHeight;
 	float y = y_initial + panelMargin;
 

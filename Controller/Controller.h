@@ -12,6 +12,8 @@
 #include "CameraController.h"
 #include "../Geometry.h"
 #include "../UI/ComponentInfoDisplay.h"
+#include "SaveCircuitHandler.h"
+
 class InputHandler;
 
 
@@ -25,10 +27,11 @@ public:
     SelectionBoxHandler selectionBoxHandler;
     DeleteHandler deleteHandler;
     EditComponentHandler editComponentHandler;
+    SaveCircuitHandler saveCircuitHandler;
 
     Selection selection;
 
-    Controller(Circuit& circ, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer, UI_Manager& UI);
+    Controller(Circuit& circ, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer, UI_Manager& UI, std::string& workingFilePath);
 
     void handleEvent(const sf::Event& event);
 
@@ -68,7 +71,9 @@ private:
     UICommand command;
     Circuit& circuit;
     std::vector<SchematicComponent>& components;
+    SaveManager saveManager;
     
+    std::string& workingFilePath;
     sf::RenderWindow& window;
     Renderer& renderer;
     AssetManager& assets;

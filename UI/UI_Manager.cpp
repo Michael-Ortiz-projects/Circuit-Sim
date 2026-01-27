@@ -5,7 +5,8 @@ UI_Manager::UI_Manager(Renderer& rend)
 	: renderer(rend) { }
 
 void UI_Manager::initialize(AssetManager& assets) {
-	menu_map.try_emplace(MenuID::Place, assets.mainFont, "Place", sf::Vector2f(20, 0), sf::Vector2f(70, 25));
+	menu_map.try_emplace(MenuID::Place, assets.mainFont, "Place", sf::Vector2f(82, 0), sf::Vector2f(80, 25));
+	menu_map.try_emplace(MenuID::File, assets.mainFont, "File", sf::Vector2f(0, 0), sf::Vector2f(80, 25));
 
 	menu_map.at(MenuID::Place).addOption("Voltage Source", UICommand::PlaceVoltageSource);
 	menu_map.at(MenuID::Place).addOption("Resistor", UICommand::PlaceResistor);
@@ -13,6 +14,12 @@ void UI_Manager::initialize(AssetManager& assets) {
 	menu_map.at(MenuID::Place).addOption("Capacitor", UICommand::PlaceCapacitor);
 	menu_map.at(MenuID::Place).addOption("Inductor", UICommand::PlaceInductor);
 	menu_map.at(MenuID::Place).addOption("Switch", UICommand::PlaceSwitch);
+
+	menu_map.at(MenuID::File).addOption("New", UICommand::OpenNewFile);
+	menu_map.at(MenuID::File).addOption("Open", UICommand::OpenFile);
+	menu_map.at(MenuID::File).addOption("Save", UICommand::SaveFile);
+	menu_map.at(MenuID::File).addOption("Save As", UICommand::SaveFileAs);
+	menu_map.at(MenuID::File).addOption("Exit", UICommand::ExitProgram);
 
 }
 
