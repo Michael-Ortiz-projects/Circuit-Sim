@@ -1,20 +1,25 @@
 #pragma once
 #include "SFML/Graphics.hpp"
-#include "../Core/Component.h"
+#include "../Core/NetlistComponent.h"
 #include "AssetManager.h"
 #include "../Config.h"
 #include "../Debug.h"
 #include "ComponentInfoDisplay.h"
 #include <optional>
+
+struct SchematicTerminal {
+    int terminalID;
+    sf::Vector2f offset;
+    WireNodeReference wireNodeReference;
+};
+
 class SchematicComponent {
 public:
     int componentID;
     bool selected = false;
+    std::vector<SchematicTerminal> schematicTerminals;
 
-    WireNodeReference A_WireNodeReference;
-    WireNodeReference B_WireNodeReference;    
-
-    SchematicComponent(const Component& comp, sf::Font& font);
+    SchematicComponent(const NetlistComponent& comp, sf::Vector2f canvasPos, sf::Font& font);
 
     void setPosition(const sf::Vector2f& pos);
     void setRotation(float rot);
@@ -36,13 +41,9 @@ public:
     sf::RectangleShape& getHitBox();
     ComponentType getType() const;
     ComponentInfoDisplay& getComponentInfoDisplay();
+    std::string& getLabel() { return label; }
+    double& getValue() { return value; }
 
-    sf::Vector2f getLeadPositionA() const;
-    sf::Vector2f getLeadPositionB() const;
-
-
-    bool nearLeadA(sf::Vector2f& point);
-    bool nearLeadB(sf::Vector2f& point);
 
     
 
@@ -59,9 +60,8 @@ private:
     bool dragging = false;
     sf::Vector2f dragOffset;
 
-    sf::Vector2f leadOffsetA = { -60.f, 0.f };
-    sf::Vector2f leadOffsetB = { 60.f, 0.f };
 
     ComponentInfoDisplay display;
+    sf::Vector2f displayOffset;
 };
 

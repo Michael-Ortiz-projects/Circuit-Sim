@@ -1,11 +1,11 @@
 #include "Controller.h"
 #include "InputHandler.h"
 
-Controller::Controller(Circuit& Circuit, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer, UI_Manager& UI, std::string& workingFilePath)
-	: circuit(Circuit), components(Components), cameraController(Window, Renderer.getCanvasView()), command(UICommand::None), window(Window), renderer(Renderer), assets(Assets),
-	dragHandler(Components, Circuit.getWires()), placeHandler(Components, Circuit, Assets),	wireHandler(Circuit, Components),
-	selectionBoxHandler(Components, Circuit, selection, shiftHeld), deleteHandler(Circuit, selection), editComponentHandler(UI, Components),
-	saveCircuitHandler(UI, saveManager, Circuit, workingFilePath), currentHandler(nullptr), workingFilePath(workingFilePath) { }
+Controller::Controller(Circuit& Circuit, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer, UI_Manager& UI, std::string& workingFilePath)
+	: circuit(Circuit), cameraController(Window, Renderer.getCanvasView()), command(UICommand::None), window(Window), renderer(Renderer), assets(Assets),
+	dragHandler(Circuit.getSchematicComponents(), Circuit.getWires()), placeHandler(Circuit, Assets),	wireHandler(Circuit, Circuit.getSchematicComponents()),
+	selectionBoxHandler(Circuit.getSchematicComponents(), Circuit, selection, shiftHeld), deleteHandler(Circuit, selection), editComponentHandler(UI, Circuit),
+	saveCircuitHandler(UI, saveManager, Circuit, Assets, workingFilePath), currentHandler(nullptr), workingFilePath(workingFilePath) { }
 
 void Controller::handleEvent(const sf::Event& event) {
 	switch (event.type) {
@@ -155,17 +155,15 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 	if (currentHandler != &editComponentHandler) {
 		switch (event.code) {
 		case sf::Keyboard::R:
-			if (circuit.getComponents().empty()) return;
-			for (Component& comp : circuit.getComponents()) {
+			if (circuit.getNetlistComponents().empty()) return;
+			for (auto& comp : circuit.getSchematicComponents()) {
 				if (comp.selected) {
 					currentHandler = &editComponentHandler;
 					Debug::setHandler("EditComponentHandler");
-					editComponentHandler.setTarget(&comp);
+					editComponentHandler.setTarget(circuit.getNetlistComponent(comp));
 					break;
 				}
 			}
-			currentHandler = &editComponentHandler;
-			Debug::setHandler("EditComponentHandler");
 			break;
 
 		case sf::Keyboard::LShift:
@@ -179,12 +177,13 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 			break;
 
 		case sf::Keyboard::Enter:
-			if (circuit.getComponents().empty()) return;
-			for (Component& comp : circuit.getComponents()) {
+			if (circuit.getNetlistComponents().empty()) return;
+			for (SchematicComponent& comp : circuit.getSchematicComponents()) {
+				
 				if (comp.selected) {
 					currentHandler = &editComponentHandler;
 					Debug::setHandler("EditComponentHandler");
-					editComponentHandler.setTarget(&comp);
+					editComponentHandler.setTarget(circuit.getNetlistComponent(comp));
 					editComponentHandler.openEditDialog();
 					break;
 				}
@@ -209,10 +208,15 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 			break;
 
 		case sf::Keyboard::F3:
-			for (auto& c : circuit.getComponents()) {
+			for (auto& c : circuit.getNetlistComponents()) {
 				Debug::componentData(c);
 			}
 			break;
+
+		case sf::Keyboard::F4:
+			circuit.getSimulator().setSystem(circuit.getNetlistComponents(), circuit.getElectricalNodes());
+			std::cout << "Controller called circuit.getSimulator().buildMNAMap()\n";
+			return;
 		}
 
 	}
@@ -265,6 +269,10 @@ void Controller::setHandler(InputHandler* handler, UICommand cmd) {
 			placeHandler.setComponentType(ComponentType::Switch);
 			break;
 
+		case UICommand::PlaceGround:
+			placeHandler.setComponentType(ComponentType::Ground);
+			break;
+
 		case UICommand::ToggleMenu:
 			break;
 
@@ -275,25 +283,12 @@ void Controller::setHandler(InputHandler* handler, UICommand cmd) {
 	currentHandler = handler;
 }
 
-void Controller::rebuildSchematicComponents() {
-	components.clear();
-
-	for (const auto& comp : circuit.getComponents()) {
-
-		SchematicComponent c(comp, assets.mainFont);
-		sf::Vector2f target = comp.position;
-		sf::Vector2f snapped(
-			std::round(target.x / gridSize) * gridSize,
-			std::round(target.y / gridSize) * gridSize
-		);
-		c.setPosition(snapped);
-		c.setTexture(assets.getTexture(comp.type));
-		c.setValue(comp.value);
-		c.setLabel(comp.label);
-		c.selected = comp.selected;
-		c.setRotation(comp.rotation);
-		components.emplace_back(c);
-		//std::cout << "rebuild a component\n";
+void Controller::rebuildSchematicComponents(const sf::Event& event) {
+	if (!event.type) return;
+	for (const auto& comp : circuit.getNetlistComponents()) {
+		SchematicComponent* c = circuit.getSchematicComponent(comp);
+		c->setValue(comp.value);
+		c->setLabel(comp.label);
 	}
 }
 
@@ -305,10 +300,10 @@ InputHandler* Controller::getHandler() {
 HitResult Controller::hitTest(const sf::Vector2f& mousePixel) {
 	HitResult result;
 
-	if (auto lead = findClickedLead(mousePixel); lead.lead != Lead::Null) {
+	if (auto lead = findClickedLead(mousePixel); lead.componentID != -1) {
 		result.type = HitResult::Type::Lead;
 		result.lead = lead;
-		std::cout << "hitTest() returned Lead hit\n";
+		std::cout << "hitTest() returned Lead hit on component " << lead.componentID << " and Terminal " << lead.terminalID << "\n";
 		return result;
 	}
 
@@ -338,22 +333,18 @@ HitResult Controller::hitTest(const sf::Vector2f& mousePixel) {
 }
 
 ElectricalConnection Controller::findClickedLead(const sf::Vector2f mousePixel) { // parameter is in pixel space, converts lead position to pixel space
-	for (const auto c : components) {
-		sf::Vector2i pixelPosA = window.mapCoordsToPixel(c.getLeadPositionA(), renderer.getCanvasView());
-		sf::Vector2f distanceA = sf::Vector2f(pixelPosA) - mousePixel;
-		if (distanceA.x * distanceA.x + distanceA.y * distanceA.y <= nodeSelectionRadius * nodeSelectionRadius) {
-			return { c.componentID, Lead::A };
-		}
 
-		sf::Vector2i pixelPosB = window.mapCoordsToPixel(c.getLeadPositionB(), renderer.getCanvasView());
-
-		sf::Vector2f distanceB = sf::Vector2f(pixelPosB) - mousePixel;
-		if (distanceB.x * distanceB.x + distanceB.y * distanceB.y <= nodeSelectionRadius * nodeSelectionRadius) {
-			
-			return { c.componentID, Lead::B };
+	for (const auto& c : circuit.getSchematicComponents()) {
+		for (const auto& T : c.schematicTerminals) {
+			sf::Vector2f terminalWorldPos = c.getPosition() + T.offset;
+			sf::Vector2i terminalPixelPosition = window.mapCoordsToPixel(terminalWorldPos, renderer.getCanvasView());
+			sf::Vector2f distance = sf::Vector2f(terminalPixelPosition) - mousePixel;
+			if (distance.x * distance.x + distance.y * distance.y <= nodeSelectionRadius * nodeSelectionRadius) {
+				return { c.componentID, T.terminalID };
+			}
 		}
 	}
-	return { -1, Lead::Null };
+	return { -1, -1 };
 }
 
 WireNodeReference Controller::findClickedNode(const sf::Vector2f mousePixel) {// parameter is in pixel space, converts node position to pixel space, returns wireID, nodeID
@@ -401,12 +392,12 @@ WireHit Controller::findClickedSegment(const sf::Vector2f mousePixel) {
 	return best;
 }
 
-Component* Controller::findComponentAt(const sf::Vector2f mousePixel) {
+SchematicComponent* Controller::findComponentAt(const sf::Vector2f mousePixel) {
 	sf::Vector2f mouseWorld = window.mapPixelToCoords(sf::Vector2i(mousePixel), renderer.getCanvasView());
 
-	for (auto& comp : components) {
+	for (auto& comp : circuit.getSchematicComponents()) {
 		if (comp.hitBoxContainsPoint(mouseWorld)) {
-			return circuit.getComponent(comp.componentID);
+			return &comp;
 		}
 	}
 	return nullptr;

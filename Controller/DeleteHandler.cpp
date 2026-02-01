@@ -17,28 +17,21 @@ bool DeleteHandler::shouldRelease() const {
 
 void DeleteHandler::deleteSelection() {
 	Selection simplified_selection = simplifySelection();
-	
 	deleteComponents(simplified_selection.componentIDs);
 	deleteSegments(simplified_selection.segments);	
-	deleteNodes(simplified_selection.nodes);	
+	deleteNodes(simplified_selection.nodes);
 	deleteWires(simplified_selection.wireIDs);
 	updateWires();
 }
 
 void DeleteHandler::deleteComponents(std::unordered_set<int> component_IDs) {
 	for (const auto ID : component_IDs) {
-		Component& c = *circuit.getComponent(ID);
-		ElectricalConnection connection_A(ID, Lead::A);
-		ElectricalConnection connection_B(ID, Lead::B);
+		NetlistComponent& c = *circuit.getNetlistComponent(ID);
+		
 
-		if (c.nodeA != -1) {
-			circuit.removeConnectionFromElectricalNode(ID, connection_A);
-			circuit.getWire(c.A_WireNodeReference.wireID)->getNode(c.A_WireNodeReference.nodeID).isAnchor = false;
-		}
-
-		if (c.nodeB != -1) {
-			circuit.removeConnectionFromElectricalNode(ID, connection_B);
-			circuit.getWire(c.B_WireNodeReference.wireID)->getNode(c.B_WireNodeReference.nodeID).isAnchor = false;
+		for (NetlistTerminal& T : c.terminals) {
+			ElectricalConnection connection(c.id, T.terminalID);
+			circuit.removeConnectionFromElectricalNode(T.electricalNode, connection);
 		}
 		circuit.removeComponent(ID);
 	}
@@ -60,8 +53,10 @@ void DeleteHandler::deleteNodes(std::unordered_set<WireNodeReference> nodes) {
 }
 
 void DeleteHandler::deleteWires(std::unordered_set<int> wire_IDs) {
+	//std::cout << "Starting deleteWires()\n";
 	for (const int wire_ID : wire_IDs) {
 		bool updateComponents = true;
+		//std::cout << "Erasing Wire: " << wire_ID << "\n";
 		circuit.eraseWire(wire_ID, updateComponents);
 	}
 }
@@ -105,7 +100,7 @@ Selection DeleteHandler::simplifySelection() { // returns the minimum amount of 
 }
 
 void DeleteHandler::updateWires() {
-	std::cout << " update Wires started\n";
+	//std::cout << " update Wires started\n";
 
 	for (int wireID : modifiedWires) {
 		Wire* oldWire = circuit.getWire(wireID);
@@ -118,25 +113,21 @@ void DeleteHandler::updateWires() {
 
 		auto sections = findWireSections(*oldWire);
 		if (sections.size() <= 1) {
-			std::cout << "only 1 section\n";
+			//std::cout << "only 1 section\n";
 			continue;
 		}
 
 		//capture components attached to this section of the wire
-		std::vector < ComponentAttachment > attachments;
+		std::vector <ComponentAttachment> attachments;
 		const ElectricalNode* eNode = circuit.getElectricalNode(wireID);
 		
 		for (const ElectricalConnection& connection : eNode->connections) {
-			const Component* comp = circuit.getComponent(connection.componentID);
+			const SchematicComponent* comp = circuit.getSchematicComponent(connection.componentID);
 			if (!comp) continue;
 
-			if (connection.lead == Lead::A && comp->A_WireNodeReference.wireID == wireID) {
-				attachments.push_back({ connection.componentID, Lead::A, comp->A_WireNodeReference.nodeID });
-			}
+			attachments.push_back({ comp->componentID, connection.terminalID, comp->schematicTerminals.at(connection.terminalID).wireNodeReference.nodeID});
+			//std::cout << "Attachments.pushed back(" << comp->componentID << " " << connection.terminalID << " " << comp->schematicTerminals.at(connection.terminalID).wireNodeReference.nodeID << "\n";
 
-			if (connection.lead == Lead::B && comp->B_WireNodeReference.wireID == wireID) {
-				attachments.push_back({ connection.componentID, Lead::B, comp->B_WireNodeReference.nodeID });
-			}
 		}
 		std::map<int, Node> oldGraph = oldWire->getGraph();
 		circuit.eraseWire(wireID, true);
@@ -144,7 +135,7 @@ void DeleteHandler::updateWires() {
 		for (auto& section : sections) {
 			if (section.size() < 2) continue;
 			rebuildWireFromSection(section, attachments, oldGraph);
-			std::cout << "Rebuilding Wire from Section\n";
+			//std::cout << "Rebuilding Wire from Section\n";
 		}
 	}
 
@@ -229,20 +220,22 @@ void DeleteHandler::rebuildWireFromSection(WireSection& section, std::vector<Com
 
 	// update leads and eNodes
 	for (const auto& a : attachments) {
-		if (!idMap.contains(a.oldNodeID)) continue;
-		Component* comp = circuit.getComponent(a.componentID);
+		if (!idMap.contains(a.oldNodeID)) {
+			std::cout << "Continued because idMap does not contain " << a.oldNodeID << "\n";
+			continue;
+		}
+		NetlistComponent* ncomp = circuit.getNetlistComponent(a.componentID);
+		SchematicComponent* scomp = circuit.getSchematicComponent(*ncomp);
+		circuit.updateComponentTerminal({ -1, -1 }, -1, { a.componentID, a.terminalID });
 
-		//detach component from previous eNode
-		circuit.updateComponentLead(-1, -1, -1, { a.componentID, a.lead });
-
-		//update WireNode Ref
-		WireNodeReference& reference = (a.lead == Lead::A) ? comp->A_WireNodeReference : comp->B_WireNodeReference;
-
+		WireNodeReference& reference = scomp->schematicTerminals.at(a.terminalID).wireNodeReference;
 		reference.wireID = newWireID;
 		reference.nodeID = idMap[a.oldNodeID];
 
-		newWire.getNode(idMap[a.oldNodeID]).isAnchor = true;
-		circuit.getElectricalNode(newWireID)->connections.push_back({ a.componentID, a.lead });
+		circuit.updateComponentTerminal(reference, reference.wireID, { a.componentID, a.terminalID });
+
+		circuit.getElectricalNode(newWireID)->connections.push_back({ a.componentID, a.terminalID });
+
 	}	
 }
 // order for deletion components -> wires -> segments -> nodes -> then cleanup wires and check for splits and all that

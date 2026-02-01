@@ -14,6 +14,7 @@ enum class UICommand {
 	PlaceCapacitor,
 	PlaceInductor,
 	PlaceSwitch,
+	PlaceGround,
 
 	OpenNewFile,
 	OpenFile,

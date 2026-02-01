@@ -2,39 +2,79 @@
 #include <algorithm>
 #include <iostream>
 
-int Circuit::addComponent(const Component& comp, const sf::Vector2f& canvasPos) {
-    int id = nextComponentID++;
-    Component c = comp;
-    c.position = canvasPos;
-    c.id = id;
-    c.value = 0;
-    componentIDToIndex[id] = static_cast<int>(components.size());
-    c.nodeA = comp.nodeA; 
-    c.nodeB = comp.nodeB;
-    c.A_WireNodeReference = { -1, -1 };
-    c.B_WireNodeReference = { -1, -1 };
+Circuit::Circuit(AssetManager& AssetManager)
+    : assets(AssetManager) { }
 
-    components.push_back(c);
+int Circuit::addComponent(ComponentType type, sf::Vector2f position) {
+    std::cout << "addComponent() started\n";
+    int newCompID = addNetlistComponent(type);
+    std::cout << "Debug A\n";
+    addSchematicComponent(*getNetlistComponent(newCompID), position);
+    std::cout << "Debug B\n";
+    return newCompID;
+    
+}
+int Circuit::addNetlistComponent(ComponentType type) {
+    std::cout << "addNetlistComponent() started\n";
+    NetlistComponent c(type, 0);
+    std::cout << "Debug X\n";
+    c.id = nextComponentID++;
+    c.label = Debug::ComponentType_to_String(type);
+    std::cout << "Debug Y\n";
 
-    return id;
+    componentIDToIndex[c.id] = static_cast<int>(netlistComponents.size());
+    netlistComponents.push_back(c);
+    std::cout << "Debug Z\n";
+
+    return c.id;
+}
+
+void Circuit::addSchematicComponent(const NetlistComponent& comp, const sf::Vector2f& canvasPos) {
+    SchematicComponent c(comp, canvasPos, assets.mainFont);
+    schematicComponents.push_back(c);
 }
 
 bool Circuit::removeComponent(int compID) {
-    auto it = componentIDToIndex.find(compID);
-    if (it == componentIDToIndex.end()) return false;
+    return removeNetlistComponent(compID);
+}
 
-    int index = it->second;
+bool Circuit::removeNetlistComponent(int compID) {
+    NetlistComponent* comp = getNetlistComponent(compID);
+    if (!comp) return false;
 
-    components.erase(components.begin() + index);
-    componentIDToIndex.erase(it);
-
-    componentIDToIndex.clear();
-    for (int i = 0; i < components.size(); ++i) {
-        componentIDToIndex[components[i].id] = i;
+    for (NetlistTerminal& t : comp->terminals) {
+        ElectricalConnection connection(compID, t.terminalID);
+        removeConnectionFromElectricalNode(t.electricalNode,connection);
     }
+
+    removeSchematicComponent(compID);
+
+    auto it = std::find_if(netlistComponents.begin(), netlistComponents.end(),
+        [&](const NetlistComponent& c) { return c.id == compID; });
+
+    netlistComponents.erase(it);
+
+    rebuildComponentIndexMap();
 
     return true;
 }
+
+bool Circuit::removeSchematicComponent(int compID) {
+    size_t before = schematicComponents.size();
+
+    schematicComponents.erase(
+        std::remove_if(
+            schematicComponents.begin(),
+            schematicComponents.end(),
+            [&](const SchematicComponent& s) {
+                return s.componentID == compID;
+            }),
+        schematicComponents.end()
+    );
+
+    return schematicComponents.size() != before;
+}
+
 
 int Circuit::createWire(sf::Vector2f position) {
     wires.emplace(nextWireID, Wire(snapPositionToGrid(position), nextWireID));
@@ -45,23 +85,48 @@ int Circuit::createWire(sf::Vector2f position) {
 void Circuit::eraseWire(int wireID, bool updateConnectedComponents) {
     auto wireIt = wires.find(wireID);
     if (wireIt == wires.end()) return;
-
+    //std::cout << "Erase Wire Debug Section 1\n";
     auto eNodeIt = electricalNodes.find(wireID);
-    if (eNodeIt == electricalNodes.end()) {
-        wires.erase(wireIt);
-        return;
-    }
+    if (eNodeIt != electricalNodes.end()) {
+        //std::cout << "Erase Wire Debug Section 2\n";
 
-    ElectricalNode& eNode = eNodeIt->second;
+        ElectricalNode& eNode = eNodeIt->second;
+        //std::cout << "Erase Wire Debug Section 3\n";
 
-    if (updateConnectedComponents) {
-        for (ElectricalConnection& conn : eNode.connections) {
-            updateComponentLead(-1, -1, -1, conn);
+        if (updateConnectedComponents) {
+            //std::cout << "Erase Wire Debug Section 4\n";
+
+            auto connections = eNode.connections; // COPY
+            //std::cout << "Erase Wire Debug Section 5\n";
+
+            for (const ElectricalConnection& conn : connections) {
+                //std::cout << "Erase Wire Debug Section 6\n";
+
+                if (getNetlistComponent(conn.componentID)) {
+                    //std::cout << "Erase Wire Debug Section 7\n";
+
+                    NetlistComponent* ncomp = getNetlistComponent(conn.componentID);
+                    if (!ncomp) continue;
+
+                    // detach terminal
+                    NetlistTerminal& term = ncomp->terminals.at(conn.terminalID);
+                    term.electricalNode = -1;
+
+                    // update schematic
+                    if (SchematicComponent* s = getSchematicComponent(conn.componentID)) {
+                        s->schematicTerminals.at(conn.terminalID).wireNodeReference = { -1, -1 };
+                    }
+                    //std::cout << "Erase Wire Debug Section 8\n";
+
+                }
+            }
         }
+        //std::cout << "Erase Wire Debug Section 9\n";
+
+
+        electricalNodes.erase(eNodeIt);
     }
-
-
-    electricalNodes.erase(eNodeIt);
+    //std::cout << "Erase Wire Debug Section 9\n";
 
     wires.erase(wireIt);
 }
@@ -76,19 +141,9 @@ void Circuit::absorbElectricalNode(int primaryID, int absorbedID) {
     ElectricalNode& absorbed = electricalNodes.at(absorbedID);
 
     for (const ElectricalConnection& conn : absorbed.connections) {
-        Component* c = getComponent(conn.componentID);
+        NetlistComponent* c = getNetlistComponent(conn.componentID);
         if (!c) continue;
-
-        switch (conn.lead) {
-        case Lead::A:
-            c->nodeA = primaryID;
-            break;
-        case Lead::B:
-            c->nodeB = primaryID;
-            break;
-        default:
-            break;
-        }
+        c->terminals.at(conn.terminalID).electricalNode = primaryID;
 
         primary.connections.push_back(conn);
     }
@@ -97,7 +152,7 @@ void Circuit::absorbElectricalNode(int primaryID, int absorbedID) {
 }
 
 void Circuit::addConnectionToElectricalNode(int nodeID, ElectricalConnection& connection) {
-    electricalNodes[nodeID].connections.push_back({ connection });
+    electricalNodes.at(nodeID).connections.push_back({connection});
 }
 
 void Circuit::removeConnectionFromElectricalNode(int nodeID, ElectricalConnection& connection) {
@@ -110,58 +165,84 @@ void Circuit::removeConnectionFromElectricalNode(int nodeID, ElectricalConnectio
     );
 }
 
-void Circuit::updateComponentLead(int wireID, int wireNodeID, int ElectricalNodeID, const ElectricalConnection& connection) {
-    Component* comp = getComponent(connection.componentID);
-    if (!comp) return;
-    switch (connection.lead) {
-    case Lead::A:
-        comp->nodeA = ElectricalNodeID;
-        comp->A_WireNodeReference = { wireID, wireNodeID };
-        // Only mark as anchor if wire and node exist
+void Circuit::updateComponentTerminal(WireNodeReference wireNode, int ElectricalNodeID, const ElectricalConnection& connection) {
+    int componentID = connection.componentID;
+    int terminalID = connection.terminalID;
+    int wireID = wireNode.wireID;
+    int nodeID = wireNode.nodeID;
+    NetlistComponent* ncomp = getNetlistComponent(componentID);
+    if (!ncomp) return;
+
+    SchematicComponent* scomp = getSchematicComponent(*ncomp);
+
+    if (ncomp->terminalValid(terminalID)) {
+        ncomp->terminals.at(terminalID).electricalNode = ElectricalNodeID;
+        scomp->schematicTerminals.at(terminalID).wireNodeReference = wireNode;
         if (wires.find(wireID) != wires.end()) {
             auto& graph = wires.at(wireID).getGraph();
-            if (graph.find(wireNodeID) != graph.end()) {
-                graph.at(wireNodeID).isAnchor = true;
+            if (graph.find(nodeID) != graph.end()) {
+                graph.at(nodeID).isAnchor = true;
             }
         }
-        return;
-    case Lead::B:
-        comp->nodeB = ElectricalNodeID;
-        comp->B_WireNodeReference = { wireID, wireNodeID };
-        if (wires.find(wireID) != wires.end()) {
-            auto& graph = wires.at(wireID).getGraph();
-            if (graph.find(wireNodeID) != graph.end()) {
-                graph.at(wireNodeID).isAnchor = true;
-            }
-        }
-        return;
-    case Lead::Null:
-        std::cout << "Update component Lead Null connection\n";
-        return;
     }
 }
 
 void Circuit::setCircuitData(const CircuitData& data) {
+    netlistComponents.clear();
+    schematicComponents.clear();
+    wires.clear();
+    electricalNodes.clear();
+    componentIDToIndex.clear();
+
     nextComponentID = data.nextComponentID;
     nextNodeID = data.nextNodeID;
     nextWireID = data.nextWireID;
     isSimulating = data.isSimulating;
 
-    components = data.components;
+    netlistComponents = data.netlistComponents;
+    schematicComponents = data.schematicComponents;
+
     wires = data.wires;
     electricalNodes = data.electricalNodes;
+
     componentIDToIndex = data.componentIDToIndex;
+
+
+    if (componentIDToIndex.empty() && !netlistComponents.empty()) {
+        rebuildComponentIndexMap();
+    }
 }
 
 
-Component* Circuit::getComponent(int compID) {
+NetlistComponent* Circuit::getNetlistComponent(int compID) {
     auto it = componentIDToIndex.find(compID);
     if (it == componentIDToIndex.end()) return nullptr;
-    return &components[it->second];
+    return &netlistComponents[it->second];
+}
+NetlistComponent* Circuit::getNetlistComponent(SchematicComponent comp) {
+    auto it = componentIDToIndex.find(comp.componentID);
+    if (it == componentIDToIndex.end()) return nullptr;
+    return &netlistComponents[it->second];
 }
 
-std::vector<Component>& Circuit::getComponents() {
-    return components;
+std::vector<NetlistComponent>& Circuit::getNetlistComponents() {
+    return netlistComponents;
+}
+
+SchematicComponent* Circuit::getSchematicComponent(int compID) {
+    auto it = componentIDToIndex.find(compID);
+    if (it == componentIDToIndex.end()) return nullptr;
+    return &schematicComponents[it->second];
+}
+
+SchematicComponent* Circuit::getSchematicComponent(NetlistComponent comp) {
+    auto it = componentIDToIndex.find(comp.id);
+    if (it == componentIDToIndex.end()) return nullptr;
+    return &schematicComponents[it->second];
+}
+
+std::vector<SchematicComponent>& Circuit::getSchematicComponents() {
+    return schematicComponents;
 }
 
 Wire* Circuit::getWire(int wireID) {
@@ -185,6 +266,8 @@ ElectricalNode* Circuit::getElectricalNode(int electricalNodeID) {
 
 std::unordered_map<int, ElectricalNode>& Circuit::getElectricalNodes() { return electricalNodes; }
 
+Simulator& Circuit::getSimulator() { return simulator; }
+
 std::unordered_map<int, int> Circuit::getComponentIDToIndex() {
     return componentIDToIndex;
 }
@@ -200,21 +283,10 @@ int Circuit::getNextComponentID() const {
     return nextComponentID;
 }
 
-bool Circuit::leadIsEmpty(ElectricalConnection& connection) { // returns false if connection is not valid
-    switch (connection.lead) {
-    case Lead::A:
-        if (getComponent(connection.componentID)->nodeA == -1) return true;
-        else return false;
-        break;
+bool Circuit::terminalIsEmpty(ElectricalConnection& connection) { // returns false if connection is not valid
+    NetlistComponent* c = getNetlistComponent(connection.componentID);
+    return c && c->terminals.at(connection.terminalID).electricalNode == -1;
 
-    case Lead::B:
-        if (getComponent(connection.componentID)->nodeB == -1) return true;
-        else return false;
-        break;
-    case Lead::Null:
-        return false;
-        break;
-    }
 }
 
 
@@ -225,3 +297,11 @@ sf::Vector2f Circuit::snapPositionToGrid(const sf::Vector2f& position) {
     };
 }
 
+void Circuit::rebuildComponentIndexMap() {
+    componentIDToIndex.clear();
+    componentIDToIndex.reserve(netlistComponents.size());
+
+    for (size_t i = 0; i < netlistComponents.size(); ++i) {
+        componentIDToIndex[netlistComponents[i].id] = i;
+    }
+}

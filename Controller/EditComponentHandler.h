@@ -1,10 +1,11 @@
 #pragma once
 #include "InputHandler.h"
 #include "../UI/UI_Manager.h"
+#include "../Core/Circuit.h"
 
 class EditComponentHandler : public InputHandler {
 public:
-	EditComponentHandler(UI_Manager& ui, std::vector<SchematicComponent>& schemComponents);
+	EditComponentHandler(UI_Manager& ui, Circuit& c);
 
     void onKeyPress(const sf::Event::KeyEvent& event) override;
 
@@ -14,7 +15,7 @@ public:
 
     bool shouldRelease() const override;
 
-    void setTarget(Component* target);
+    void setTarget(NetlistComponent* target);
 
     void openEditDialog();
 
@@ -22,13 +23,17 @@ public:
 
 private:
 
-    Component* component;
+    NetlistComponent* component;
     SchematicComponent* schemComp = nullptr;
     std::vector<SchematicComponent>& schematicComponents;
     UI_Manager& ui;
+    std::unordered_map<int, Wire>& wires;
+    Circuit& circuit;
     bool finished = false;
 
     bool parseValueWithSuffix(const std::string& input, double& outValue);
 
     void rotateTarget();
+    sf::Vector2f rotatePoint(const sf::Vector2f& point, const sf::Vector2f& center, float angleDegrees);
+
 };

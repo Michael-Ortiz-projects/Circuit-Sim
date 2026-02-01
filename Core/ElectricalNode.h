@@ -60,18 +60,18 @@ namespace std {
 	};
 
 }
-enum class Lead {
-	A,
-	B,
-	Null
-};
 
 struct ElectricalConnection {
 	int componentID;
-	Lead lead;
+	int terminalID;
+
+	bool operator<(const ElectricalConnection& other) const {
+		if (componentID != other.componentID) return componentID < other.componentID;
+		return terminalID < other.terminalID;
+	}
 
 	bool operator==(const ElectricalConnection& other) const {
-		return componentID == other.componentID && lead == other.lead;
+		return componentID == other.componentID && terminalID == other.terminalID;
 	}
 };
 
@@ -99,10 +99,6 @@ struct Selection {
 	}
 };
 
-struct Wirecoverage {
-	int segmentCount = 0;
-	int coveredSegments = 0;
-};
 class ElectricalNode {
 public:
 	ElectricalNode();

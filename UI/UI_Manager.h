@@ -36,7 +36,7 @@ public:
 
 	// modal control
 
-	void openEditDialog(Component* target);
+	void openEditDialog(NetlistComponent* target);
 	void closeEditDialog();
 
 	std::string formatValue(double value);

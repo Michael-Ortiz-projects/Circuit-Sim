@@ -13,12 +13,11 @@ enum class EditMode {
 
 class PlaceHandler : public InputHandler {
 public:
-	std::vector<SchematicComponent>& components;
 	Circuit& circuit;
 	AssetManager& assets;
 	ComponentType type;
 
-	PlaceHandler(std::vector<SchematicComponent>& comps, Circuit& Circuit, AssetManager& Assets);
+	PlaceHandler(Circuit& Circuit, AssetManager& Assets);
 
 	void onMousePress(const sf::Vector2f& worldPos) override;
 
@@ -30,8 +29,6 @@ public:
 
 
 	void placeComponent(const sf::Vector2f& worldPos);
-
-	void deleteComponents();
 
 	void setComponentType(ComponentType comp_type);
 };

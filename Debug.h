@@ -1,6 +1,6 @@
 #pragma once
 #include "UI/Button.h"
-#include "Core/Component.h"
+#include "Core/NetlistComponent.h"
 #include "iomanip"
 #include "Core/ElectricalNode.h"
 #include "Core/Wire.h"
@@ -16,6 +16,7 @@ public:
         case UICommand::ToggleMenu: std::cout << "UI Command = ToggleMenu\n\n"; break;
         case UICommand::PlaceVoltageSource: std::cout << "UI Command = PlaceVoltageSource\n\n"; break;
         case UICommand::PlaceResistor: std::cout << "UI Command = PlaceResistor\n\n"; break;
+        case UICommand::PlaceGround: std::cout << "UI Command = PlaceGround\n\n"; break;
 
         case UICommand::ApplyEdit: std::cout << "UI Command = ApplyEdit\n\n"; break;
         case UICommand::CancelEdit: std::cout << "UI Command = CancelEdit\n\n"; break;
@@ -26,22 +27,22 @@ public:
         std::cout << "[Controller] Handler set: " << name << "\n\n";
     }
 
-    static void componentData(Component component) {
+    static void componentData(NetlistComponent component) {
         std::cout
             << "Component {\n"
             << "  ID:           " << component.id << '\n'
-            //<< "  Type:      " << ComponentType_to_String(component.type) << '\n'
-            << "  Nodes:        " << component.nodeA << " -> " << component.nodeB << '\n'
-            << "  WNReferenceA: [" << component.A_WireNodeReference.wireID << ", " << component.A_WireNodeReference.nodeID << "]        "
-            << "  WNReferenceB: [" << component.B_WireNodeReference.wireID << ", " << component.B_WireNodeReference.nodeID << "]\n"
-            << "  Value:     " << component.value << '\n'
-            //<< "  Voltage:   " << std::fixed << std::setprecision(4) << component.voltage << " V\n"
-            //<< "  Current:   " << std::fixed << std::setprecision(6) << component.current << " A\n"
-            //<< "  Closed:    " << (component.isClosed ? "true" : "false") << '\n'
-            << "  Position: " << printVector2f(component.position) << "\n"
+            << "  Type:      " << ComponentType_to_String(component.type) << '\n'
+            << "  Terminals:  \n     ";
+        for (NetlistTerminal& T : component.terminals) {
+            std::cout << T.terminalID << " -> " << T.electricalNode << "\n     ";
+        }
+        
+        std::cout
+            << "\n  Value:     " << component.value << '\n'
             
             << "}\n";
     }
+
 
     static std::string ComponentType_to_String(ComponentType type) {
         switch (type) {
@@ -57,19 +58,8 @@ public:
             return "Inductor";
         case ComponentType::Switch:
             return "Switch";
-        }
-    }
-
-    static std::string lead_to_string(Lead lead) {
-        switch (lead) {
-        case Lead::A:
-            return "A";
-
-        case Lead::B:
-            return "B";
-
-        case Lead::Null:
-            return "Null";
+        case ComponentType::Ground:
+            return "Ground";
         }
     }
 
@@ -131,14 +121,10 @@ public:
         for (const auto& conn : node.connections) {
             std::cout << "    -> Component "
                 << conn.componentID
-                << ", Lead "
-                << lead_to_string(conn.lead)
+                << ", Terminal "
+                << conn.terminalID
                 << '\n';
         }
-    }
-
-    static void printComponentData(const Component& component) {
-        
     }
 
 private:

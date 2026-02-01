@@ -7,7 +7,7 @@ using WireSection = std::vector<int>; // old node IDs
 
 struct ComponentAttachment {
 	int componentID;
-	Lead lead;
+	int terminalID;
 	int oldNodeID;
 };
 

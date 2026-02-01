@@ -2,7 +2,7 @@
 
 
 SelectionBoxHandler::SelectionBoxHandler(std::vector<SchematicComponent>& comps, Circuit& circ, Selection& sel, bool& shift) 
-	: components(comps), circuit(circ), selection(sel), shiftHeld(shift) { }
+	: circuit(circ), selection(sel), shiftHeld(shift) { }
 
 void SelectionBoxHandler::onMousePress(const sf::Vector2f& worldPos) {
     startPos = worldPos;
@@ -43,11 +43,8 @@ void SelectionBoxHandler::updateSelection(sf::Vector2f position) {
     if (!shiftHeld) {
         selection.clear();
 
-        for (auto& comp : components) {
-            auto* circuitComp = circuit.getComponent(comp.componentID);
-            if (circuitComp) {
-                circuitComp->selected = false;
-            }
+        for (auto& comp : circuit.getSchematicComponents()) {
+            comp.selected = false;
         }
 
         for (auto& [wireID, wire] : circuit.getWires()) {
@@ -58,10 +55,10 @@ void SelectionBoxHandler::updateSelection(sf::Vector2f position) {
         }
     }
    
-    for (auto& comp : components) {
+    for (auto& comp : circuit.getSchematicComponents()) {
         if (selectionRect.intersects(comp.getHitBox().getGlobalBounds()) || comp.hitBoxContainsPoint(position)) {
             selection.componentIDs.insert(comp.componentID);
-            circuit.getComponent(comp.componentID)->selected = true;
+            circuit.getSchematicComponent(comp.componentID)->selected = true;
         }
     }
 

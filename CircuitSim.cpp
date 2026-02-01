@@ -2,9 +2,8 @@
 #include <cmath>
 #include <functional>
 #include "SFML/Graphics.hpp"
-#include "Core/Component.h"
+#include "Core/NetlistComponent.h"
 #include "Core/Circuit.h"
-#include "Core/CircuitSolver.h"
 #include "Controller/Controller.h"
 #include "UI/Grid.h"
 #include "Config.h"
@@ -15,24 +14,30 @@
 #include "UI/UI_Manager.h"
 #include <fstream>
 
-//WORK ON CIRCUIT SIMULATION
 
+// save button doesnt work, save as does though
+// additionally: need to fix wiring more because trying to connect a wire to a component Terminal that already has a node doesnt work as it should
 int main() {
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Circuit Sim", sf::Style::None);
+
+    std::string currentWorkingFilePath;
+
     Grid grid(gridSize);
 
     AssetManager assets;
-    Circuit circuit;
-    
-    
-    std::string currentWorkingFilePath;
-    std::vector<SchematicComponent> schematic_components;
+
+    Circuit circuit(assets);
 
     Renderer renderer(window, assets, grid);
 
     UI_Manager UI(renderer);
-    
-    Controller controller(circuit, schematic_components, window, assets, renderer, UI, currentWorkingFilePath);
+
+    Controller controller(circuit, window, assets, renderer, UI, currentWorkingFilePath);
+    //initializing circuit data
+    char filename[MAX_PATH] = "TestingMNACircuit.ckt";
+    CircuitData initializedData = controller.saveCircuitHandler.loadFromFile(filename);
+    circuit.setCircuitData(initializedData);
+
 
     UI.initialize(assets);
 
@@ -44,7 +49,7 @@ int main() {
 
             UI.handleEvent(event);
             controller.handleEvent(event);
-            controller.rebuildSchematicComponents();
+            controller.rebuildSchematicComponents(event);
         }
 
         UICommand cmd;
@@ -58,6 +63,8 @@ int main() {
             case UICommand::PlaceCapacitor:
             case UICommand::PlaceInductor:
             case UICommand::PlaceSwitch:
+            case UICommand::PlaceGround:
+                Debug::UICommand(cmd);
                 Debug::setHandler("PlaceHandler");
                 controller.setHandler(&controller.placeHandler, cmd);
                 break;
@@ -88,7 +95,7 @@ int main() {
         }
         
 
-        renderer.drawCanvas(schematic_components, circuit.getWires(), controller.selectionBoxHandler.getRect());
+        renderer.drawCanvas(circuit.getSchematicComponents(), circuit.getWires(), controller.selectionBoxHandler.getRect());
         renderer.drawUI(UI.menu_map);
         UI.draw();
         window.display();

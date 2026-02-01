@@ -20,7 +20,8 @@ void Renderer::drawCanvas(std::vector<SchematicComponent>& components, std::unor
     grid.draw(window, canvasView);
     for (auto& c : components) {
         window.draw(c.getSprite());
-        c.getComponentInfoDisplay().draw(window);
+        if (c.getType() != ComponentType::Ground) 
+            c.getComponentInfoDisplay().draw(window);
         if (c.selected)
             window.draw(c.getHitBox());
     }

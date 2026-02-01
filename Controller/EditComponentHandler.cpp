@@ -1,7 +1,7 @@
 #include "EditComponentHandler.h"
 
-EditComponentHandler::EditComponentHandler(UI_Manager& ui, std::vector<SchematicComponent>& schemComponents)
-	: ui(ui), schematicComponents(schemComponents) { }
+EditComponentHandler::EditComponentHandler(UI_Manager& ui, Circuit& c)
+	: ui(ui), schematicComponents(c.getSchematicComponents()), wires(c.getWires()), circuit(c) { }
 
 void EditComponentHandler::onKeyPress(const sf::Event::KeyEvent& event) {
     if (event.code == sf::Keyboard::Enter)
@@ -23,9 +23,10 @@ bool EditComponentHandler::shouldRelease() const {
     return finished;
 }
 
-void EditComponentHandler::setTarget(Component* target) {
-    std::cout << "begin Called\n";
+void EditComponentHandler::setTarget(NetlistComponent* target) {
+    std::cout << "setTarget Called\n";
     component = target;
+    schemComp = circuit.getSchematicComponent(*component);
     for (auto& c : schematicComponents) {
         if (c.componentID == target->id) schemComp = &c;
     }
@@ -121,8 +122,41 @@ bool EditComponentHandler::parseValueWithSuffix(const std::string& input, double
     }
 }
 
-void EditComponentHandler::rotateTarget() {
-    component->rotation -= 90;
-    std::cout << "Rotated component 90 degrees counter clockwise\n";
+void EditComponentHandler::rotateTarget() { //rotation is bad
+    float prevRotation = schemComp->getRotation();
+    float newRotation = prevRotation - 90.0f;
+    newRotation = std::fmod(newRotation, 360.0f);
+    if (newRotation < 0)
+        newRotation += 360.0f;
+    schemComp->setRotation(newRotation);
+
+
+    for (auto& T : schemComp->schematicTerminals) {
+        Debug::printVector2f(T.offset);
+        sf::Vector2f rotatedOffset = rotatePoint(schemComp->getPosition() + T.offset, schemComp->getPosition(),-90);
+        T.offset = rotatedOffset - schemComp->getPosition();
+        if (T.wireNodeReference.isValid()) {
+            int wireID = T.wireNodeReference.wireID;
+            int nodeID = T.wireNodeReference.nodeID;
+            Wire* W = circuit.getWire(wireID);
+            W->moveNode(nodeID, rotatedOffset);
+        }
+    }
+
     finished = true;
+
+}
+
+sf::Vector2f EditComponentHandler::rotatePoint(const sf::Vector2f& point, const sf::Vector2f& center, float angleDegrees) {
+    // Translate point to origin
+    float s = std::sin(angleDegrees * 3.14159265f / 180.0f);
+    float c = std::cos(angleDegrees * 3.14159265f / 180.0f);
+
+    sf::Vector2f p = point - center;
+
+    float xnew = p.x * c - p.y * s;
+    float ynew = p.x * s + p.y * c;
+
+    // Translate back
+    return sf::Vector2f(xnew, ynew) + center;
 }

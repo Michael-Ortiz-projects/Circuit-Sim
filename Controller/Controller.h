@@ -31,7 +31,7 @@ public:
 
     Selection selection;
 
-    Controller(Circuit& circ, std::vector<SchematicComponent>& Components, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer, UI_Manager& UI, std::string& workingFilePath);
+    Controller(Circuit& circ, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer, UI_Manager& UI, std::string& workingFilePath);
 
     void handleEvent(const sf::Event& event);
 
@@ -49,13 +49,13 @@ public:
 
     void setHandler(InputHandler* handler, UICommand cmd);
 
-    void rebuildSchematicComponents();
+    void rebuildSchematicComponents(const sf::Event& event);
 
     InputHandler* getHandler();
 
     HitResult hitTest(const sf::Vector2f& mousePixel);
     
-    Component* findComponentAt(const sf::Vector2f mousePixel);
+    SchematicComponent* findComponentAt(const sf::Vector2f mousePixel);
 
     ElectricalConnection findClickedLead(const sf::Vector2f mousePixel);
 
@@ -70,7 +70,6 @@ private:
 
     UICommand command;
     Circuit& circuit;
-    std::vector<SchematicComponent>& components;
     SaveManager saveManager;
     
     std::string& workingFilePath;

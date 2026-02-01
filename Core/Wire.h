@@ -50,7 +50,7 @@ public:
 	
 	Wire(sf::Vector2f initialPosition, int id);
 	Wire(sf::Vector2f initialPosition, int id, const std::map<int, Node>& nodes, int nextNode);
-
+	Wire(int id, const std::map<int, Node>& nodes, int nextNode);
 	int createNode(sf::Vector2f pos);
 
 	void removeNode(int nodeID);
@@ -80,7 +80,6 @@ public:
 	Node& getNode(int nodeID) { if (graph.contains(nodeID)) return graph.at(nodeID); }
 	std::vector<WireSegment> getSegments() const;
 	int getNextNodeID() const { return nextNodeID; }
-	//getstemNode needs fixing, when deleting the current stem node, it is invalid and should be set to a value, for now im doing the first available key in the graph
 	int getStemNode() { 
 		if (!graph.contains(currentStemNode)) {
 			currentStemNode = graph.begin()->first;

@@ -21,10 +21,10 @@ struct Vector2fCompare {
 
 
 struct WireInteraction {
-	ElectricalConnection connection{ -1, Lead::Null };
+	ElectricalConnection connection{ -1, -1 };
 	WireNodeReference wire_node{ -1, -1 };
 
-	bool hasLead() const { return connection.lead != Lead::Null; }
+	bool hasLead() const { return connection.terminalID != -1; }
 	bool hasWireNode() const { return wire_node.isValid(); }
 	bool invalid() const { return !hasLead() && !hasWireNode(); }
 };
@@ -43,12 +43,13 @@ struct HitResult {
 		WireNode,
 		WireSegment,
 		Component
-	} type = Type::None;
+	}
+	type = Type::None;
 
 	ElectricalConnection lead;
 	WireNodeReference wireNode;
 	WireHit wireSegment;
-	Component* component = nullptr;
+	SchematicComponent* component = nullptr;
 	bool shiftHeld;
 
 	bool isNone() const { return type == Type::None; }

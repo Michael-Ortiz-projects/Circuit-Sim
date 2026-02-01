@@ -16,6 +16,8 @@ AssetManager::AssetManager() {
 	loadTexture("normal_SO", "UI/Assets/Schematic_Open_Switch.png");
 
 	loadTexture("normal_SC", "UI/Assets/Schematic_Closed_Switch.png");
+
+	loadTexture("normal_G", "UI/Assets/Schematic_Ground.png");
 	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
 	mainFont.loadFromFile("UI/Fonts/RobotoSlab-Regular.ttf");
 }
@@ -56,6 +58,9 @@ sf::Texture& AssetManager::getTexture(ComponentType type) {
 		}
 		case ComponentType::Switch: {
 			return m_textures.at("normal_SO");
+		}
+		case ComponentType::Ground: {
+			return m_textures.at("normal_G");
 		}
 	}
 }

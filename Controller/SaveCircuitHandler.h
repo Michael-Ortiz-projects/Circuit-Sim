@@ -4,10 +4,11 @@
 #include "SaveManager.h"
 #include <Windows.h>
 #include <commdlg.h>
+#include "../Core/Circuit.h"
 
 class SaveCircuitHandler : public InputHandler {
 public:
-	SaveCircuitHandler(UI_Manager& ui, SaveManager& save, Circuit& Circuit, std::string& workingFilePath);
+	SaveCircuitHandler(UI_Manager& ui, SaveManager& save, Circuit& Circuit, AssetManager& Assets, std::string& workingFilePath);
 
     void onMousePress(const sf::Vector2f& worldPos) override;
     void onMouseRelease(const sf::Vector2f& worldPos) override;
@@ -25,10 +26,13 @@ public:
 
     void loadDialog();
     std::string selectLoadFile();
+
+    CircuitData loadFromFile(const std::string& path);
    
 private:
     UI_Manager& ui;
     SaveManager& saveManager;
+    AssetManager& assets;
     Circuit& circuit;
     std::string& workingFilePath;
     bool finished = false;

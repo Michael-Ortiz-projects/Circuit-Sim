@@ -12,7 +12,6 @@ class SelectionBoxHandler : public InputHandler {
 	sf::FloatRect selectionRect;
 	bool& shiftHeld;
 	Selection& selection;
-	std::vector<SchematicComponent>& components;
 	Circuit& circuit;
 
 public:

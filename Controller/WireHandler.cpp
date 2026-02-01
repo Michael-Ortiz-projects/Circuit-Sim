@@ -4,14 +4,17 @@ WireHandler::WireHandler(Circuit& Circuit, std::vector<SchematicComponent>& comp
 	: circuit(Circuit), schematicComponents(components) { }
 
 void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
+
+    std::cout << "this ran\n";
     switch (wireState) {
 
     case WireState::Null:
-
-        if (hit.type == HitResult::Type::Lead &&
-            circuit.leadIsEmpty(hit.lead)) {
+        std::cout << "this ran again\n";
+        std::cout << "Terminal is empty == " << circuit.terminalIsEmpty(hit.lead) << "hit.type == HitResult::Type::Lead = ";
+        if (hit.type == HitResult::Type::Lead && circuit.terminalIsEmpty(hit.lead)) {
 
             beginWireFromConnection(hit.lead);
+            std::cout << "beginWireFromConnection() ran\n";
             wireState = WireState::Creating;
             activeWire->updatePreview(worldPos);
             return;
@@ -56,7 +59,6 @@ void WireHandler::onMouseMove(const sf::Vector2f& worldPos) {
     switch (wireState) {
 
     case WireState::Creating:
-        // Live preview follows the mouse
         activeWire->updatePreview(worldPos);
         break;
 
@@ -107,22 +109,11 @@ sf::Vector2f WireHandler::snapPositionToGrid(const sf::Vector2f& position) {
 }
 
 sf::Vector2f WireHandler::positionOfConnection(ElectricalConnection& connection) {
-	int id = connection.componentID;
-	auto it = std::find_if(schematicComponents.begin(), schematicComponents.end(),
-		[id](const SchematicComponent& c) {
-			return c.componentID == id;
-		}
-	);
+    SchematicComponent* c = circuit.getSchematicComponent(connection.componentID);
 
-	if (it == schematicComponents.end()) {
-		return { -1, -1};
-	}
+    if (!c) return { -1, -1 };
 
-	switch (connection.lead) {
-	case Lead::A: return it->getLeadPositionA();
-	case Lead::B: return it->getLeadPositionB();
-	default:      return { -1.f, -1.f };
-	}
+    return c->getPosition() + c->schematicTerminals.at(connection.terminalID).offset;
 }
 
 void WireHandler::beginWireFromConnection(ElectricalConnection& connection) {
@@ -133,7 +124,7 @@ void WireHandler::beginWireFromConnection(ElectricalConnection& connection) {
     activeElectricalNodeID = wireID;
 
     circuit.addConnectionToElectricalNode(activeElectricalNodeID, connection);
-    circuit.updateComponentLead(wireID, 0, activeElectricalNodeID, connection);
+    circuit.updateComponentTerminal({ wireID, 0 }, activeElectricalNodeID, connection);
 
     activeWire = circuit.getWire(wireID);
     activeWire->selected = true;
@@ -163,8 +154,10 @@ void WireHandler::editWireFromHangingNode(WireNodeReference reference) {
 
 void WireHandler::handleWireCreationClick(const sf::Vector2f& worldPos) {
     std::cout << "handling wire creation click\n";
-    if (!activeWire)
+    if (!activeWire) {
+        std::cout << "No activeWire\n";
         return;
+    }
 
     if (hit.type == HitResult::Type::Lead) {
         finishWireAtConnection(hit.lead);
@@ -209,7 +202,7 @@ void WireHandler::finishWireAtConnection(ElectricalConnection& end) {
 
     // Circuit owns electrical truth
     circuit.addConnectionToElectricalNode(wireID, end);
-    circuit.updateComponentLead(wireID, finalNodeID, wireID, end);
+    circuit.updateComponentTerminal({ wireID, finalNodeID }, activeElectricalNodeID, end);
 
     activeWire->selected = false;
     activeWire = nullptr;
@@ -350,19 +343,19 @@ void WireHandler::mergeActiveWireIntoPrimary(Wire& primaryWire, Wire& activeWire
 
     // update component leads
     for (ElectricalConnection& c : circuit.getElectricalNode(activeWire.ID)->connections) {
-        Component* component = circuit.getComponent(c.componentID);
-        switch (c.lead) {
-        case Lead::A:
-            circuit.updateComponentLead(primaryWire.ID, idRemap[component->A_WireNodeReference.nodeID], activeWire.ID, c);
-            break;
-
-        case Lead::B:
-            circuit.updateComponentLead(primaryWire.ID, idRemap[component->B_WireNodeReference.nodeID], activeWire.ID, c);
-            break;
+        int terminalID = c.terminalID;
+        int componentID = c.componentID;
+        NetlistComponent* ncomp = circuit.getNetlistComponent(componentID);
+        if (!ncomp->terminalValid(terminalID)) {
+            std::cout << "Terminal " << terminalID << "Not Valid\n";
+            return;
         }
-    }
-    std::cout << "got here 5\n";
+        SchematicComponent* scomp = circuit.getSchematicComponent(componentID);
+        int terminalNodeReference = scomp->schematicTerminals.at(terminalID).wireNodeReference.nodeID;
 
+
+        circuit.updateComponentTerminal({ primaryWire.ID, idRemap[terminalNodeReference] }, activeWire.ID, c);
+    }
 }
 
 void WireHandler::setHitResult(const HitResult& h) {

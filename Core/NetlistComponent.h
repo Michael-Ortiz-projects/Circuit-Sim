@@ -1,0 +1,45 @@
+#pragma once
+#include <vector>
+#include <string>
+#include <iostream>
+#include "SFML/Graphics.hpp"
+#include "ElectricalNode.h"
+#include "../Config.h"
+
+enum class ComponentType {
+    Resistor,
+    VoltageSource,
+    CurrentSource,
+    Capacitor,
+    Inductor,
+    Switch,
+    Ground
+};
+
+enum class PinRole {
+    Positive,
+    Negative
+};
+
+struct NetlistTerminal {
+    int terminalID;
+    int electricalNode;
+    PinRole role;
+};
+
+class NetlistComponent {
+public:
+    int id;
+    std::string label;
+    ComponentType type;
+    std::vector<NetlistTerminal> terminals;
+    double value;
+
+    NetlistComponent(const ComponentType& ty, double val);
+    NetlistComponent();
+
+    void setType(ComponentType Type);
+    void setValue(double Value);
+
+    bool terminalValid(int terminalID);
+};

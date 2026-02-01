@@ -12,6 +12,10 @@ Wire::Wire(sf::Vector2f initialPosition, int id) {
 Wire::Wire(sf::Vector2f initialPosition, int id, const std::map<int, Node>& nodes, int nextNode)
     : ID(id), graph(nodes), nextNodeID(nextNode), currentStemNode(0), selected(false) { }
 
+Wire::Wire(int id, const std::map<int, Node>& nodes, int nextNode)
+    : ID(id), graph(nodes), nextNodeID(nextNode), currentStemNode(0), selected(false) { }
+
+
 
 int Wire::createNode(sf::Vector2f pos) {
     int id = nextNodeID++;
@@ -152,10 +156,16 @@ int Wire::commitPreview() {
 
 
 WireMoveResult Wire::moveNode(int movingNodeID, sf::Vector2f worldPosition) {
-    if (!graph.contains(movingNodeID)) return WireMoveResult::Invalid;
-
+    if (!graph.contains(movingNodeID)) {
+        std::cout << "Wire.moveNode() returned invalid\n";
+        return WireMoveResult::Invalid;
+    }
+    
+    std::cout << "moveNode() debug 1\n";
     Node& movingNode = graph.at(movingNodeID);
+    std::cout << "moveNode() debug 2\n";
     movingNode.position = snapPositionToGrid(worldPosition);
+    std::cout << "moveNode() debug 1\n";
     return WireMoveResult::Valid;
 }
 

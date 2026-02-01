@@ -23,7 +23,7 @@ void Grid::draw(sf::RenderWindow& window, const sf::View& view)
     float endX = std::ceil(topRight.x / gridSpacing) * gridSpacing;
     float endY = std::ceil(topRight.y / gridSpacing) * gridSpacing;
 
-    float halfSize = gridSpacing * 0.20f;
+    float halfSize = gridSpacing * 0.1f;
 
     sf::VertexArray crosses(sf::Lines);
 

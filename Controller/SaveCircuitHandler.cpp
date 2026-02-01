@@ -1,7 +1,7 @@
 #include "SaveCircuitHandler.h"
 
-SaveCircuitHandler::SaveCircuitHandler(UI_Manager& ui, SaveManager& saver, Circuit& Circuit, std::string& workingFilePath)
-	: ui(ui), saveManager(saver), circuit(Circuit), workingFilePath(workingFilePath) { }
+SaveCircuitHandler::SaveCircuitHandler(UI_Manager& ui, SaveManager& saver, Circuit& Circuit, AssetManager& Assets, std::string& workingFilePath)
+	: ui(ui), saveManager(saver), circuit(Circuit), assets(Assets), workingFilePath(workingFilePath) { }
 
 
 void SaveCircuitHandler::onMousePress(const sf::Vector2f& worldPos) {
@@ -27,7 +27,8 @@ void SaveCircuitHandler::onKeyPress(const sf::Event::KeyEvent& event) {
 void SaveCircuitHandler::saveDialog() {
     std::string path = selectSaveFile();
     if (path.empty()) return;
-    if (!saveManager.save(circuit, path)) std::cout << "Failed to save circuit to path: " << path << std::endl;
+   
+    if (!saveManager.saveCircuitToFile(circuit, path)) std::cout << "Failed to save circuit to path: " << path << std::endl;
     workingFilePath = path;
 }
 
@@ -52,8 +53,8 @@ void SaveCircuitHandler::loadDialog() {
     std::string path = selectLoadFile();
     if (path.empty()) return;
     CircuitData data;
-    if (!saveManager.load(path, data)) {
-        std::cout << "Failed to load circuit from path: " << path << std::endl;
+    if (!saveManager.loadCircuitFromFile(data, path, assets)) {
+       std::cout << "Failed to load circuit from path: " << path << std::endl;
     }
     circuit.setCircuitData(data);
     workingFilePath = path;
@@ -70,12 +71,20 @@ std::string SaveCircuitHandler::selectLoadFile() {
     ofn.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
     ofn.lpstrDefExt = "ckt";
 
-    if (GetOpenFileNameA(&ofn))
+    if (GetOpenFileNameA(&ofn)) {
+        std::cout << filename;
         return filename;
+    }
 
     return "";
 }
 
 void SaveCircuitHandler::saveCurrentWorkingFile() {
-    saveManager.save(circuit, workingFilePath);
+    //saveManager.save(circuit, workingFilePath);
+}
+
+CircuitData SaveCircuitHandler::loadFromFile(const std::string& path) {
+    CircuitData data;
+    if (!saveManager.loadCircuitFromFile(data, path, assets)) std::cout << "SaveCircuitHandler::loadFromFile() failed\n";
+    return data;
 }

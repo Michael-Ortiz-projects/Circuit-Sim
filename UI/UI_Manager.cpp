@@ -14,6 +14,7 @@ void UI_Manager::initialize(AssetManager& assets) {
 	menu_map.at(MenuID::Place).addOption("Capacitor", UICommand::PlaceCapacitor);
 	menu_map.at(MenuID::Place).addOption("Inductor", UICommand::PlaceInductor);
 	menu_map.at(MenuID::Place).addOption("Switch", UICommand::PlaceSwitch);
+	menu_map.at(MenuID::Place).addOption("Ground", UICommand::PlaceGround);
 
 	menu_map.at(MenuID::File).addOption("New", UICommand::OpenNewFile);
 	menu_map.at(MenuID::File).addOption("Open", UICommand::OpenFile);
@@ -98,7 +99,7 @@ bool UI_Manager::onMouseRelease(const sf::Vector2f& pixelPos) {
 	return false;
 }
 
-void UI_Manager::openEditDialog(Component* target) {
+void UI_Manager::openEditDialog(NetlistComponent* target) {
 	std::cout << "openEditDialog called\n";
 	if (activeDialog) return;
 

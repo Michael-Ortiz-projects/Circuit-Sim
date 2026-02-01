@@ -3,7 +3,7 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include "../Core/Component.h"
+#include "../Core/NetlistComponent.h"
 
 class AssetManager {
 public:

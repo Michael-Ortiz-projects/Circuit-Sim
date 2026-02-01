@@ -6,6 +6,7 @@ ComponentInfoDisplay::ComponentInfoDisplay(sf::Font& font, const sf::Vector2f& p
 {
     labelBox.setActive(active);
     valueBox.setActive(active);
+    
 }
 
 void ComponentInfoDisplay::setLabel(const std::string& label) {

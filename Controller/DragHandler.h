@@ -8,7 +8,7 @@ class DragHandler : public InputHandler {
 public:
 	DragHandler(std::vector<SchematicComponent>& comps, std::unordered_map<int, Wire>& Wires);
 
-	void setDraggedComponent(Component& component);
+	void setDraggedComponent(SchematicComponent& component);
 
 	void onMousePress(const sf::Vector2f& worldPos) override;
 
@@ -21,7 +21,7 @@ public:
 private:
 	std::vector<SchematicComponent>& components;
 	bool dragging;
-	Component* active;
+	SchematicComponent* active;
 	std::unordered_map<int, Wire>& wires;
 	
 };
