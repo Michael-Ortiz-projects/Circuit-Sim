@@ -1,13 +1,13 @@
-#include "Controller.h"
+#include "EditorController.h"
 #include "InputHandler.h"
 
-Controller::Controller(Circuit& Circuit, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer, UI_Manager& UI, std::string& workingFilePath)
-	: circuit(Circuit), cameraController(Window, Renderer.getCanvasView()), command(UICommand::None), window(Window), renderer(Renderer), assets(Assets),
+EditorController::EditorController(Circuit& Circuit, AssetManager& Assets, Renderer& Renderer, EditorUI_Manager& UI, std::string& workingFilePath)
+	: circuit(Circuit), window(Renderer.getWindow()), cameraController(Renderer.getWindow(), Renderer.getCanvasView()), command(EditorUICommand::None), renderer(Renderer), assets(Assets),
 	dragHandler(Circuit.getSchematicComponents(), Circuit.getWires()), placeHandler(Circuit, Assets),	wireHandler(Circuit, Circuit.getSchematicComponents()),
 	selectionBoxHandler(Circuit.getSchematicComponents(), Circuit, selection, shiftHeld), deleteHandler(Circuit, selection), editComponentHandler(UI, Circuit),
 	saveCircuitHandler(UI, saveManager, Circuit, Assets, workingFilePath), currentHandler(nullptr), workingFilePath(workingFilePath) { }
 
-void Controller::handleEvent(const sf::Event& event) {
+void EditorController::handleEvent(const sf::Event& event) {
 	switch (event.type) {
 
 	case sf::Event::MouseButtonPressed: {
@@ -23,7 +23,6 @@ void Controller::handleEvent(const sf::Event& event) {
 	}
 
 	case sf::Event::MouseMoved: {
-		sf::Vector2f worldPos = window.mapPixelToCoords({ event.mouseMove.x, event.mouseMove.y }, renderer.getCanvasView());
 
 		cameraController.onMouseMove({ event.mouseMove.x, event.mouseMove.y });
 
@@ -38,7 +37,6 @@ void Controller::handleEvent(const sf::Event& event) {
 		break;
 
 	case sf::Event::MouseButtonReleased: {
-		sf::Vector2f worldPos = window.mapPixelToCoords({ event.mouseButton.x, event.mouseButton.y }, renderer.getCanvasView());
 
 		if (event.mouseButton.button == sf::Mouse::Middle) {
 			cameraController.onMouseRelease();
@@ -63,7 +61,7 @@ void Controller::handleEvent(const sf::Event& event) {
 	}
 }
 
-void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
+void EditorController::onMousePress(const sf::Event::MouseButtonEvent& event) {
 	if (event.button != sf::Mouse::Left) return;
 	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y }, renderer.getCanvasView());
 	if (currentHandler != &editComponentHandler) {
@@ -92,6 +90,7 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 			currentHandler = &dragHandler;
 			Debug::setHandler("DragHandler");
 			dragHandler.setDraggedComponent(*hit.component);
+			selectionBoxHandler.updateSelection(worldMousePosition);
 			break;
 
 		case HitResult::Type::None:
@@ -116,13 +115,13 @@ void Controller::onMousePress(const sf::Event::MouseButtonEvent& event) {
 	if (currentHandler) currentHandler->onMousePress(worldMousePosition);
 }
 
-void Controller::onMouseMove(const sf::Event::MouseMoveEvent& event) {
+void EditorController::onMouseMove(const sf::Event::MouseMoveEvent& event) {
 	sf::Vector2f worldMousePosition = window.mapPixelToCoords({ event.x, event.y }, renderer.getCanvasView());
 	if (currentHandler) currentHandler->onMouseMove(worldMousePosition);
 
 }
 
-void Controller::onScroll(const sf::Event::MouseWheelScrollEvent& event) {
+void EditorController::onScroll(const sf::Event::MouseWheelScrollEvent& event) {
 
 	currentHandler->onScroll(event);
 
@@ -135,7 +134,7 @@ void Controller::onScroll(const sf::Event::MouseWheelScrollEvent& event) {
 	}
 }
 
-void Controller::onMouseRelease(const sf::Event::MouseButtonEvent& event) {
+void EditorController::onMouseRelease(const sf::Event::MouseButtonEvent& event) {
 
 	sf::Vector2f worldPos =
 		window.mapPixelToCoords({ event.x, event.y }, renderer.getCanvasView());
@@ -150,7 +149,7 @@ void Controller::onMouseRelease(const sf::Event::MouseButtonEvent& event) {
 	}
 }
 
-void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
+void EditorController::onKeyPress(const sf::Event::KeyEvent& event) {
 	cameraController.onKeyPress(event);
 	if (currentHandler != &editComponentHandler) {
 		switch (event.code) {
@@ -215,6 +214,7 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 
 		case sf::Keyboard::F4:
 			circuit.getSimulator().setSystem(circuit.getNetlistComponents(), circuit.getElectricalNodes());
+			circuit.getSimulator().runDC(true);
 			std::cout << "Controller called circuit.getSimulator().buildMNAMap()\n";
 			return;
 		}
@@ -227,11 +227,9 @@ void Controller::onKeyPress(const sf::Event::KeyEvent& event) {
 			Debug::setHandler("None");
 		}
 	}
-	
-
 }
 
-void Controller::onKeyRelease(const sf::Event::KeyEvent& event) {
+void EditorController::onKeyRelease(const sf::Event::KeyEvent& event) {
 	if (event.code == sf::Keyboard::LShift || event.code == sf::Keyboard::RShift)
 		shiftHeld = false;
 	if (event.code == sf::Keyboard::Delete) {
@@ -241,50 +239,49 @@ void Controller::onKeyRelease(const sf::Event::KeyEvent& event) {
 }
 
 
-void Controller::setHandler(InputHandler* handler, UICommand cmd) {
+void EditorController::setHandler(InputHandler* handler, EditorUICommand cmd) {
 	command = cmd;
-	if (command != UICommand::None) {
+	if (command != EditorUICommand::None) {
 		switch (command) {
-		case UICommand::PlaceVoltageSource:
+		case EditorUICommand::PlaceVoltageSource:
 			placeHandler.setComponentType(ComponentType::VoltageSource);
 			break;
 
-		case UICommand::PlaceResistor:
+		case EditorUICommand::PlaceResistor:
 			placeHandler.setComponentType(ComponentType::Resistor);
 			break;
 
-		case UICommand::PlaceCurrentSource:
+		case EditorUICommand::PlaceCurrentSource:
 			placeHandler.setComponentType(ComponentType::CurrentSource);
 			break;
 
-		case UICommand::PlaceCapacitor:
+		case EditorUICommand::PlaceCapacitor:
 			placeHandler.setComponentType(ComponentType::Capacitor);
 			break;
 
-		case UICommand::PlaceInductor:
+		case EditorUICommand::PlaceInductor:
 			placeHandler.setComponentType(ComponentType::Inductor);
 			break;
 
-		case UICommand::PlaceSwitch:
+		case EditorUICommand::PlaceSwitch:
 			placeHandler.setComponentType(ComponentType::Switch);
 			break;
 
-		case UICommand::PlaceGround:
+		case EditorUICommand::PlaceGround:
 			placeHandler.setComponentType(ComponentType::Ground);
 			break;
 
-		case UICommand::ToggleMenu:
+		case EditorUICommand::ToggleMenu:
 			break;
 
-		case UICommand::None:
+		case EditorUICommand::None:
 			break;
 		}
 	}
 	currentHandler = handler;
 }
 
-void Controller::rebuildSchematicComponents(const sf::Event& event) {
-	if (!event.type) return;
+void EditorController::rebuildSchematicComponents() {
 	for (const auto& comp : circuit.getNetlistComponents()) {
 		SchematicComponent* c = circuit.getSchematicComponent(comp);
 		c->setValue(comp.value);
@@ -292,12 +289,12 @@ void Controller::rebuildSchematicComponents(const sf::Event& event) {
 	}
 }
 
-InputHandler* Controller::getHandler() {
+InputHandler* EditorController::getHandler() {
 	return currentHandler;
 }
 
 
-HitResult Controller::hitTest(const sf::Vector2f& mousePixel) {
+HitResult EditorController::hitTest(const sf::Vector2f& mousePixel) {
 	HitResult result;
 
 	if (auto lead = findClickedLead(mousePixel); lead.componentID != -1) {
@@ -332,7 +329,7 @@ HitResult Controller::hitTest(const sf::Vector2f& mousePixel) {
 	return result;
 }
 
-ElectricalConnection Controller::findClickedLead(const sf::Vector2f mousePixel) { // parameter is in pixel space, converts lead position to pixel space
+ElectricalConnection EditorController::findClickedLead(const sf::Vector2f mousePixel) { // parameter is in pixel space, converts lead position to pixel space
 
 	for (const auto& c : circuit.getSchematicComponents()) {
 		for (const auto& T : c.schematicTerminals) {
@@ -347,7 +344,7 @@ ElectricalConnection Controller::findClickedLead(const sf::Vector2f mousePixel) 
 	return { -1, -1 };
 }
 
-WireNodeReference Controller::findClickedNode(const sf::Vector2f mousePixel) {// parameter is in pixel space, converts node position to pixel space, returns wireID, nodeID
+WireNodeReference EditorController::findClickedNode(const sf::Vector2f mousePixel) {// parameter is in pixel space, converts node position to pixel space, returns wireID, nodeID
 	for (auto& w : circuit.getWires()) {
 		for (const auto& n : w.second.getGraph()) {
 			sf::Vector2i pixelPos = window.mapCoordsToPixel(n.second.position, renderer.getCanvasView());
@@ -362,7 +359,7 @@ WireNodeReference Controller::findClickedNode(const sf::Vector2f mousePixel) {//
 	return { -1, -1 };
 }
 
-WireHit Controller::findClickedSegment(const sf::Vector2f mousePixel) {
+WireHit EditorController::findClickedSegment(const sf::Vector2f mousePixel) {
 	WireHit best;
 	
 	sf::Vector2f mouseWorld = window.mapPixelToCoords(sf::Vector2i(mousePixel), renderer.getCanvasView());
@@ -392,7 +389,7 @@ WireHit Controller::findClickedSegment(const sf::Vector2f mousePixel) {
 	return best;
 }
 
-SchematicComponent* Controller::findComponentAt(const sf::Vector2f mousePixel) {
+SchematicComponent* EditorController::findComponentAt(const sf::Vector2f mousePixel) {
 	sf::Vector2f mouseWorld = window.mapPixelToCoords(sf::Vector2i(mousePixel), renderer.getCanvasView());
 
 	for (auto& comp : circuit.getSchematicComponents()) {

@@ -1,7 +1,5 @@
 #pragma once
 #include "TextBox.h"
-#include <SFML/Graphics.hpp>
-#include <string>
 #include <sstream>
 class ComponentInfoDisplay {
 public:

@@ -1,29 +1,26 @@
 #pragma once
 #include <vector>
-#include "Button.h"
 #include "DropdownMenu.h"
-#include "AssetManager.h"
 #include <optional>
 #include "Renderer.h"
 #include "../Config.h"
-#include <queue>
 #include "Dialog.h"
 #include <sstream>
 #include <iomanip>
 
-class UI_Manager
+class EditorUI_Manager
 {
 public:
 
-	std::unordered_map<MenuID, DropdownMenu> menu_map;
+	std::unordered_map<MenuID, DropdownMenu<EditorUICommand>> menu_map;
 
-	UI_Manager(Renderer& rend);
+	EditorUI_Manager(Renderer& rend);
 
-	void initialize(AssetManager& assets);
+	void initialize();
 
 	bool handleEvent(const sf::Event& event);
 
-	bool pollCommand(UICommand& outputCommand);
+	bool pollCommand(EditorUICommand& outputCommand);
 
 	bool onMousePress(const sf::Vector2f& pixelPos);
 
@@ -41,12 +38,14 @@ public:
 
 	std::string formatValue(double value);
 
+	std::string formatValueWithSuffix(double value);
+
 
 	bool hasActiveDialog() const;
 	const EditDialogResult getEditDialogText() const;
 
 private:
-	std::unique_ptr<Dialog> activeDialog;
+	std::unique_ptr<Dialog<EditorUICommand>> activeDialog;
 
 
 	Renderer& renderer;

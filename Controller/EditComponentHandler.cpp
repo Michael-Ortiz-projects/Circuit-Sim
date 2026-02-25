@@ -1,6 +1,6 @@
 #include "EditComponentHandler.h"
 
-EditComponentHandler::EditComponentHandler(UI_Manager& ui, Circuit& c)
+EditComponentHandler::EditComponentHandler(EditorUI_Manager& ui, Circuit& c)
 	: ui(ui), schematicComponents(c.getSchematicComponents()), wires(c.getWires()), circuit(c) { }
 
 void EditComponentHandler::onKeyPress(const sf::Event::KeyEvent& event) {
@@ -39,12 +39,12 @@ void EditComponentHandler::openEditDialog() {
 }
 
 void EditComponentHandler::update() {
-    UICommand cmd;
+    EditorUICommand cmd;
     while (ui.pollCommand(cmd)) {
         EditDialogResult EditDialog;
         Debug::UICommand(cmd);
         switch (cmd) {
-        case UICommand::ApplyEdit:
+        case EditorUICommand::ApplyEdit:
             std::cout << "this ran\n";
             EditDialog = ui.getEditDialogText();
             std::cout << "got edit dialog\n";
@@ -65,7 +65,7 @@ void EditComponentHandler::update() {
             finished = true;
             break;
 
-        case UICommand::CancelEdit:
+        case EditorUICommand::CancelEdit:
             std::cout << "closing Dialog Ran\n";
             ui.closeEditDialog();
             finished = true;
@@ -122,7 +122,7 @@ bool EditComponentHandler::parseValueWithSuffix(const std::string& input, double
     }
 }
 
-void EditComponentHandler::rotateTarget() { //rotation is bad
+void EditComponentHandler::rotateTarget() {
     float prevRotation = schemComp->getRotation();
     float newRotation = prevRotation - 90.0f;
     newRotation = std::fmod(newRotation, 360.0f);

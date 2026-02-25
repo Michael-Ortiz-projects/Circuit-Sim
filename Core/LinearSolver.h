@@ -1,8 +1,11 @@
 #pragma once
+#include "MNASystem.h"
 
 class LinearSolver {
 public:
 	LinearSolver() {}
 
-	bool solve();
+	bool solve(MNASystem& sys);
+
+private:
 };

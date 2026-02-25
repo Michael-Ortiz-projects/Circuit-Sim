@@ -1,10 +1,9 @@
 #pragma once
 #include "SFML/Graphics.hpp"
-#include <functional>
 #include <iostream>
 #include "../Config.h"
 
-enum class UICommand {
+enum class EditorUICommand {
 	None,
 	ToggleMenu,
 
@@ -22,9 +21,40 @@ enum class UICommand {
 	SaveFileAs,
 	ExitProgram,
 
+	OpenSimulationWindow,
+
 	ApplyEdit,
 	CancelEdit
 };
+
+enum class SimulationUICommand {
+	None,
+	ToggleMenu,
+	NewSimulation,
+	CreateSimulation,
+	CancelCreateSimulation,
+	EditSimulation,
+	ApplyEditSimulation,
+	CancelEditSimulation,
+	RunSimulation,
+
+
+	GraphData,
+	UpdateY_AxisMenu,
+	ApplyGraphData,
+	CancelGraphData,
+
+	GraphSettings,
+	AutoScaleGraph,
+	ApplyGraphSettings,
+	CancelGraphSettings,
+	
+
+	DCOP,
+	TRAN,
+};
+
+template <typename CommandT>
 
 class Button {
 public:
@@ -34,29 +64,123 @@ public:
 	int characterSize;
 	float textResolutionFactor;
 
-	Button(sf::Font& fnt, const std::string& label, const sf::Vector2f& pos, const sf::Vector2f& size, UICommand cmd);
+	Button(sf::Font& fnt, const std::string& label, const sf::Vector2f& pos, const sf::Vector2f& size, CommandT cmd)
+		: font(fnt), textResolutionFactor(fontFactor), characterSize(fontSize), command(cmd), clicked(false), triggered(false), name(label)
+	{
+		box.setPosition(pos);
+		box.setSize(size);
+		box.setFillColor(normalColor);
+		box.setOutlineThickness(1);
+		box.setOutlineColor(normalColor);
 
-	void draw(sf::RenderWindow& window);
 
-	bool contains(const sf::Vector2f mousePos);
+		text.setFont(font);
+		text.setString(label);
+		text.setCharacterSize(characterSize * textResolutionFactor); // Resolution factor because default font resolution was fuzzy
+		text.setFillColor(sf::Color(220, 220, 240));
+		text.setScale({ 1 / textResolutionFactor, 1 / textResolutionFactor });
+		sf::FloatRect textbox = text.getLocalBounds();
+		text.setOrigin(0, 0);
+		text.setPosition(
+			pos.x + (size.x - textbox.width / textResolutionFactor) / 2,
+			pos.y + (size.y - textbox.height / textResolutionFactor) / 2 - textbox.top / 2
+		);
+	}
 
-	void onMousePress(const sf::Vector2f& point);
+	void draw(sf::RenderWindow& window) {
+		window.draw(box);
+		window.draw(text);
+	}
 
-	void onMouseMove(const sf::Vector2f& point);
+	bool contains(const sf::Vector2f mousePos) {
+		const sf::FloatRect b = box.getGlobalBounds();
+		/*std::cout
+			<< "Point: (" << mousePos.x << ", " << mousePos.y << ")\n"
+			<< "Bounds: ["
+			<< "L=" << b.left
+			<< ", T=" << b.top
+			<< ", R=" << b.left + b.width
+			<< ", B=" << b.top + b.height
+			<< "]\n"
+			<< "Contains: " << b.contains(mousePos)
+			<< "\n\n";*/
+		return b.contains(mousePos);
+	}
 
-	void onMouseRelease(const sf::Vector2f& point);
+	void onMousePress(const sf::Vector2f& point) {
+		clicked = contains(point);
+		//std::cout << "Clicked = " << clicked << std::endl;
+	}
 
-	bool consumed(UICommand& outputCommand);
+	void onMouseMove(const sf::Vector2f& point) {
+		bool hovering = contains(point);
+		box.setFillColor(hovering ? hoverColor : normalColor);
+		box.setOutlineColor(hovering ? hoverOutline : normalColor);
+	}
 
-	void setTextResolutionFactor(float factor);
+	void onMouseRelease(const sf::Vector2f& point) {
+		if (clicked && contains(point)) {
+			triggered = true;
+			std::cout << name << " was triggered\n";
+		}
 
-	void alignTextOnLeft(float margin);
+		clicked = false;
+	}
 
-	std::string getName();
+	bool consumed(CommandT& outputCommand) {
+		if (triggered) {
+			outputCommand = command;
+			triggered = false;
+			std::cout << name + " Button Triggered\n\n";
+			return true;
+		}
+		return false;
+	}
+
+	void setTextResolutionFactor(float factor) {
+		textResolutionFactor = factor;
+	}
+
+	void alignTextOnLeft(float margin) {
+		text.setOrigin(0, 0);
+		text.setPosition(box.getPosition().x + margin / 2,
+			box.getPosition().y + (box.getSize().y - text.getLocalBounds().height) * 0.5f + margin / 2);
+	}
+
+	void fitBoxWidthToText(float padding = 12.f) {
+		// Get unscaled text bounds
+		sf::FloatRect bounds = text.getLocalBounds();
+
+		// Convert to actual rendered size (because you scale the text down)
+		float textWidth = bounds.width / textResolutionFactor;
+		float textHeight = bounds.height / textResolutionFactor;
+
+		// Resize the box to fit text + padding
+		sf::Vector2f size = box.getSize();
+		size.x = textWidth + padding * 2.f;
+		size.y = std::max(size.y, textHeight + padding * 2.f);
+		box.setSize(size);
+
+		// Re-center text in the resized box
+		sf::Vector2f pos = box.getPosition();
+		text.setPosition(
+			pos.x + (size.x - textWidth) / 2.f,
+			pos.y + (size.y - textHeight) / 2.f - (bounds.top / textResolutionFactor)
+		);
+	}
+	std::string& getName() {
+		return name;
+	}
+
+	void setName(std::string n) {
+		name = n;
+		text.setString(name);
+		fitBoxWidthToText();
+	}
 private:
 	bool clicked;
 	bool triggered;
-	UICommand command = UICommand::None;
+	CommandT command;
 	std::string name;
 
 

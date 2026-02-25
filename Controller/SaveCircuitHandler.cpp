@@ -1,6 +1,6 @@
 #include "SaveCircuitHandler.h"
 
-SaveCircuitHandler::SaveCircuitHandler(UI_Manager& ui, SaveManager& saver, Circuit& Circuit, AssetManager& Assets, std::string& workingFilePath)
+SaveCircuitHandler::SaveCircuitHandler(EditorUI_Manager& ui, SaveManager& saver, Circuit& Circuit, AssetManager& Assets, std::string& workingFilePath)
 	: ui(ui), saveManager(saver), circuit(Circuit), assets(Assets), workingFilePath(workingFilePath) { }
 
 
@@ -57,6 +57,7 @@ void SaveCircuitHandler::loadDialog() {
        std::cout << "Failed to load circuit from path: " << path << std::endl;
     }
     circuit.setCircuitData(data);
+
     workingFilePath = path;
 }
 
@@ -80,11 +81,12 @@ std::string SaveCircuitHandler::selectLoadFile() {
 }
 
 void SaveCircuitHandler::saveCurrentWorkingFile() {
-    //saveManager.save(circuit, workingFilePath);
+    saveManager.saveCircuitToFile(circuit, workingFilePath);
 }
 
 CircuitData SaveCircuitHandler::loadFromFile(const std::string& path) {
     CircuitData data;
     if (!saveManager.loadCircuitFromFile(data, path, assets)) std::cout << "SaveCircuitHandler::loadFromFile() failed\n";
+    workingFilePath = path;
     return data;
 }

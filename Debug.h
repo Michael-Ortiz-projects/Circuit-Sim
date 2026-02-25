@@ -9,17 +9,17 @@ class Debug
 public:
     static void setEnabled(bool e) { enabled = e; }
 
-    static void UICommand(UICommand cmd) {
+    static void UICommand(EditorUICommand cmd) {
         if (!enabled) return;
         switch (cmd) {
-        case UICommand::None: std::cout << "UI Command = None\n\n"; break;
-        case UICommand::ToggleMenu: std::cout << "UI Command = ToggleMenu\n\n"; break;
-        case UICommand::PlaceVoltageSource: std::cout << "UI Command = PlaceVoltageSource\n\n"; break;
-        case UICommand::PlaceResistor: std::cout << "UI Command = PlaceResistor\n\n"; break;
-        case UICommand::PlaceGround: std::cout << "UI Command = PlaceGround\n\n"; break;
+        case EditorUICommand::None: std::cout << "EditorUI Command = None\n\n"; break;
+        case EditorUICommand::ToggleMenu: std::cout << "EditorUI Command = ToggleMenu\n\n"; break;
+        case EditorUICommand::PlaceVoltageSource: std::cout << "EditorUI Command = PlaceVoltageSource\n\n"; break;
+        case EditorUICommand::PlaceResistor: std::cout << "EditorUI Command = PlaceResistor\n\n"; break;
+        case EditorUICommand::PlaceGround: std::cout << "EditorUI Command = PlaceGround\n\n"; break;
 
-        case UICommand::ApplyEdit: std::cout << "UI Command = ApplyEdit\n\n"; break;
-        case UICommand::CancelEdit: std::cout << "UI Command = CancelEdit\n\n"; break;
+        case EditorUICommand::ApplyEdit: std::cout << "EditorUI Command = ApplyEdit\n\n"; break;
+        case EditorUICommand::CancelEdit: std::cout << "EditorUI Command = CancelEdit\n\n"; break;
         }
     }
 

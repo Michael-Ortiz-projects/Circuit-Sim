@@ -1,104 +1,147 @@
-﻿#include <iostream>
-#include <cmath>
-#include <functional>
-#include "SFML/Graphics.hpp"
-#include "Core/NetlistComponent.h"
-#include "Core/Circuit.h"
-#include "Controller/Controller.h"
-#include "UI/Grid.h"
-#include "Config.h"
-#include "UI/AssetManager.h"
-#include "UI/DropdownMenu.h"
-#include "Debug.h"
-#include "UI/Renderer.h"
-#include "UI/UI_Manager.h"
-#include <fstream>
+﻿#include "Controller/EditorController.h"
+#include "Controller/SimulationController.h"
+#include "UI/EditorUI_Manager.h"
+#include "UI/SimulationUI_Manager.h"
+#include "UI/EditorRenderer.h"
+#include "UI/SimulationRenderer.h"
 
 
-// save button doesnt work, save as does though
-// additionally: need to fix wiring more because trying to connect a wire to a component Terminal that already has a node doesnt work as it should
-int main() {
-    sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Circuit Sim", sf::Style::None);
 
-    std::string currentWorkingFilePath;
+//I now need to actually create the simulation for DC operating point
+Grid grid(gridSize);
+std::string currentWorkingFilePath;
+AssetManager assets;
+sf::RenderWindow editorWindow(sf::VideoMode::getDesktopMode(), "Circuit Sim", sf::Style::None);
+sf::RenderWindow simulationWindow;
 
-    Grid grid(gridSize);
-
-    AssetManager assets;
-
+int main() {   
+    
     Circuit circuit(assets);
 
-    Renderer renderer(window, assets, grid);
+    Renderer editorRenderer(editorWindow, assets);
+    Renderer simRenderer(simulationWindow, assets);
 
-    UI_Manager UI(renderer);
+    EditorRenderer schematicRenderer(editorRenderer, grid);
+    SimulationRenderer simulationRenderer(simRenderer);
 
-    Controller controller(circuit, window, assets, renderer, UI, currentWorkingFilePath);
+    EditorUI_Manager editorUI(editorRenderer);
+    SimulationUI_Manager simUI(simRenderer);
+    editorUI.initialize();
+
+    EditorController editorController(circuit, assets, editorRenderer, editorUI, currentWorkingFilePath);
+    SimulationController simulationController(circuit, simUI);
+
     //initializing circuit data
-    char filename[MAX_PATH] = "TestingMNACircuit.ckt";
-    CircuitData initializedData = controller.saveCircuitHandler.loadFromFile(filename);
+    char filename[MAX_PATH] = "SeriesRLCDCCircuit.ckt";
+    CircuitData initializedData = editorController.saveCircuitHandler.loadFromFile(filename);
     circuit.setCircuitData(initializedData);
 
 
-    UI.initialize(assets);
+    ScrollTextBox box(assets.mainFont, 18, { 50, 1000 }, { 400, 200 });
+    box.setString("Long text...\nLine 2...\nLine 3...\nLine 4...\nLine 5...\nLine 6...\nLine 7...\nLine 2...\nLine 3...\nLine 4...\nLine 5...\nLine 6...\nLine 7");
 
-    while (window.isOpen()) {
+    int simColorDepth = 90;
+
+    while (editorWindow.isOpen()) {
         sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
-                window.close();
+        while (editorWindow.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                editorWindow.close();                
+                return 1;
+            }
+            editorUI.handleEvent(event);
 
-            UI.handleEvent(event);
-            controller.handleEvent(event);
-            controller.rebuildSchematicComponents(event);
+            editorController.handleEvent(event);
+            editorController.rebuildSchematicComponents();
+            box.handleEvent(event, editorWindow);
+
         }
 
-        UICommand cmd;
+        // ----- Simulation window -----
+        if (simulationWindow.isOpen()) {
+            sf::Event simEvent;
+            while (simulationWindow.pollEvent(simEvent)) {
+                if (simEvent.type == sf::Event::Closed) {
+                    simulationWindow.close();
+                }
+                simUI.handleEvent(simEvent);
+                simulationController.handleEvent(simEvent);
+            }
+        }
 
-        while (UI.pollCommand(cmd)) {
+        EditorUICommand cmd;
+
+        while (editorUI.pollCommand(cmd)) {
             CircuitData data;
             switch (cmd) {
-            case UICommand::PlaceVoltageSource:
-            case UICommand::PlaceResistor:
-            case UICommand::PlaceCurrentSource:
-            case UICommand::PlaceCapacitor:
-            case UICommand::PlaceInductor:
-            case UICommand::PlaceSwitch:
-            case UICommand::PlaceGround:
+            case EditorUICommand::PlaceVoltageSource:
+            case EditorUICommand::PlaceResistor:
+            case EditorUICommand::PlaceCurrentSource:
+            case EditorUICommand::PlaceCapacitor:
+            case EditorUICommand::PlaceInductor:
+            case EditorUICommand::PlaceSwitch:
+            case EditorUICommand::PlaceGround:
                 Debug::UICommand(cmd);
                 Debug::setHandler("PlaceHandler");
-                controller.setHandler(&controller.placeHandler, cmd);
+                editorController.setHandler(&editorController.placeHandler, cmd);
                 break;
 
-            case UICommand::OpenNewFile:
+            case EditorUICommand::OpenNewFile:
                 circuit.setCircuitData(data);
                 currentWorkingFilePath.clear();
                 break;
-            case UICommand::OpenFile:
-                controller.saveCircuitHandler.loadDialog();
+            case EditorUICommand::OpenFile:
+                editorController.saveCircuitHandler.loadDialog();
                 break;
-            case UICommand::SaveFile:
+            case EditorUICommand::SaveFile:
                 if (currentWorkingFilePath.empty())
-                    controller.saveCircuitHandler.saveDialog();
+                    editorController.saveCircuitHandler.saveDialog();
                 else {
-                    controller.saveCircuitHandler.saveCurrentWorkingFile();
+                    editorController.saveCircuitHandler.saveCurrentWorkingFile();
                 }
                 break;
-            case UICommand::SaveFileAs:
-                controller.saveCircuitHandler.saveDialog();
+            case EditorUICommand::SaveFileAs:
+                editorController.saveCircuitHandler.saveDialog();
                 break;
-            case UICommand::ExitProgram:
-                window.close();
+            case EditorUICommand::ExitProgram:
+                editorWindow.close();
                 break;
+            case EditorUICommand::OpenSimulationWindow:
+                if (!simulationWindow.isOpen()) {
+
+                    sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+
+                    simulationWindow.create(sf::VideoMode(desktop.width, desktop.height), "Simulation Window", sf::Style::Default);
+                    circuit.getSimulator().setSystem(circuit.getNetlistComponents(), circuit.getElectricalNodes());
+                    simRenderer.setViews();
+                    simUI.initialize();
+
+
+                }
+                break;
+                
             default:
                 break;
             }
         }
-        
 
-        renderer.drawCanvas(circuit.getSchematicComponents(), circuit.getWires(), controller.selectionBoxHandler.getRect());
-        renderer.drawUI(UI.menu_map);
-        UI.draw();
-        window.display();
+        
+        
+        if (editorWindow.isOpen()) {
+            schematicRenderer.drawCanvas(circuit.getSchematicComponents(), circuit.getWires(), editorController.selectionBoxHandler.getRect());
+            editorUI.draw();
+            editorWindow.draw(box);
+
+            editorWindow.display();
+        }
+        
+        // ----- Draw simulation window -----
+        if (simulationWindow.isOpen()) {
+            simulationWindow.clear(simulationWindowBackgroundColor);
+            simUI.draw();
+            simulationWindow.display();
+        }
     }
+    
     return 0;
 }

@@ -1,40 +1,36 @@
 #include "Simulator.h"
 
-Simulator::Simulator() { }
+Simulator::Simulator(std::vector<std::unique_ptr<SimulationComponent>>& simComps)
+	: simComponents(simComps) { }
 
-void Simulator::setSystem(const std::vector<NetlistComponent>& netlist, const std::unordered_map<int, ElectricalNode>& eNodes) {
+bool Simulator::setSystem(const std::vector<NetlistComponent>& netlist, const std::unordered_map<int, ElectricalNode>& eNodes) {
 	int index = buildMNAMap(netlist, eNodes);
+	if (index == -1) {
+		std::cout << "No Ground Nodes Located in MNA System\n";
+		return false;
+	}
 	simComponents.clear();
-	std::cout << "debug 1\n";
 
 	for (const auto& C : netlist) {
 		auto simulationComp = buildSimulationComponent(C);
 		if (simulationComp) simComponents.push_back(std::move(simulationComp));
 	}
-	std::cout << "debug 2\n";
-	//need to assign extra variable indexes for voltage sources and inductors and such
 
-	int extraIndex = index;
+	system.extraVars.clear();
+	int extraIndex = index++;
 	for (auto& c : simComponents) {
 		c->setExtraVariableIndex(extraIndex);
+		for (auto info : c->getExtraVarInfo()) {
+			info.index = extraIndex;
+			system.extraVars.push_back(info);
+		}
 		extraIndex += c->extraVariables();
 	}
-	std::cout << "debug 3\n";
 
 
 	system.setSystem(index, extraIndex - index);
-	std::cout << "debug 4\n";
 
-	/*temporary solving code to just generate the matrices to print to console*/
-
-	for (auto& C : simComponents) {
-		std::cout << "Stamping Component: " << C->getID() << "\n";
-		C->stamp(system);
-	}
-	std::cout << "debug 5\n";
-
-	system.printA();
-	system.printb();
+	return true;
 }
 
 std::unique_ptr<SimulationComponent> Simulator::buildSimulationComponent(const NetlistComponent& netlistComp) {
@@ -54,6 +50,18 @@ std::unique_ptr<SimulationComponent> Simulator::buildSimulationComponent(const N
 		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
 		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
 		return std::make_unique<SimCurrentSource>(n1, n2, netlistComp.value, netlistComp.id);
+	case ComponentType::VoltageSource:
+		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
+		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
+		return std::make_unique<SimVoltageSource>(n1, n2, netlistComp.value, netlistComp.id);
+	case ComponentType::Capacitor:
+		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
+		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
+		return std::make_unique<SimCapacitor>(n1, n2, netlistComp.value, netlistComp.id);
+	case ComponentType::Inductor:
+		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
+		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
+		return std::make_unique<SimInductor>(n1, n2, netlistComp.value, netlistComp.id);
 	case ComponentType::Ground:
 		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
 		return std::make_unique<SimGround>(n1, netlistComp.id);
@@ -62,6 +70,7 @@ std::unique_ptr<SimulationComponent> Simulator::buildSimulationComponent(const N
 
 int Simulator::buildMNAMap(const std::vector<NetlistComponent>& netlist, const std::unordered_map<int, ElectricalNode>& eNodes) {
 	std::cout << "buildMNAMap() running\n";
+	eNodeToMNA.clear();
 	std::set<int> nonGroundNodes;
 	std::set<int> groundNodes;
 	std::set<ElectricalConnection> groundConnections;
@@ -80,6 +89,7 @@ int Simulator::buildMNAMap(const std::vector<NetlistComponent>& netlist, const s
 			if (groundConnections.contains(C)) groundNodes.insert(eNode.id);
 		}
 	}
+	if (groundNodes.empty()) return -1;
 	
 
 	for (const auto& [ID, eNode] : eNodes) {
@@ -112,6 +122,64 @@ int Simulator::getMNAIndex(const int eNode) {
 	return it->second;
 }
 
-bool Simulator::runDC() {
+bool Simulator::runDC(bool printToConsole) {
+
+	/*temporary solving code to just generate the matrices to print to console*/
+	if (printToConsole) {
+		system.printA();
+		system.printb();
+	}
+	
+
+	for (auto& C : simComponents) {
+		std::cout << "Stamping Component: " << C->getID() << "\n";
+		C->stamp(SimulationType::DC, system);
+	}
+
+	if (printToConsole) {
+		system.printA();
+		system.printb();
+		system.printx();
+	}
+	solver.solve(system);
+
 	return true;
+}
+
+TransientSimResults Simulator::runTransient(Config config) {
+	size_t numSteps = static_cast<size_t>(std::ceil((config.tEnd - config.tStart) / config.timeStep)) + 1;
+	size_t step = 0;
+
+	std::vector<Eigen::VectorXd> resultVector(numSteps);
+	std::vector<double> timeVector(numSteps);
+	for (auto& v : resultVector)
+		v = Eigen::VectorXd::Zero(system.getx().size());
+
+	for (size_t step = 0; step < numSteps; ++step) {
+		double t = config.tStart + step * config.timeStep;		
+		double dt = (step == numSteps - 1) ? config.tEnd - t : config.timeStep;
+		if (step == numSteps - 1) t = config.timeStep * step + dt;
+		if (dt <= 0.0) dt = 1e-12;
+
+
+		for (auto& C : simComponents) {
+			C->stamp(SimulationType::Transient, system, dt);
+		}
+		solver.solve(system);
+		// update inductor currents for the next step
+		for (auto& comp : simComponents) {
+			if (auto ind = dynamic_cast<SimInductor*>(comp.get())) {
+				int idx = ind->getExtraVarInfo()[0].index;  // extraVarIndex in MNASystem
+				double i_new = system.getx()[idx];          // solved current
+				ind->setCurrent(i_new);
+			}
+		}
+		timeVector[step] = t;
+
+		resultVector[step] = system.getx();
+		system.setZero();
+	}
+	
+	transientSimResults = { timeVector, resultVector };
+	return transientSimResults;
 }

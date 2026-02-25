@@ -1,5 +1,4 @@
 #pragma once
-#include "SFML/Graphics.hpp"
 #include "../Core/NetlistComponent.h"
 #include "AssetManager.h"
 #include "../Config.h"

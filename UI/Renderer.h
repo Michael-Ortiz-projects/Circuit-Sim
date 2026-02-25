@@ -1,29 +1,15 @@
 #pragma once
-#include <SFML/Graphics.hpp>
-#include "Grid.h"
-#include <vector>
-#include <string>
-#include "SchematicComponent.h"
 #include "AssetManager.h"
-#include <unordered_map>
-#include "DropdownMenu.h"
-#include "../Core/Wire.h"
-#include "../Core/ElectricalNode.h"
-#include <set>
 
 class Renderer {
 public:
-    Renderer(sf::RenderWindow& Window, AssetManager& Assets, Grid& Grid);
+    Renderer(sf::RenderWindow& Window, AssetManager& Assets);
 
-    void drawCanvas(std::vector<SchematicComponent>& components, std::unordered_map<int, Wire>& wires, sf::FloatRect selectionRect);
+    void setViews();
 
-    void drawWireGraph(int nodeID, const std::map<int, Node>& graph, std::set<std::pair<int, int>>& drawnEdges);
+    sf::View& getCanvasView() { return canvasView; }
 
-    void drawUI(std::unordered_map<MenuID, DropdownMenu> menu_map);
-
-    sf::View& getCanvasView();
-
-    sf::View& getUIView();
+    sf::View& getUIView() { return UIView; }
 
     sf::RenderWindow& getWindow() { return window; }
 
@@ -32,7 +18,6 @@ private:
 
     AssetManager& assets;
     sf::RenderWindow& window;
-    Grid& grid;
     sf::View canvasView;
     sf::View UIView;
 };

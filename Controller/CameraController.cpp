@@ -39,6 +39,7 @@ void CameraController::onScroll(const sf::Event::MouseWheelScrollEvent& event) {
 }
 
 void CameraController::onKeyPress(const sf::Event::KeyEvent& event) {
-    if (event.code == sf::Keyboard::Escape)
+    if (event.code == sf::Keyboard::Escape) {
         window.close();
+    }
 }

@@ -86,6 +86,7 @@ void SchematicComponent::setValue(double val) {
 void SchematicComponent::startDrag(const sf::Vector2f& worldPos) {
     dragging = true;
     dragOffset = position - worldPos;
+    //selected = true;
 }
 
 void SchematicComponent::dragTo(const sf::Vector2f& worldPos) {
@@ -101,6 +102,7 @@ void SchematicComponent::dragTo(const sf::Vector2f& worldPos) {
 
 void SchematicComponent::stopDrag() {
     dragging = false;
+    //selected = false;
 }
 
 void SchematicComponent::setTexture(const sf::Texture& texture) {

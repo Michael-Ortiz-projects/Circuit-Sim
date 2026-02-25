@@ -3,7 +3,7 @@
 #include <iostream>
 
 Circuit::Circuit(AssetManager& AssetManager)
-    : assets(AssetManager) { }
+    : assets(AssetManager), simulator(simComponents) { }
 
 int Circuit::addComponent(ComponentType type, sf::Vector2f position) {
     std::cout << "addComponent() started\n";
@@ -267,6 +267,7 @@ ElectricalNode* Circuit::getElectricalNode(int electricalNodeID) {
 std::unordered_map<int, ElectricalNode>& Circuit::getElectricalNodes() { return electricalNodes; }
 
 Simulator& Circuit::getSimulator() { return simulator; }
+
 
 std::unordered_map<int, int> Circuit::getComponentIDToIndex() {
     return componentIDToIndex;

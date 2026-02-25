@@ -3,7 +3,6 @@
 #include <iostream>
 #include "../Config.h"
 #include "ElectricalNode.h"
-#include <unordered_set>
 
 struct Node {
 	int id;

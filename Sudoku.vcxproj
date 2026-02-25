@@ -146,11 +146,13 @@
   <ItemGroup>
     <ClCompile Include="Controller\CameraController.cpp" />
     <ClCompile Include="Controller\DeleteHandler.cpp" />
+    <ClCompile Include="Controller\DialogHandler.cpp" />
     <ClCompile Include="Controller\EditComponentHandler.cpp" />
     <ClCompile Include="Controller\PlaceHandler.cpp" />
     <ClCompile Include="Controller\SaveCircuitHandler.cpp" />
     <ClCompile Include="Controller\SaveManager.cpp" />
     <ClCompile Include="Controller\SelectionBoxHandler.cpp" />
+    <ClCompile Include="Controller\SimulationController.cpp" />
     <ClCompile Include="Controller\WireHandler.cpp" />
     <ClCompile Include="Core\ElectricalNode.cpp" />
     <ClCompile Include="Core\LinearSolver.cpp" />
@@ -165,32 +167,42 @@
     <ClCompile Include="UI\Button.cpp" />
     <ClCompile Include="Controller\DragHandler.cpp" />
     <ClCompile Include="UI\AssetManager.cpp" />
+    <ClCompile Include="UI\EditorRenderer.cpp" />
+    <ClCompile Include="UI\ElementStateDisplay.cpp" />
+    <ClCompile Include="UI\Graph.cpp" />
     <ClCompile Include="UI\Renderer.cpp" />
     <ClCompile Include="UI\SchematicComponent.cpp" />
-    <ClCompile Include="Controller\Controller.cpp" />
+    <ClCompile Include="Controller\EditorController.cpp" />
     <ClCompile Include="Core\Circuit.cpp" />
     <ClCompile Include="Core\NetlistComponent.cpp" />
     <ClCompile Include="CircuitSim.cpp" />
     <ClCompile Include="UI\Grid.cpp" />
+    <ClCompile Include="UI\SimulationRenderer.cpp" />
+    <ClCompile Include="UI\SimulationUI_Manager.cpp" />
     <ClCompile Include="UI\TextBox.cpp" />
-    <ClCompile Include="UI\UI_Manager.cpp" />
+    <ClCompile Include="UI\EditorUI_Manager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Controller\CameraController.h" />
     <ClInclude Include="Controller\DeleteHandler.h" />
+    <ClInclude Include="Controller\DialogHandler.h" />
     <ClInclude Include="Controller\EditComponentHandler.h" />
     <ClInclude Include="Controller\PlaceHandler.h" />
     <ClInclude Include="Controller\SaveCircuitHandler.h" />
     <ClInclude Include="Controller\SaveManager.h" />
     <ClInclude Include="Controller\SelectionBoxHandler.h" />
+    <ClInclude Include="Controller\SimulationController.h" />
     <ClInclude Include="Controller\WireHandler.h" />
     <ClInclude Include="Core\ElectricalNode.h" />
     <ClInclude Include="Core\LinearSolver.h" />
     <ClInclude Include="Core\MNASystem.h" />
+    <ClInclude Include="Core\SimComps\SimCapacitor.h" />
     <ClInclude Include="Core\SimComps\SimCurrentSource.h" />
     <ClInclude Include="Core\SimComps\SimGround.h" />
+    <ClInclude Include="Core\SimComps\SimInductor.h" />
     <ClInclude Include="Core\SimComps\SimResistor.h" />
     <ClInclude Include="Core\SimComps\SimulationComponent.h" />
+    <ClInclude Include="Core\SimComps\SimVoltageSource.h" />
     <ClInclude Include="Core\Simulator.h" />
     <ClInclude Include="Core\Wire.h" />
     <ClInclude Include="Debug.h" />
@@ -202,15 +214,20 @@
     <ClInclude Include="Controller\DragHandler.h" />
     <ClInclude Include="Controller\InputHandler.h" />
     <ClInclude Include="UI\AssetManager.h" />
+    <ClInclude Include="UI\EditorRenderer.h" />
+    <ClInclude Include="UI\ElementStateDisplay.h" />
+    <ClInclude Include="UI\Graph.h" />
     <ClInclude Include="UI\Renderer.h" />
     <ClInclude Include="UI\SchematicComponent.h" />
     <ClInclude Include="Config.h" />
-    <ClInclude Include="Controller\Controller.h" />
+    <ClInclude Include="Controller\EditorController.h" />
     <ClInclude Include="Core\Circuit.h" />
     <ClInclude Include="Core\NetlistComponent.h" />
     <ClInclude Include="UI\Grid.h" />
+    <ClInclude Include="UI\SimulationRenderer.h" />
+    <ClInclude Include="UI\SimulationUI_Manager.h" />
     <ClInclude Include="UI\TextBox.h" />
-    <ClInclude Include="UI\UI_Manager.h" />
+    <ClInclude Include="UI\EditorUI_Manager.h" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="UI\Fonts\AnonymousPro-Regular.ttf" />

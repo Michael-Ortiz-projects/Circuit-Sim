@@ -1,5 +1,4 @@
 #pragma once
-#include "SFML/Graphics.hpp"
 #include "../Core/circuit.h"
 #include "DragHandler.h"
 #include "PlaceHandler.h"
@@ -7,19 +6,20 @@
 #include "SelectionBoxHandler.h"
 #include "DeleteHandler.h"
 #include "EditComponentHandler.h"
+#include "SaveCircuitHandler.h"
+
 #include "../Debug.h"
 #include "../UI/Renderer.h"
 #include "CameraController.h"
 #include "../Geometry.h"
 #include "../UI/ComponentInfoDisplay.h"
-#include "SaveCircuitHandler.h"
 
 class InputHandler;
 
 
 
 
-class Controller {
+class EditorController {
 public:
     DragHandler dragHandler;
     PlaceHandler placeHandler;
@@ -31,7 +31,7 @@ public:
 
     Selection selection;
 
-    Controller(Circuit& circ, sf::RenderWindow& Window, AssetManager& Assets, Renderer& Renderer, UI_Manager& UI, std::string& workingFilePath);
+    EditorController(Circuit& circ, AssetManager& Assets, Renderer& Renderer, EditorUI_Manager& UI, std::string& workingFilePath);
 
     void handleEvent(const sf::Event& event);
 
@@ -47,9 +47,9 @@ public:
 
     void onScroll(const sf::Event::MouseWheelScrollEvent& event);
 
-    void setHandler(InputHandler* handler, UICommand cmd);
+    void setHandler(InputHandler* handler, EditorUICommand cmd);
 
-    void rebuildSchematicComponents(const sf::Event& event);
+    void rebuildSchematicComponents();
 
     InputHandler* getHandler();
 
@@ -68,7 +68,7 @@ private:
 
     CameraController cameraController;
 
-    UICommand command;
+    EditorUICommand command;
     Circuit& circuit;
     SaveManager saveManager;
     

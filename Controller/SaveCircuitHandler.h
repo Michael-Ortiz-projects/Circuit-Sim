@@ -1,6 +1,6 @@
 #pragma once
 #include "InputHandler.h"
-#include "../UI/UI_Manager.h"
+#include "../UI/EditorUI_Manager.h"
 #include "SaveManager.h"
 #include <Windows.h>
 #include <commdlg.h>
@@ -8,7 +8,7 @@
 
 class SaveCircuitHandler : public InputHandler {
 public:
-	SaveCircuitHandler(UI_Manager& ui, SaveManager& save, Circuit& Circuit, AssetManager& Assets, std::string& workingFilePath);
+	SaveCircuitHandler(EditorUI_Manager& ui, SaveManager& save, Circuit& Circuit, AssetManager& Assets, std::string& workingFilePath);
 
     void onMousePress(const sf::Vector2f& worldPos) override;
     void onMouseRelease(const sf::Vector2f& worldPos) override;
@@ -30,7 +30,7 @@ public:
     CircuitData loadFromFile(const std::string& path);
    
 private:
-    UI_Manager& ui;
+    EditorUI_Manager& ui;
     SaveManager& saveManager;
     AssetManager& assets;
     Circuit& circuit;

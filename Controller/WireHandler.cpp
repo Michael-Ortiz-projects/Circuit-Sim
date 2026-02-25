@@ -195,20 +195,36 @@ void WireHandler::handleWireCreationClick(const sf::Vector2f& worldPos) {
 }
 
 void WireHandler::finishWireAtConnection(ElectricalConnection& end) {
-   if (wireState != WireState::Creating || !activeWire) return;
+    if (wireState != WireState::Creating || !activeWire) return;
 
+    int primaryWireID = circuit.getNetlistComponent(end.componentID)->terminals.at(end.terminalID).electricalNode;
     int finalNodeID = activeWire->commitPreview();
-    int wireID = activeWire->ID;
+    int wireID;
 
-    // Circuit owns electrical truth
-    circuit.addConnectionToElectricalNode(wireID, end);
-    circuit.updateComponentTerminal({ wireID, finalNodeID }, activeElectricalNodeID, end);
+    if (primaryWireID == -1) {
+        wireID = activeWire->ID;
 
-    activeWire->selected = false;
-    activeWire = nullptr;
-    wireState = WireState::Null;
-    std::cout << "WireState = Null in finishWireAtConnection\n\n";
+        circuit.addConnectionToElectricalNode(wireID, end);
+        circuit.updateComponentTerminal({ wireID, finalNodeID }, activeElectricalNodeID, end);
 
+        activeWire->selected = false;
+        activeWire = nullptr;
+        wireState = WireState::Null;
+        std::cout << "WireState = Null in finishWireAtConnection\n\n";
+        return;
+    }
+
+    else {
+        Wire& primaryWire = *circuit.getWire(primaryWireID);
+        circuit.addConnectionToElectricalNode(primaryWireID, end);
+        mergeActiveWireIntoPrimary(primaryWire, *activeWire);
+        circuit.absorbElectricalNode(primaryWireID, activeElectricalNodeID);
+        circuit.eraseWire(activeWire->ID, true);
+        activeWire = nullptr;
+        wireState = WireState::Null;
+        std::cout << "WireState = Null in finishWireAtConnection\n\n";
+        return;
+    }
 }
 
 void WireHandler::finishWireAtNode(WireNodeReference reference) {

@@ -1,20 +1,17 @@
 #pragma once
-#include "SFML/Graphics.hpp"
 #include "InputHandler.h"
 #include "../Geometry.h"
 #include <algorithm>
-#include "../UI/SchematicComponent.h"
 #include "../Core/Circuit.h"
 
 class SelectionBoxHandler : public InputHandler {
 
+public:
 	sf::Vector2f startPos;
 	sf::FloatRect selectionRect;
 	bool& shiftHeld;
 	Selection& selection;
 	Circuit& circuit;
-
-public:
 	SelectionBoxHandler(std::vector<SchematicComponent>& comps, Circuit& circ, Selection& sel, bool& shift);
 
 	void onMousePress(const sf::Vector2f& worldPos) override;

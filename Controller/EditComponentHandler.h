@@ -1,11 +1,11 @@
 #pragma once
 #include "InputHandler.h"
-#include "../UI/UI_Manager.h"
+#include "../UI/EditorUI_Manager.h"
 #include "../Core/Circuit.h"
 
 class EditComponentHandler : public InputHandler {
 public:
-	EditComponentHandler(UI_Manager& ui, Circuit& c);
+	EditComponentHandler(EditorUI_Manager& ui, Circuit& c);
 
     void onKeyPress(const sf::Event::KeyEvent& event) override;
 
@@ -26,7 +26,7 @@ private:
     NetlistComponent* component;
     SchematicComponent* schemComp = nullptr;
     std::vector<SchematicComponent>& schematicComponents;
-    UI_Manager& ui;
+    EditorUI_Manager& ui;
     std::unordered_map<int, Wire>& wires;
     Circuit& circuit;
     bool finished = false;

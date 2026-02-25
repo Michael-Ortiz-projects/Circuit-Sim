@@ -1,14 +1,12 @@
 #pragma once
-#include <iostream>
-#include <vector>
 #include <unordered_map>
-#include "SFML/Graphics.hpp"
 #include "NetlistComponent.h"
 #include "../UI/SchematicComponent.h"
+#include "SimComps/SimulationComponent.h"
 #include "Wire.h"
-#include "ElectricalNode.h"
 #include "../Config.h"
 #include "Simulator.h"
+
 
 struct CircuitData {
     int nextComponentID = 0;
@@ -41,6 +39,8 @@ struct CircuitData {
 
 class Circuit {
 public:
+    std::vector<Eigen::VectorXd> simulationResult;
+
     Circuit(AssetManager& AssetManager);
 
     int addComponent(ComponentType type, sf::Vector2f position);
@@ -90,9 +90,6 @@ public:
     int getNextComponentID() const;
 
     bool terminalIsEmpty(ElectricalConnection& connection);
-
-
-    
 private:
 
     sf::Vector2f snapPositionToGrid(const sf::Vector2f& position);
@@ -108,6 +105,8 @@ private:
 
     std::vector<NetlistComponent> netlistComponents;
     std::vector<SchematicComponent> schematicComponents;
+    std::vector<std::unique_ptr<SimulationComponent>> simComponents;
+
     
 
     std::unordered_map<int, Wire> wires;

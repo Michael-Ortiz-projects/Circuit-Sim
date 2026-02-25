@@ -1,8 +1,6 @@
 #pragma once
-#include <vector>
 #include <string>
 #include <iostream>
-#include "SFML/Graphics.hpp"
 #include "ElectricalNode.h"
 #include "../Config.h"
 

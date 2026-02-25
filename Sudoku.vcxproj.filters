@@ -6,12 +6,12 @@
     <ClCompile Include="Controller\DragHandler.cpp" />
     <ClCompile Include="UI\AssetManager.cpp" />
     <ClCompile Include="UI\SchematicComponent.cpp" />
-    <ClCompile Include="Controller\Controller.cpp" />
+    <ClCompile Include="Controller\EditorController.cpp" />
     <ClCompile Include="Core\Circuit.cpp" />
     <ClCompile Include="Core\NetlistComponent.cpp" />
     <ClCompile Include="CircuitSim.cpp" />
     <ClCompile Include="UI\Grid.cpp" />
-    <ClCompile Include="UI\UI_Manager.cpp" />
+    <ClCompile Include="UI\EditorUI_Manager.cpp" />
     <ClCompile Include="Controller\PlaceHandler.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="UI\Renderer.cpp" />
@@ -31,6 +31,13 @@
     <ClCompile Include="Core\Simulator.cpp" />
     <ClCompile Include="Core\LinearSolver.cpp" />
     <ClCompile Include="Core\MNASystem.cpp" />
+    <ClCompile Include="UI\ElementStateDisplay.cpp" />
+    <ClCompile Include="UI\SimulationUI_Manager.cpp" />
+    <ClCompile Include="UI\EditorRenderer.cpp" />
+    <ClCompile Include="UI\SimulationRenderer.cpp" />
+    <ClCompile Include="Controller\SimulationController.cpp" />
+    <ClCompile Include="Controller\DialogHandler.cpp" />
+    <ClCompile Include="UI\Graph.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UI\AssetManager.h">
@@ -54,7 +61,7 @@
     <ClInclude Include="Config.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
-    <ClInclude Include="Controller\Controller.h">
+    <ClInclude Include="Controller\EditorController.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="Debug.h">
@@ -102,7 +109,7 @@
     <ClInclude Include="UI\TextBox.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
-    <ClInclude Include="UI\UI_Manager.h">
+    <ClInclude Include="UI\EditorUI_Manager.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="Core\Wire.h">
@@ -117,13 +124,57 @@
     <ClInclude Include="Controller\SaveCircuitHandler.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Simulator.h" />
-    <ClInclude Include="Core\LinearSolver.h" />
-    <ClInclude Include="Core\MNASystem.h" />
-    <ClInclude Include="Core\SimComps\SimResistor.h" />
-    <ClInclude Include="Core\SimComps\SimCurrentSource.h" />
-    <ClInclude Include="Core\SimComps\SimulationComponent.h" />
-    <ClInclude Include="Core\SimComps\SimGround.h" />
+    <ClInclude Include="Core\MNASystem.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\LinearSolver.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\SimComps\SimVoltageSource.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\SimComps\SimulationComponent.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\SimComps\SimResistor.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\SimComps\SimInductor.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\SimComps\SimGround.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\SimComps\SimCurrentSource.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\SimComps\SimCapacitor.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Simulator.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\ElementStateDisplay.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\SimulationUI_Manager.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\EditorRenderer.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\SimulationRenderer.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\SimulationController.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\DialogHandler.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Graph.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Font Include="UI\Fonts\AnonymousPro-Regular.ttf" />
