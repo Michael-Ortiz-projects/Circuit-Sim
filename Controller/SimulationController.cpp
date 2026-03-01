@@ -109,7 +109,7 @@ void SimulationController::onMouseRelease(const sf::Event::MouseButtonEvent& eve
 			selectionRect.width = std::abs(worldPos.x - startSelectionPos.x);
 			selectionRect.height = std::abs(worldPos.y - startSelectionPos.y);
 
-			UI.simulationGraph.setBounds(selectionRect.left, selectionRect.left + selectionRect.width, selectionRect.top + selectionRect.height, selectionRect.top);
+			UI.simulationGraph.setBounds(selectionRect.left, selectionRect.left + selectionRect.width, selectionRect.top, selectionRect.top + selectionRect.height);
 			selectionRect = sf::FloatRect();
 			UI.simulationGraph.selectionRect = selectionRect;
 
@@ -149,7 +149,7 @@ void SimulationController::runSimulation() {
 	Simulator& sim = circuit.getSimulator();
 	if (!sim.setSystem(circuit.getNetlistComponents(), circuit.getElectricalNodes())) return;
 	
-	TransientSimResults transientResults;
+	std::vector<TransientSimulationState> transientResults;
 	std::vector<sf::Vector2f> data;
 
 	switch (simType) {
@@ -174,24 +174,31 @@ void SimulationController::runSimulation() {
 			UI.resultTextBox.appendString(invalidTransientString);
 			return;
 		}
+		std::cout << "doing sim\n";
 		transientResults = sim.runTransient(simParameters);
-		timeVector = transientResults.timeVector;
-		results = transientResults.resultsVector;
+		timeVector.resize(transientResults.size());
+		results.resize(transientResults.size());
+		std::cout << "resized vectors\n";
+		if (UI.graphDataY_Varidx >= 0) {
+			for (size_t t = 1; t < transientResults.size(); t++) {
+				//std::cout << "time t = " << t << "\n";
+				timeVector[t] = transientResults[t].time;
+				results[t] = transientResults[t].resultsVector;
+				transientResults[t].previousResultsVector = transientResults[t - 1].previousResultsVector;
+				data.emplace_back(timeVector[t], sim.graphVariables[UI.graphDataY_Varidx].evaluator(transientResults[t])); // i think the issue is with this line, its vector subscript out of range
+			}
+		}
+		
+		std::cout << "set vector data\n";
 		
 		exportToCSV(results, timeVector, "simulation_results.csv");
 		circuit.simulationResult = results;
-		std::cout << "Time and Result Vectors \n\n";
-		if (UI.graphDataY_VarMNAidx >= 0) {
-			for (size_t i = 0; i < timeVector.size(); i++) {
+		//std::cout << "Time and Result Vectors \n\n";
 
-				data.emplace_back(timeVector[i], results[i](UI.graphDataY_VarMNAidx));
-				//std::cout << timeVector[i] << ", " << results[i](UI.graphDataY_VarMNAidx) << "\n";
-			}
-			std::cout << timeVector.size();
+		
 
-			UI.simulationGraph.setData(data);
-			UI.simulationGraph.autoScale();
-		}
+		UI.simulationGraph.setData(data);
+		UI.simulationGraph.autoScale();
 		
 		
 		for (auto [eNode, MNA] : sim.eNodeToMNA) {
@@ -209,6 +216,32 @@ void SimulationController::runSimulation() {
 		UI.resultTextBox.appendString("No sim type selected\n");
 		break;
 	}
+
+	/*
+	
+	graphVarIdx = ui.activeDialog->getMenu(MenuID::GraphY_Axis).getSelectedValue();
+		ui.graphDataY_Varidx = graphVarIdx;
+		graphDataDialogResult.graphVariableIndex = graphVarIdx;
+
+		std::cout << "graphDataDialog result:\graphVariableIndex = " << graphVarIdx << "\n";
+
+		timeVector.resize(transientSimResults.size());
+		results.resize(transientSimResults.size());
+		for (size_t t = 1; t < transientSimResults.size(); t++) {
+			//printf("Transient Sim Results[%d]:\n", (t));
+			//std::cout << "Previous Results Vector: " << transientSimResults[t].previousResultsVector << "\n\n";
+			
+			timeVector[t] = transientSimResults[t].time;
+			results[t] = transientSimResults[t].resultsVector;
+			transientSimResults[t].previousResultsVector = transientSimResults[t - 1].previousResultsVector;
+			transientData.emplace_back(timeVector[t], graphVars[graphVarIdx].evaluator(transientSimResults[t]));
+		}
+
+		ui.simulationGraph.setData(transientData);
+		ui.simulationGraph.autoScale();
+		
+		ui.closeDialog();
+		*/
 }
 
 bool SimulationController::parseValueWithSuffix(const std::string& input, double& outValue) {

@@ -197,6 +197,7 @@ void SimulationUI_Manager::openGraphSettingsDialog() {
 	activeDialog->open();
 
 	// i want to add more y_axis data options for current and voltage of every circuit element, currently I am only able to graph the node voltages as well as any extra variables produced by the elements
+	// i need to fix graph tick markers, sometimes when autoscaling the numbers dont go all they way up
 }
 
 void SimulationUI_Manager::openGraphDataDialog(Circuit& circuit) {
@@ -206,32 +207,20 @@ void SimulationUI_Manager::openGraphDataDialog(Circuit& circuit) {
 	int textSize = 16;
 	activeDialog = std::make_unique<Dialog<SimulationUICommand>>(sf::Vector2f(1000.f, 200.f), sf::Vector2f(800, 500), renderer);
 
+
 	activeDialog->addLabel("Plot Y-axis Variable: ", sf::Vector2f(20, 100), textSize);
 	activeDialog->addDropdown(MenuID::GraphY_Axis, renderer.getAssets().mainFont, "", sf::Vector2f(180, 100), sf::Vector2f(120, 25), SimulationUICommand::ToggleMenu);
-
-	for (auto [eNode, MNA] : circuit.getSimulator().eNodeToMNA) { // add eNode options
-		std::cout << " this ran\n";
-		activeDialog->addOptionToDropdown(MenuID::GraphY_Axis, "eNode " + std::to_string(eNode) + " Voltage", SimulationUICommand::UpdateY_AxisMenu, MNA);
-	}
-
-	for (auto extraVarInfo : circuit.getSimulator().system.extraVars) { // add circuit element options
-		extraVarInfo.label += circuit.getNetlistComponent(extraVarInfo.componentID)->label + ")";
-		activeDialog->addOptionToDropdown(MenuID::GraphY_Axis, extraVarInfo.label, SimulationUICommand::UpdateY_AxisMenu, extraVarInfo.index);
-	}
-
+	auto& graphVariables(circuit.getSimulator().graphVariables);
 	std::string menuLabel;
-
-	if (graphDataY_VarMNAidx == -1) menuLabel = "None";
-
-	else {
-		menuLabel = activeDialog->getMenu(MenuID::GraphY_Axis).getOption(graphDataY_VarMNAidx).button.getName();
-	}
-
+	menuLabel = "None";
 	activeDialog->getMenu(MenuID::GraphY_Axis).setLabel(menuLabel);
 
-
-
 	
+
+
+	for (int i = 0; i < graphVariables.size(); i++) {
+		activeDialog->addOptionToDropdown(MenuID::GraphY_Axis, graphVariables[i].label, SimulationUICommand::UpdateY_AxisMenu, i);
+	}
 	
 	activeDialog->addLabel("Plot X-Axis Variable: ", sf::Vector2f(380, 100), textSize);
 	activeDialog->addDropdown(MenuID::GraphX_Axis, renderer.getAssets().mainFont, "", sf::Vector2f(540, 100), sf::Vector2f(120, 25), SimulationUICommand::ToggleMenu);
@@ -240,6 +229,14 @@ void SimulationUI_Manager::openGraphDataDialog(Circuit& circuit) {
 	activeDialog->addButton("OK", SimulationUICommand::ApplyGraphData, { 600.f, 450.f }, { 80.f, 30.f });
 	activeDialog->addButton("Cancel", SimulationUICommand::CancelGraphData, { 700.f, 450.f }, { 80.f, 30.f });
 
+	if (graphDataY_Varidx == -1) menuLabel = "None";
+
+	else {
+		menuLabel = activeDialog->getMenu(MenuID::GraphY_Axis).getOption(graphDataY_Varidx).button.getName();
+	}
+	activeDialog->getMenu(MenuID::GraphY_Axis).setLabel(menuLabel);
+
+	
 
 	activeDialog->open();
 }

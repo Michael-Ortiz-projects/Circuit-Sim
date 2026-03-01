@@ -14,12 +14,15 @@ AssetManager assets;
 sf::RenderWindow editorWindow(sf::VideoMode::getDesktopMode(), "Circuit Sim", sf::Style::None);
 sf::RenderWindow simulationWindow;
 
+
 int main() {   
     
     Circuit circuit(assets);
 
     Renderer editorRenderer(editorWindow, assets);
     Renderer simRenderer(simulationWindow, assets);
+    editorWindow.setFramerateLimit(60);
+    simulationWindow.setFramerateLimit(60);
 
     EditorRenderer schematicRenderer(editorRenderer, grid);
     SimulationRenderer simulationRenderer(simRenderer);
@@ -34,8 +37,9 @@ int main() {
     //initializing circuit data
     char filename[MAX_PATH] = "SeriesRLCDCCircuit.ckt";
     CircuitData initializedData = editorController.saveCircuitHandler.loadFromFile(filename);
-    circuit.setCircuitData(initializedData);
+    //circuit.setCircuitData(initializedData);
 
+    
 
     ScrollTextBox box(assets.mainFont, 18, { 50, 1000 }, { 400, 200 });
     box.setString("Long text...\nLine 2...\nLine 3...\nLine 4...\nLine 5...\nLine 6...\nLine 7...\nLine 2...\nLine 3...\nLine 4...\nLine 5...\nLine 6...\nLine 7");

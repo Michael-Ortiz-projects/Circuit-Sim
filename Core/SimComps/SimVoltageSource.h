@@ -4,8 +4,8 @@
 
 class SimVoltageSource : public SimulationComponent {
 public:
-	SimVoltageSource(int a, int b, double v, int id)
-		: SimulationComponent(id), n1(a), n2(b), V(v) {
+	SimVoltageSource(int a, int b, double v, int id, std::string Label)
+		: SimulationComponent(id, Label), n1(a), n2(b), V(v) {
 	}
 
 	std::vector<int> getNodes() const override { return { n1, n2 }; }

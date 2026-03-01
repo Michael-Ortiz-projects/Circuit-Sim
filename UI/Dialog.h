@@ -18,7 +18,7 @@ struct EditSimulationDialogResult {
 };
 
 struct GraphDataDialogResult {
-    int MNAIndex;
+    int graphVariableIndex;
 };
 
 struct GraphSettingsDialogResult {

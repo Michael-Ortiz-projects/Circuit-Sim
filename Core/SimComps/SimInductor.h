@@ -4,8 +4,8 @@
 
 class SimInductor : public SimulationComponent { // not complete, need to fix stamping
 public:
-	SimInductor(int a, int b, double l, int id)
-		: SimulationComponent(id), n1(a), n2(b), L(l) {
+	SimInductor(int a, int b, double l, int id, std::string Label)
+		: SimulationComponent(id, Label), n1(a), n2(b), L(l) {
 	}
 
 	std::vector<int> getNodes() const override { return { n1, n2 }; }

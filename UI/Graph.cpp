@@ -138,7 +138,6 @@ void Graph::drawData(sf::RenderTarget& target) {
 }
 
 void Graph::drawGrid(sf::RenderTarget& target) {
-
     spacingX = niceFraction((maxX - minX) / 20.f);
     spacingY = niceFraction((maxY - minY) / 20.f);
 
@@ -158,7 +157,6 @@ void Graph::drawGrid(sf::RenderTarget& target) {
 
     firstY = std::ceil(minY / spacingY) * spacingY;
     tickCountY = std::floor((maxY - firstY) / spacingY);
-
     for (int i = 0; i <= tickCountY; i++) {
         float y = firstY + i * spacingY;
 
@@ -225,7 +223,8 @@ void Graph::drawLabels(sf::RenderTarget& target) {
         target.draw(label);
     }
 
-    for (int i = 0; i <= tickCountX; i++) {
+    
+    for (int i = 0; i <= tickCountY; i++) {
 
         float y = firstY + i * spacingY;
 
@@ -258,6 +257,6 @@ void Graph::drawSelectionBox(sf::RenderTarget& target) {
     box.setSize({ selectionRect.width, selectionRect.height });
     box.setFillColor(sf::Color(100, 100, 255, 50));
     //box.setOutlineThickness(.0001f); // fix this outline, draw the outline in world space because super small outline values cause it not to be drawn OR just dont draw an outline. lowkey better
-    std::cout << "drawingBox";
+    //std::cout << "drawingBox";
     target.draw(box);
 }

@@ -40,6 +40,7 @@ void EditComponentHandler::openEditDialog() {
 
 void EditComponentHandler::update() {
     EditorUICommand cmd;
+
     while (ui.pollCommand(cmd)) {
         EditDialogResult EditDialog;
         Debug::UICommand(cmd);

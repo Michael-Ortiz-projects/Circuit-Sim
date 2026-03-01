@@ -20,7 +20,7 @@ public:
 	ScrollTextBox resultTextBox;
 	Graph simulationGraph;
 	std::unique_ptr<Dialog<SimulationUICommand>> activeDialog;
-	int graphDataY_VarMNAidx = -1;
+	int graphDataY_Varidx = -1;
 
 	SimulationUI_Manager(Renderer& rend);
 

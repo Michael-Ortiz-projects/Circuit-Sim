@@ -15,7 +15,7 @@ enum class MenuID {
 template <typename CommandT>
 struct DropdownOption {
 	Button<CommandT> button;
-	int value;   // eNode index
+	int value;   //index of GraphVariable in simulation for example, but this value is a way to allow the button to store data that varies with each use case
 };
 
 template <typename CommandT>
@@ -40,11 +40,13 @@ public:
 	void addOption(const std::string& label, CommandT cmd, int value = -1) {
 
 		Button temp(parentButton.font, label, parentButton.box.getPosition(), parentButton.box.getSize(), cmd);
+		
 		float textWidth = temp.text.getLocalBounds().width + margin * 2.f;
 		//std::cout << label << " width " << textWidth << " max width = " << maxWidth << std::endl;
 
 		if (textWidth > maxWidth)
 			maxWidth = textWidth;
+
 
 		DropdownOption opt{ std::move(temp), value };
 
@@ -112,6 +114,7 @@ public:
 
 	void updateMenuLayout() {
 		float buttonHeight = parentButton.box.getSize().y;
+		std::cout << "button height = " << buttonHeight << "\n";
 
 		float x = parentButton.box.getPosition().x + 5;
 		float y_initial = parentButton.box.getPosition().y + buttonHeight;

@@ -21,8 +21,14 @@ void DialogHandler::update(SimulationUICommand& cmd, Circuit& circuit) {
 	GraphDataDialogResult graphDataDialogResult;
 	GraphSettingsDialogResult graphSettingsDialogResult;
 	std::vector<double> parsedValues;
+
 	std::vector<sf::Vector2f> transientData;
-	TransientSimResults& transientSimResults = circuit.getSimulator().transientSimResults;
+	std::vector<TransientSimulationState>& transientSimResults = circuit.getSimulator().transientResults;
+	std::vector<Eigen::VectorXd> results;
+	std::vector<double> timeVector;
+
+	auto& graphVars(circuit.getSimulator().graphVariables);
+	int graphVarIdx;
 
 	switch (cmd) {
 	case SimulationUICommand::NewSimulation:
@@ -77,15 +83,22 @@ void DialogHandler::update(SimulationUICommand& cmd, Circuit& circuit) {
 		break;
 
 	case SimulationUICommand::ApplyGraphData:
-		graphDataDialogResult.MNAIndex = ui.activeDialog->getMenu(MenuID::GraphY_Axis).getSelectedValue();
-		ui.graphDataY_VarMNAidx = graphDataDialogResult.MNAIndex;
-		std::cout << "graphDataDialog result:\nMNAIndex = " << graphDataDialogResult.MNAIndex << "\n";
+		graphVarIdx = ui.activeDialog->getMenu(MenuID::GraphY_Axis).getSelectedValue();
+		ui.graphDataY_Varidx = graphVarIdx;
+		graphDataDialogResult.graphVariableIndex = graphVarIdx;
 
-		
+		std::cout << "graphDataDialog result:\graphVariableIndex = " << graphVarIdx << "\n";
 
-		for (size_t i = 0; i < transientSimResults.timeVector.size(); i++) {
-			transientData.emplace_back(transientSimResults.timeVector[i], transientSimResults.resultsVector[i](ui.graphDataY_VarMNAidx));
-			//std::cout << timeVector[i] << ", " << results[i](UI.graphDataY_VarMNAidx) << "\n";
+		timeVector.resize(transientSimResults.size());
+		results.resize(transientSimResults.size());
+		for (size_t t = 1; t < transientSimResults.size(); t++) {
+			//printf("Transient Sim Results[%d]:\n", (t));
+			//std::cout << "Previous Results Vector: " << transientSimResults[t].previousResultsVector << "\n\n";
+			
+			timeVector[t] = transientSimResults[t].time;
+			results[t] = transientSimResults[t].resultsVector;
+			transientSimResults[t].previousResultsVector = transientSimResults[t - 1].previousResultsVector;
+			transientData.emplace_back(timeVector[t], graphVars[graphVarIdx].evaluator(transientSimResults[t]));
 		}
 
 		ui.simulationGraph.setData(transientData);

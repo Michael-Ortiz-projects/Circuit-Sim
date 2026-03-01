@@ -16,6 +16,7 @@ bool Simulator::setSystem(const std::vector<NetlistComponent>& netlist, const st
 		if (simulationComp) simComponents.push_back(std::move(simulationComp));
 	}
 
+	std::cout << "simulation components built\n\n";
 	system.extraVars.clear();
 	int extraIndex = index++;
 	for (auto& c : simComponents) {
@@ -26,9 +27,13 @@ bool Simulator::setSystem(const std::vector<NetlistComponent>& netlist, const st
 		}
 		extraIndex += c->extraVariables();
 	}
+	std::cout << "setting graph variables\n\n";
 
+	setGraphVars();
+	std::cout << "graph variables set\n\n";
 
 	system.setSystem(index, extraIndex - index);
+
 
 	return true;
 }
@@ -45,23 +50,23 @@ std::unique_ptr<SimulationComponent> Simulator::buildSimulationComponent(const N
 	case ComponentType::Resistor:
 		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
 		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
-		return std::make_unique<SimResistor>(n1, n2, netlistComp.value, netlistComp.id);
+		return std::make_unique<SimResistor>(n1, n2, netlistComp.value, netlistComp.id, netlistComp.label);
 	case ComponentType::CurrentSource:
 		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
 		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
-		return std::make_unique<SimCurrentSource>(n1, n2, netlistComp.value, netlistComp.id);
+		return std::make_unique<SimCurrentSource>(n1, n2, netlistComp.value, netlistComp.id, netlistComp.label);
 	case ComponentType::VoltageSource:
 		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
 		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
-		return std::make_unique<SimVoltageSource>(n1, n2, netlistComp.value, netlistComp.id);
+		return std::make_unique<SimVoltageSource>(n1, n2, netlistComp.value, netlistComp.id, netlistComp.label);
 	case ComponentType::Capacitor:
 		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
 		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
-		return std::make_unique<SimCapacitor>(n1, n2, netlistComp.value, netlistComp.id);
+		return std::make_unique<SimCapacitor>(n1, n2, netlistComp.value, netlistComp.id, netlistComp.label);
 	case ComponentType::Inductor:
 		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
 		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
-		return std::make_unique<SimInductor>(n1, n2, netlistComp.value, netlistComp.id);
+		return std::make_unique<SimInductor>(n1, n2, netlistComp.value, netlistComp.id, netlistComp.label);
 	case ComponentType::Ground:
 		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
 		return std::make_unique<SimGround>(n1, netlistComp.id);
@@ -146,25 +151,38 @@ bool Simulator::runDC(bool printToConsole) {
 	return true;
 }
 
-TransientSimResults Simulator::runTransient(Config config) {
+std::vector<TransientSimulationState> Simulator::runTransient(Config config) {
 	size_t numSteps = static_cast<size_t>(std::ceil((config.tEnd - config.tStart) / config.timeStep)) + 1;
 	size_t step = 0;
-
+	std::vector<TransientSimulationState> results(numSteps);
 	std::vector<Eigen::VectorXd> resultVector(numSteps);
 	std::vector<double> timeVector(numSteps);
+
+	// -------------------------
+	// 1) Run DC operating point
+	// -------------------------
+	//runDC(false);
+
+	Eigen::VectorXd previousX = system.getx();
+
+	// Step 0 = initial condition
+	results[0].time = config.tStart;
+	results[0].deltaT = 0.0;
+	results[0].resultsVector = previousX;
+	results[0].previousResultsVector = previousX;
+
 	for (auto& v : resultVector)
 		v = Eigen::VectorXd::Zero(system.getx().size());
 
-	for (size_t step = 0; step < numSteps; ++step) {
+	for (size_t step = 1; step < numSteps; ++step) {
 		double t = config.tStart + step * config.timeStep;		
-		double dt = (step == numSteps - 1) ? config.tEnd - t : config.timeStep;
+		double dt = (step == numSteps - 1 && config.tEnd - t > 0) ? config.tEnd - t : config.timeStep;
 		if (step == numSteps - 1) t = config.timeStep * step + dt;
 		if (dt <= 0.0) dt = 1e-12;
 
 
-		for (auto& C : simComponents) {
-			C->stamp(SimulationType::Transient, system, dt);
-		}
+		for (auto& C : simComponents) C->stamp(SimulationType::Transient, system, dt);
+		
 		solver.solve(system);
 		// update inductor currents for the next step
 		for (auto& comp : simComponents) {
@@ -174,12 +192,49 @@ TransientSimResults Simulator::runTransient(Config config) {
 				ind->setCurrent(i_new);
 			}
 		}
-		timeVector[step] = t;
+
+		results[step].time = t;
+		results[step].deltaT = dt;
+		results[step].resultsVector = system.getx();
+		results[step].previousResultsVector = results[step - 1].resultsVector;
 
 		resultVector[step] = system.getx();
 		system.setZero();
 	}
 	
-	transientSimResults = { timeVector, resultVector };
-	return transientSimResults;
+	transientResults = results;
+	return transientResults;
+}
+
+void Simulator::setGraphVars() {
+	graphVariables.clear();
+
+	addNodeVoltages();
+	addComponentVars();
+}
+
+void Simulator::addNodeVoltages() {
+	std::cout << "adding Node Voltages\n";
+	for (auto [node, mnaIndex] : eNodeToMNA)
+	{
+		TransientGraphVariable var;
+		var.label = "V(Node " + std::to_string(node) + ")";
+
+		var.evaluator =
+			[mnaIndex](const TransientSimulationState& state)
+			{
+				return state.resultsVector[mnaIndex];
+			};
+
+		graphVariables.push_back(var);
+	}
+}
+
+void Simulator::addComponentVars() {
+	std::cout << "adding component variables\n";
+	for (auto& comp : simComponents) {
+		std::cout << "comp ID: " << comp->getID() << "\n";
+		comp->addGraphVariables(graphVariables, eNodeToMNA);
+		std::cout << "added variable\n";
+	}
 }

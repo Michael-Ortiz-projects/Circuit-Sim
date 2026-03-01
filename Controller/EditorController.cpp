@@ -220,6 +220,10 @@ void EditorController::onKeyPress(const sf::Event::KeyEvent& event) {
 		}
 
 	}
+
+	else if (event.code == sf::Keyboard::Enter) {
+
+	}
 	if (currentHandler) {
 		currentHandler->onKeyPress(event);
 		if (currentHandler->shouldRelease()) {

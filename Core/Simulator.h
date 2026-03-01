@@ -15,23 +15,22 @@ struct Config {
 	//TRANSIENT CONFIG
 	double timeStep = .00001;
 	double tStart = 0;
-	double tEnd = .1;
+	double tEnd = .2;
 
 	bool transientValid() const {
 		return timeStep > 0 && tEnd > tStart && timeStep < abs(tEnd - tStart);
 	}
 };
 
-struct TransientSimResults {
-	std::vector<double> timeVector;
-	std::vector<Eigen::VectorXd> resultsVector;
-};
+
 
 class Simulator {
 public:
 	std::unordered_map<int, int> eNodeToMNA;
 	MNASystem system;
-	TransientSimResults transientSimResults;
+	std::vector<TransientSimulationState> transientResults;
+	std::vector<TransientGraphVariable> graphVariables;
+
 	Simulator(std::vector<std::unique_ptr<SimulationComponent>>& simComps);
 
 	bool setSystem(const std::vector<NetlistComponent>& netlist, const std::unordered_map<int, ElectricalNode>& eNodes);
@@ -42,7 +41,12 @@ public:
 
 	bool runDC(bool printToConsole);
 
-	TransientSimResults runTransient(Config config);
+	std::vector<TransientSimulationState> runTransient(Config config);
+
+	void setGraphVars();
+
+	void addNodeVoltages();
+	void addComponentVars();
 
 private:
 

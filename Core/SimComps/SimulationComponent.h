@@ -9,10 +9,22 @@ enum class SimulationType {
     Transient,
 };
 
+struct TransientSimulationState {
+    Eigen::VectorXd resultsVector;
+    Eigen::VectorXd previousResultsVector;
+    double time;
+    double deltaT;
+};
+
+struct TransientGraphVariable {
+    std::string label;
+    std::function<double(const TransientSimulationState&)> evaluator;
+};
+
 
 class SimulationComponent {
 public:
-    SimulationComponent(int id = -1) : ID(id) {}
+    SimulationComponent(int id = -1, std::string Label = "Default Component Label Set In SimulationComponent.h") : ID(id), label(Label) {}
     virtual ~SimulationComponent() = default;
 
     virtual std::vector<int> getNodes() const = 0;
@@ -32,10 +44,16 @@ public:
 
     virtual std::vector<ExtraVarInfo> getExtraVarInfo() const { return {}; }
 
+    virtual void addGraphVariables(std::vector<TransientGraphVariable>& vars, const std::unordered_map<int, int>& eNodeToMNA) const { return; }
+
+    /*
+    Now I need to add options in the dropdown for graph variables, when a graph variable index is selected, that graph variable is then used to compute the selected data using the simulation result struct
+    */
 
 protected:
     int extraVarIndex = -1;
     int ID = -1;
+    std::string label;
     double voltage = 0;
     double current = 0;
 };
