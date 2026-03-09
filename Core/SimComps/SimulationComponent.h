@@ -30,7 +30,7 @@ public:
     virtual std::vector<int> getNodes() const = 0;
     virtual int getID() const { return ID; }
     virtual int extraVariables() const { return 0; }
-    virtual void setExtraVariableIndex(int startIndex) { extraVarIndex = startIndex; }
+    virtual void setExtraVariableIndex(int startIndex) { return;/* extraVarIndices startIndex; */} // make this function default to do nothing, but in each simComponent define how many variables and their indices
 
     virtual void setCurrent(double C) { current = C; }
     virtual void setVoltage(double V) { voltage = V; }
@@ -46,12 +46,10 @@ public:
 
     virtual void addGraphVariables(std::vector<TransientGraphVariable>& vars, const std::unordered_map<int, int>& eNodeToMNA) const { return; }
 
-    /*
-    Now I need to add options in the dropdown for graph variables, when a graph variable index is selected, that graph variable is then used to compute the selected data using the simulation result struct
-    */
+   
 
 protected:
-    int extraVarIndex = -1;
+    std::vector<int> extraVarIndices;
     int ID = -1;
     std::string label;
     double voltage = 0;

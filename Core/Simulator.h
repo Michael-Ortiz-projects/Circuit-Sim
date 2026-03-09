@@ -10,6 +10,10 @@
 #include "SimComps/SimInductor.h"
 #include "SimComps/SimVoltageSource.h"
 #include "SimComps/SimCapacitor.h"
+#include "SimComps/SimVoltageControlledVoltageSource.h"
+#include "SimComps/SimVoltageControlledCurrentSource.h"
+#include "SimComps/SimCurrentControlledCurrentSource.h"
+#include "SimComps/SimCurrentControlledVoltageSource.h"
 
 struct Config {
 	//TRANSIENT CONFIG

@@ -123,6 +123,7 @@ bool SaveManager::loadCircuitFromFile(CircuitData& circuitData, const std::strin
     circuitData.clear();
 
     std::string token;
+    std::cout << "debug1\n";
 
     // ================= HEADER =================
     if (!expectToken(in, "CIRCUIT")) return false;
@@ -135,6 +136,7 @@ bool SaveManager::loadCircuitFromFile(CircuitData& circuitData, const std::strin
 
     int netlistCount;
     in >> netlistCount;
+    std::cout << "debug2\n";
 
     for (int i = 0; i < netlistCount; ++i) {
 
@@ -166,6 +168,7 @@ bool SaveManager::loadCircuitFromFile(CircuitData& circuitData, const std::strin
         circuitData.netlistComponents.push_back(comp);
     }
 
+    std::cout << "debug3\n";
 
     // ================= SCHEMATIC COMPONENTS =================
     if (!expectToken(in, "SCHEMATIC_COMPONENTS")) return false;
@@ -222,6 +225,8 @@ bool SaveManager::loadCircuitFromFile(CircuitData& circuitData, const std::strin
         sc.setTexture(assets.getTexture(sc.getType()));
         circuitData.schematicComponents.push_back(sc);
     }
+    std::cout << "debug4\n";
+
 
     // ================= WIRES =================
     if (!expectToken(in, "WIRES")) return false;
@@ -270,6 +275,7 @@ bool SaveManager::loadCircuitFromFile(CircuitData& circuitData, const std::strin
         circuitData.wires.emplace(wireID, std::move(wire));
     }
 
+    std::cout << "debug5\n";
 
     // ================= ELECTRICAL NODES =================
     if (!expectToken(in, "ELECTRICAL_NODES")) return false;
@@ -300,6 +306,9 @@ bool SaveManager::loadCircuitFromFile(CircuitData& circuitData, const std::strin
 
         circuitData.electricalNodes[id] = node;
     }
+
+    std::cout << "debug6\n";
+
 
     // ================= COMPONENT INDEX MAP =================
     if (!expectToken(in, "COMPONENT_INDEX_MAP")) return false;

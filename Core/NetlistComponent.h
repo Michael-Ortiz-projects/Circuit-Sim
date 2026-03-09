@@ -11,12 +11,20 @@ enum class ComponentType {
     Capacitor,
     Inductor,
     Switch,
-    Ground
+    Ground,
+    VCVS,
+    VCCS,
+    CCVS,
+    CCCS,
+    ACVoltageSource,
+    ACCurrentSource,
 };
 
 enum class PinRole {
     Positive,
-    Negative
+    Negative,
+    ControlPositive,
+    ControlNegative
 };
 
 struct NetlistTerminal {
@@ -32,6 +40,7 @@ public:
     ComponentType type;
     std::vector<NetlistTerminal> terminals;
     double value;
+    std::string expression;
 
     NetlistComponent(const ComponentType& ty, double val);
     NetlistComponent();

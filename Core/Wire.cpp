@@ -161,11 +161,8 @@ WireMoveResult Wire::moveNode(int movingNodeID, sf::Vector2f worldPosition) {
         return WireMoveResult::Invalid;
     }
     
-    std::cout << "moveNode() debug 1\n";
     Node& movingNode = graph.at(movingNodeID);
-    std::cout << "moveNode() debug 2\n";
     movingNode.position = snapPositionToGrid(worldPosition);
-    std::cout << "moveNode() debug 1\n";
     return WireMoveResult::Valid;
 }
 

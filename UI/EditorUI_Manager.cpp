@@ -14,7 +14,12 @@ void EditorUI_Manager::initialize() {
 	menu_map.at(MenuID::Place).addOption("Current Source", EditorUICommand::PlaceCurrentSource);
 	menu_map.at(MenuID::Place).addOption("Capacitor", EditorUICommand::PlaceCapacitor);
 	menu_map.at(MenuID::Place).addOption("Inductor", EditorUICommand::PlaceInductor);
-	menu_map.at(MenuID::Place).addOption("Switch", EditorUICommand::PlaceSwitch);
+	menu_map.at(MenuID::Place).addOption("VCVS", EditorUICommand::PlaceVCVS);
+	menu_map.at(MenuID::Place).addOption("VCCS", EditorUICommand::PlaceVCCS);
+	menu_map.at(MenuID::Place).addOption("CCVS", EditorUICommand::PlaceCCVS);
+	menu_map.at(MenuID::Place).addOption("CCCS", EditorUICommand::PlaceCCCS);
+
+	//menu_map.at(MenuID::Place).addOption("Switch", EditorUICommand::PlaceSwitch);
 	menu_map.at(MenuID::Place).addOption("Ground", EditorUICommand::PlaceGround);
 
 	menu_map.at(MenuID::File).addOption("New", EditorUICommand::OpenNewFile);

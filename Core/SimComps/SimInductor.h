@@ -12,11 +12,15 @@ public:
 
 	int extraVariables() const override { return 1; } // one extra variable for inductor current
 
-
+    void setExtraVariableIndex(int startIndex) override {
+        for (int i = 0; i < extraVariables(); i++) {
+            extraVarIndices.push_back(startIndex + i);
+        }
+    }
 
 	void stamp(SimulationType type, MNASystem& sys, double deltaT) override {
         //std::cout << "SimInductor stamp ran\n";
-
+        int extraVarIndex = extraVarIndices[0];
         if (type == SimulationType::DC) {
             // DC inductor behaves like a 0V voltage source
 
@@ -48,9 +52,44 @@ public:
         }
 	}
 
+
+    void addGraphVariables(std::vector<TransientGraphVariable>& vars, const std::unordered_map<int, int>& eNodeToMNA) const override {
+        int mna1 = (n1 == 0) ? -1 : n1;
+        int mna2 = (n2 == 0) ? -1 : n2;
+
+        std::string compLabel = label;
+        double inductance = L;
+        int extraVarIndex = getExtraVarInfo()[0].index;
+
+        // -------------------------
+        // Voltage across inductor
+        // -------------------------
+        vars.push_back({
+            "V(" + compLabel + ")",
+            [mna1, mna2](const TransientSimulationState& state)
+            {
+                double v1 = (mna1 == -1) ? 0.0 : state.resultsVector[mna1];
+                double v2 = (mna2 == -1) ? 0.0 : state.resultsVector[mna2];
+                return v2 - v1;
+            }
+            });
+
+        // -------------------------
+        // Current through inductor stored in MNA matrix
+        // -------------------------
+        vars.push_back({
+            "I(" + compLabel + ")",
+            [extraVarIndex]
+            (const TransientSimulationState& state)
+            {
+                return state.resultsVector[extraVarIndex];
+            }
+            });
+    }
+
     std::vector<ExtraVarInfo> getExtraVarInfo() const override {
         return {
-            { extraVarIndex, ExtraVarType::Current, ID, "I(" }
+            { extraVarIndices[0], ExtraVarType::Current, ID, "I("}
         };
     }
 private:

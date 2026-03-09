@@ -286,6 +286,7 @@ int Circuit::getNextComponentID() const {
 
 bool Circuit::terminalIsEmpty(ElectricalConnection& connection) { // returns false if connection is not valid
     NetlistComponent* c = getNetlistComponent(connection.componentID);
+    std::cout << "terminalIsEmpty(), connection.terminalID = " << connection.terminalID << "  Terminals size = " << c->terminals.size() << "\n";
     return c && c->terminals.at(connection.terminalID).electricalNode == -1;
 
 }

@@ -33,13 +33,11 @@ public:
 	}
 
 	void addGraphVariables(std::vector<TransientGraphVariable>& vars, const std::unordered_map<int, int>& eNodeToMNA) const override { 
-        std::cout << "add variable debug 0\n";
-        std::cout << "[n1, n2] = [" << n1 << ", " << n2 << "]\n";
+        //std::cout << "[n1, n2] = [" << n1 << ", " << n2 << "]\n";
 
 
         int mna1 = (n1 == 0) ? -1 : n1;
         int mna2 = (n2 == 0) ? -1 : n2;
-        std::cout << "add variable debug 1\n";
 
         std::string compLabel = label; // inherited from SimulationComponent
 
@@ -55,7 +53,6 @@ public:
                 return v2 - v1;
             }
             });
-        std::cout << "add variable debug 2\n";
 
         // -------------------------
         // Current through resistor
@@ -71,11 +68,11 @@ public:
                 return (v2 - v1) / resistance;
             }
             });
-        std::cout << "add variable debug 3\n";
 
         // -------------------------
         // Power dissipated
         // -------------------------
+        /*
         vars.push_back({
             "P(" + compLabel + ")",
             [mna1, mna2, resistance](const TransientSimulationState& state)
@@ -86,7 +83,8 @@ public:
                 return v * (v / resistance);
             }
             });
-        std::cout << "add variable debug 4\n";
+        */
+        
 
 	}
 

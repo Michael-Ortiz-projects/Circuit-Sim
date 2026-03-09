@@ -25,7 +25,7 @@ void PlaceHandler::placeComponent(const sf::Vector2f& worldPos) {
 	SchematicComponent* comp = circuit.getSchematicComponent(newID);
 
 	comp->setTexture(assets.getTexture(comp->getType()));
-	
+
 	comp->startDrag(worldPos);
 	comp->dragTo(worldPos);
 	comp->stopDrag();

@@ -21,7 +21,7 @@ bool Simulator::setSystem(const std::vector<NetlistComponent>& netlist, const st
 	int extraIndex = index++;
 	for (auto& c : simComponents) {
 		c->setExtraVariableIndex(extraIndex);
-		for (auto info : c->getExtraVarInfo()) {
+		for (ExtraVarInfo info : c->getExtraVarInfo()) {
 			info.index = extraIndex;
 			system.extraVars.push_back(info);
 		}
@@ -45,7 +45,7 @@ std::unique_ptr<SimulationComponent> Simulator::buildSimulationComponent(const N
 		std::cout << T.electricalNode << " ";
 	}
 	std::cout << "\n";
-	int n1, n2;
+	int n1, n2, n3, n4;
 	switch (netlistComp.type) {
 	case ComponentType::Resistor:
 		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
@@ -55,6 +55,30 @@ std::unique_ptr<SimulationComponent> Simulator::buildSimulationComponent(const N
 		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
 		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
 		return std::make_unique<SimCurrentSource>(n1, n2, netlistComp.value, netlistComp.id, netlistComp.label);
+	case ComponentType::VCCS:
+		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
+		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
+		n3 = getMNAIndex(netlistComp.terminals[2].electricalNode);
+		n4 = getMNAIndex(netlistComp.terminals[3].electricalNode);
+		return std::make_unique<VoltageControlledCurrentSource>(n1, n2, n3, n4, netlistComp.value, netlistComp.id, netlistComp.label);
+	case ComponentType::VCVS:
+		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
+		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
+		n3 = getMNAIndex(netlistComp.terminals[2].electricalNode);
+		n4 = getMNAIndex(netlistComp.terminals[3].electricalNode);
+		return std::make_unique<VoltageControlledVoltageSource>(n1, n2, n3, n4, netlistComp.value, netlistComp.id, netlistComp.label);
+	case ComponentType::CCCS:
+		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
+		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
+		n3 = getMNAIndex(netlistComp.terminals[2].electricalNode);
+		n4 = getMNAIndex(netlistComp.terminals[3].electricalNode);
+		return std::make_unique<CurrentControlledCurrentSource>(n1, n2, n3, n4, netlistComp.value, netlistComp.id, netlistComp.label);
+	case ComponentType::CCVS:
+		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
+		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
+		n3 = getMNAIndex(netlistComp.terminals[2].electricalNode);
+		n4 = getMNAIndex(netlistComp.terminals[3].electricalNode);
+		return std::make_unique<CurrentControlledVoltageSource>(n1, n2, n3, n4, netlistComp.value, netlistComp.id, netlistComp.label);
 	case ComponentType::VoltageSource:
 		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
 		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
@@ -129,7 +153,6 @@ int Simulator::getMNAIndex(const int eNode) {
 
 bool Simulator::runDC(bool printToConsole) {
 
-	/*temporary solving code to just generate the matrices to print to console*/
 	if (printToConsole) {
 		system.printA();
 		system.printb();
@@ -157,11 +180,6 @@ std::vector<TransientSimulationState> Simulator::runTransient(Config config) {
 	std::vector<TransientSimulationState> results(numSteps);
 	std::vector<Eigen::VectorXd> resultVector(numSteps);
 	std::vector<double> timeVector(numSteps);
-
-	// -------------------------
-	// 1) Run DC operating point
-	// -------------------------
-	//runDC(false);
 
 	Eigen::VectorXd previousX = system.getx();
 
@@ -233,6 +251,7 @@ void Simulator::addNodeVoltages() {
 void Simulator::addComponentVars() {
 	std::cout << "adding component variables\n";
 	for (auto& comp : simComponents) {
+		
 		std::cout << "comp ID: " << comp->getID() << "\n";
 		comp->addGraphVariables(graphVariables, eNodeToMNA);
 		std::cout << "added variable\n";

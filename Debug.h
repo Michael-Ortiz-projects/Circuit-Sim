@@ -52,6 +52,14 @@ public:
             return "Resistor";
         case ComponentType::CurrentSource:
             return "Current Source";
+        case ComponentType::VCVS:
+            return "VCVS";
+        case ComponentType::VCCS:
+            return "VCCS";
+        case ComponentType::CCVS:
+            return "CCVS";
+        case ComponentType::CCCS:
+            return "CCCS";
         case ComponentType::Capacitor:
             return "Capacitor";
         case ComponentType::Inductor:
@@ -60,6 +68,10 @@ public:
             return "Switch";
         case ComponentType::Ground:
             return "Ground";
+        case ComponentType::ACVoltageSource:
+            return "ACVS";
+        case ComponentType::ACCurrentSource:
+            return "ACCS";
         }
     }
 

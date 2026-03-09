@@ -12,6 +12,16 @@ NetlistComponent::NetlistComponent(const ComponentType& ty, double val)
         terminals.push_back({ 0, -1, PinRole::Negative });
         terminals.push_back({ 1, -1, PinRole::Positive });
         break;
+
+    case ComponentType::VCVS:
+    case ComponentType::VCCS:
+    case ComponentType::CCVS:
+    case ComponentType::CCCS:
+        terminals.push_back({ 0, -1, PinRole::Negative });
+        terminals.push_back({ 1, -1, PinRole::Positive });
+        terminals.push_back({ 2, -1, PinRole::ControlNegative});
+        terminals.push_back({ 3, -1, PinRole::ControlPositive});
+        break;
     case ComponentType::Ground:
         terminals.push_back({ 0, -1, PinRole::Negative });
         break;

@@ -32,11 +32,23 @@ SchematicComponent::SchematicComponent(const NetlistComponent& comp, const sf::V
         hitBox.setSize({ 105.f, 70.f });
         hitBox.setOrigin(hitBox.getSize() * 0.5f);
         break;
+
+    case ComponentType::VCVS:
+    case ComponentType::VCCS:
+    case ComponentType::CCVS:
+    case ComponentType::CCCS:
+        schematicTerminals.push_back({ 0, sf::Vector2f(-60, 0),  { -1, -1 } });
+        schematicTerminals.push_back({ 1, sf::Vector2f(60, 0),  { -1, -1 } });
+        schematicTerminals.push_back({ 2, sf::Vector2f(-20, -40),  { -1, -1 } });
+        schematicTerminals.push_back({ 3, sf::Vector2f(20, -40),  { -1, -1 } });
+        hitBox.setSize({ 105.f, 70.f });
+        hitBox.setOrigin(hitBox.getSize() * 0.5f);
+        break;
     case ComponentType::Ground:
         schematicTerminals.push_back({ 0, sf::Vector2f(0, -20), {-1, -1} });
         hitBox.setSize({ 40.f, 30.f });
         hitBox.setOrigin(hitBox.getSize() * 0.5f - sf::Vector2f(0, 10));
-
+        
         break;
     }
 

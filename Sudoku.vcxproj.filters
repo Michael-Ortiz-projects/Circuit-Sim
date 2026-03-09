@@ -175,6 +175,18 @@
     <ClInclude Include="UI\Graph.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
+    <ClInclude Include="Core\SimComps\SimCurrentControlledCurrentSource.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\SimComps\SimCurrentControlledVoltageSource.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\SimComps\SimVoltageControlledCurrentSource.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\SimComps\SimVoltageControlledVoltageSource.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Font Include="UI\Fonts\AnonymousPro-Regular.ttf" />

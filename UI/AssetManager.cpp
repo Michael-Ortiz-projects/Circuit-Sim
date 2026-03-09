@@ -18,6 +18,10 @@ AssetManager::AssetManager() {
 	loadTexture("normal_SC", "UI/Assets/Schematic_Closed_Switch.png");
 
 	loadTexture("normal_G", "UI/Assets/Schematic_Ground.png");
+
+	loadTexture("dependent_VS", "UI/Assets/Schematic_Dep_Voltage_Source.png");
+
+	loadTexture("dependent_CS", "UI/Assets/Schematic_Dep_Current_Source.png");
 	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
 	mainFont.loadFromFile("UI/Fonts/RobotoSlab-Regular.ttf");
 }
@@ -41,26 +45,34 @@ bool AssetManager::loadTexture(const std::string& textureName, const std::string
 
 sf::Texture& AssetManager::getTexture(ComponentType type) {
 	switch (type) {
-		case ComponentType::Resistor: {
+		case ComponentType::Resistor:
 			return m_textures.at("normal_R");
-		}
-		case ComponentType::Capacitor: {
+		
+		case ComponentType::Capacitor:
 			return m_textures.at("normal_CAP");
-		}
-		case ComponentType::CurrentSource: {
+		
+		case ComponentType::CurrentSource:
 			return m_textures.at("normalCS");
-		}
-		case ComponentType::Inductor: {
+		
+		case ComponentType::VCVS:
+		case ComponentType::CCVS:
+			return m_textures.at("dependent_VS");
+
+		case ComponentType::VCCS:
+		case ComponentType::CCCS:
+			return m_textures.at("dependent_CS");
+
+		case ComponentType::Inductor:
 			return m_textures.at("normal_L");
-		}
-		case ComponentType::VoltageSource: {
+		
+		case ComponentType::VoltageSource:
 			return m_textures.at("normal_VS");
-		}
-		case ComponentType::Switch: {
+		
+		case ComponentType::Switch:
 			return m_textures.at("normal_SO");
-		}
-		case ComponentType::Ground: {
+		
+		case ComponentType::Ground:
 			return m_textures.at("normal_G");
-		}
+		
 	}
 }

@@ -4,10 +4,9 @@
 #include "UI/SimulationUI_Manager.h"
 #include "UI/EditorRenderer.h"
 #include "UI/SimulationRenderer.h"
+#include "exprtk.hpp"
 
 
-
-//I now need to actually create the simulation for DC operating point
 Grid grid(gridSize);
 std::string currentWorkingFilePath;
 AssetManager assets;
@@ -16,7 +15,20 @@ sf::RenderWindow simulationWindow;
 
 
 int main() {   
-    
+    double x = 0;
+    std::string expr = "8*sin(x+3^2)";
+    exprtk::symbol_table<double> symbol_table;
+    symbol_table.add_variable("x", x);
+    symbol_table.add_constants();
+
+    exprtk::expression<double> expression;
+    expression.register_symbol_table(symbol_table);
+
+    exprtk::parser<double> parser;
+    parser.compile(expr, expression);
+    x = 3;
+    std::cout << expression.value() << std::endl;
+    return -123123;
     Circuit circuit(assets);
 
     Renderer editorRenderer(editorWindow, assets);
@@ -36,7 +48,7 @@ int main() {
 
     //initializing circuit data
     char filename[MAX_PATH] = "SeriesRLCDCCircuit.ckt";
-    CircuitData initializedData = editorController.saveCircuitHandler.loadFromFile(filename);
+    //CircuitData initializedData = editorController.saveCircuitHandler.loadFromFile(filename);
     //circuit.setCircuitData(initializedData);
 
     
@@ -44,7 +56,6 @@ int main() {
     ScrollTextBox box(assets.mainFont, 18, { 50, 1000 }, { 400, 200 });
     box.setString("Long text...\nLine 2...\nLine 3...\nLine 4...\nLine 5...\nLine 6...\nLine 7...\nLine 2...\nLine 3...\nLine 4...\nLine 5...\nLine 6...\nLine 7");
 
-    int simColorDepth = 90;
 
     while (editorWindow.isOpen()) {
         sf::Event event;
@@ -81,6 +92,10 @@ int main() {
             case EditorUICommand::PlaceVoltageSource:
             case EditorUICommand::PlaceResistor:
             case EditorUICommand::PlaceCurrentSource:
+            case EditorUICommand::PlaceVCVS:
+            case EditorUICommand::PlaceVCCS:
+            case EditorUICommand::PlaceCCVS:
+            case EditorUICommand::PlaceCCCS:
             case EditorUICommand::PlaceCapacitor:
             case EditorUICommand::PlaceInductor:
             case EditorUICommand::PlaceSwitch:
@@ -149,3 +164,23 @@ int main() {
     
     return 0;
 }
+
+// TODO
+/*
+* 
+    Create AC Sources
+     - Instead of a double value, they will hold an expression (either string or exprt::expression).
+     - Currently the SchematicComponent class is made for only double values.
+     - Make it so that the constructor differentiates between components that need a double or an expression to change the display value text.
+     - I need to make a exprtk ExpressionEvaluator class that the simulator uses to evaluate the component expressions.
+     - Sim Components are going to instead of taking a value, take a expression that is evaluated by the above class.
+     - When doing a simulation, the stamp parameters needs to include dt and t to evaluate any expressions
+
+    Create Transistors/Implement Non-Linear Devices
+
+    Create DC Sweep Analysis 
+    - Sweeping a DC voltage source through some interval and step to graph a circuit's DCOP response when subject to several different source values.
+
+    Possibly implement AC Sweep Analyis
+
+*/

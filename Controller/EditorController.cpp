@@ -258,6 +258,21 @@ void EditorController::setHandler(InputHandler* handler, EditorUICommand cmd) {
 		case EditorUICommand::PlaceCurrentSource:
 			placeHandler.setComponentType(ComponentType::CurrentSource);
 			break;
+		case EditorUICommand::PlaceVCVS:
+			placeHandler.setComponentType(ComponentType::VCVS);
+			break;
+
+		case EditorUICommand::PlaceVCCS:
+			placeHandler.setComponentType(ComponentType::VCCS);
+			break;
+
+		case EditorUICommand::PlaceCCVS:
+			placeHandler.setComponentType(ComponentType::CCVS);
+			break;
+
+		case EditorUICommand::PlaceCCCS:
+			placeHandler.setComponentType(ComponentType::CCCS);
+			break;
 
 		case EditorUICommand::PlaceCapacitor:
 			placeHandler.setComponentType(ComponentType::Capacitor);

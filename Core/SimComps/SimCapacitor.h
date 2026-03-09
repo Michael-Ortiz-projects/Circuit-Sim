@@ -86,6 +86,8 @@ public:
         // Energy stored
         // E = 1/2 C V^2
         // -------------------------
+
+        /*
         vars.push_back({
             "E(" + compLabel + ")",
             [mna1, mna2, capacitance]
@@ -99,6 +101,8 @@ public:
                 return 0.5 * capacitance * v * v;
             }
             });
+        */
+        
     }
 private:
 	int n1, n2;
