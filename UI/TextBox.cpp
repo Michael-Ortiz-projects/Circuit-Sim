@@ -35,8 +35,8 @@ void TextBox::setFont(sf::Font& font) {
     text.setFont(font);
 }
 
-void TextBox::handleEvent(const sf::Event& event) {
-    if (!active) return;
+bool TextBox::handleEvent(const sf::Event& event) { 
+    if (!active) return false;
 
     if (event.type == sf::Event::TextEntered) {
         uint32_t c = event.text.unicode;
@@ -45,12 +45,17 @@ void TextBox::handleEvent(const sf::Event& event) {
             if (!value.empty())
                 value.pop_back();
         }
+        else if (c == 13) { // enter
+            std::cout << "enter Pressed\n";
+            return true;
+        }
         else if (c >= 32 && c < 127) {
             value += static_cast<char>(c);
         }
 
         text.setString(value);
     }
+    return false;
 }
 
 void TextBox::draw(sf::RenderWindow& window) {

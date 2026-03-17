@@ -4,6 +4,7 @@ Simulator::Simulator(std::vector<std::unique_ptr<SimulationComponent>>& simComps
 	: simComponents(simComps) { }
 
 bool Simulator::setSystem(const std::vector<NetlistComponent>& netlist, const std::unordered_map<int, ElectricalNode>& eNodes) {
+	std::cout << "setSystem() running\n";
 	int index = buildMNAMap(netlist, eNodes);
 	if (index == -1) {
 		std::cout << "No Ground Nodes Located in MNA System\n";
@@ -41,59 +42,53 @@ bool Simulator::setSystem(const std::vector<NetlistComponent>& netlist, const st
 std::unique_ptr<SimulationComponent> Simulator::buildSimulationComponent(const NetlistComponent& netlistComp) {
 	std::cout << "building Simulation component from component " << netlistComp.id;
 	std::cout << ", nodes are ";
+	std::vector<int> nodes;
 	for (auto T : netlistComp.terminals) {
 		std::cout << T.electricalNode << " ";
+		nodes.push_back(getMNAIndex(T.electricalNode));
 	}
 	std::cout << "\n";
-	int n1, n2, n3, n4;
+	
+
+	std::cout << "debug1\n";
+	ExpressionEvaluator f(netlistComp.expressionString);
+	
 	switch (netlistComp.type) {
 	case ComponentType::Resistor:
-		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
-		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
-		return std::make_unique<SimResistor>(n1, n2, netlistComp.value, netlistComp.id, netlistComp.label);
+		return std::make_unique<SimResistor>(nodes[0], nodes[1], netlistComp.value, netlistComp.id, netlistComp.label);
+
 	case ComponentType::CurrentSource:
-		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
-		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
-		return std::make_unique<SimCurrentSource>(n1, n2, netlistComp.value, netlistComp.id, netlistComp.label);
+		return std::make_unique<SimCurrentSource>(nodes[0], nodes[1], netlistComp.value, netlistComp.id, netlistComp.label);
+	
 	case ComponentType::VCCS:
-		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
-		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
-		n3 = getMNAIndex(netlistComp.terminals[2].electricalNode);
-		n4 = getMNAIndex(netlistComp.terminals[3].electricalNode);
-		return std::make_unique<VoltageControlledCurrentSource>(n1, n2, n3, n4, netlistComp.value, netlistComp.id, netlistComp.label);
+		return std::make_unique<VoltageControlledCurrentSource>(nodes[0], nodes[1], nodes[2], nodes[3], netlistComp.value, netlistComp.id, netlistComp.label);
+	
 	case ComponentType::VCVS:
-		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
-		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
-		n3 = getMNAIndex(netlistComp.terminals[2].electricalNode);
-		n4 = getMNAIndex(netlistComp.terminals[3].electricalNode);
-		return std::make_unique<VoltageControlledVoltageSource>(n1, n2, n3, n4, netlistComp.value, netlistComp.id, netlistComp.label);
+		return std::make_unique<VoltageControlledVoltageSource>(nodes[0], nodes[1], nodes[2], nodes[3], netlistComp.value, netlistComp.id, netlistComp.label);
+	
 	case ComponentType::CCCS:
-		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
-		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
-		n3 = getMNAIndex(netlistComp.terminals[2].electricalNode);
-		n4 = getMNAIndex(netlistComp.terminals[3].electricalNode);
-		return std::make_unique<CurrentControlledCurrentSource>(n1, n2, n3, n4, netlistComp.value, netlistComp.id, netlistComp.label);
+		return std::make_unique<CurrentControlledCurrentSource>(nodes[0], nodes[1], nodes[2], nodes[3], netlistComp.value, netlistComp.id, netlistComp.label);
+	
 	case ComponentType::CCVS:
-		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
-		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
-		n3 = getMNAIndex(netlistComp.terminals[2].electricalNode);
-		n4 = getMNAIndex(netlistComp.terminals[3].electricalNode);
-		return std::make_unique<CurrentControlledVoltageSource>(n1, n2, n3, n4, netlistComp.value, netlistComp.id, netlistComp.label);
+		return std::make_unique<CurrentControlledVoltageSource>(nodes[0], nodes[1], nodes[2], nodes[3], netlistComp.value, netlistComp.id, netlistComp.label);
+	
 	case ComponentType::VoltageSource:
-		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
-		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
-		return std::make_unique<SimVoltageSource>(n1, n2, netlistComp.value, netlistComp.id, netlistComp.label);
+		return std::make_unique<SimVoltageSource>(nodes[0], nodes[1], netlistComp.value, netlistComp.id, netlistComp.label);
+	
 	case ComponentType::Capacitor:
-		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
-		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
-		return std::make_unique<SimCapacitor>(n1, n2, netlistComp.value, netlistComp.id, netlistComp.label);
+		return std::make_unique<SimCapacitor>(nodes[0], nodes[1], netlistComp.value, netlistComp.id, netlistComp.label);
+
 	case ComponentType::Inductor:
-		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
-		n2 = getMNAIndex(netlistComp.terminals[1].electricalNode);
-		return std::make_unique<SimInductor>(n1, n2, netlistComp.value, netlistComp.id, netlistComp.label);
+		return std::make_unique<SimInductor>(nodes[0], nodes[1], netlistComp.value, netlistComp.id, netlistComp.label);
+	
+	case ComponentType::ACCurrentSource:
+		return std::make_unique<SimACCurrentSource>(nodes[0], nodes[1], f, netlistComp.id, netlistComp.label);
+
+	case ComponentType::ACVoltageSource:
+		return std::make_unique<SimACVoltageSource>(nodes[0], nodes[1], f, netlistComp.id, netlistComp.label);
+
 	case ComponentType::Ground:
-		n1 = getMNAIndex(netlistComp.terminals[0].electricalNode);
-		return std::make_unique<SimGround>(n1, netlistComp.id);
+		return std::make_unique<SimGround>(nodes[0], netlistComp.id);
 	}
 }
 
@@ -175,7 +170,13 @@ bool Simulator::runDC(bool printToConsole) {
 }
 
 std::vector<TransientSimulationState> Simulator::runTransient(Config config) {
+	// to make this faster, make 2 matrices, static and dynamic, resistors and indep. sources dont change so stamping them every step is dumb
+	// the inductor search loop could be done once at the start of the function then stored to reduce the amount of lookups
+	// i can use LU factorization to make solving more efficient
+	// fixing timestep is a must
+	
 	size_t numSteps = static_cast<size_t>(std::ceil((config.tEnd - config.tStart) / config.timeStep)) + 1;
+	std::cout << "Matrix Size: " <<  system.getA().size() << "\n";
 	size_t step = 0;
 	std::vector<TransientSimulationState> results(numSteps);
 	std::vector<Eigen::VectorXd> resultVector(numSteps);
@@ -199,8 +200,8 @@ std::vector<TransientSimulationState> Simulator::runTransient(Config config) {
 		if (dt <= 0.0) dt = 1e-12;
 
 
-		for (auto& C : simComponents) C->stamp(SimulationType::Transient, system, dt);
-		
+		for (auto& C : simComponents) C->stamp(SimulationType::Transient, system, dt, t);
+		//std::cout << "A = \n" << system.getA() << "\n\n b = \n" << system.getb() << "\n\n";
 		solver.solve(system);
 		// update inductor currents for the next step
 		for (auto& comp : simComponents) {

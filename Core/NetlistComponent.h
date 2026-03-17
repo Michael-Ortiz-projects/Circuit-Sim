@@ -40,7 +40,7 @@ public:
     ComponentType type;
     std::vector<NetlistTerminal> terminals;
     double value;
-    std::string expression;
+    std::string expressionString;
 
     NetlistComponent(const ComponentType& ty, double val);
     NetlistComponent();

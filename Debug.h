@@ -36,11 +36,21 @@ public:
         for (NetlistTerminal& T : component.terminals) {
             std::cout << T.terminalID << " -> " << T.electricalNode << "\n     ";
         }
-        
-        std::cout
-            << "\n  Value:     " << component.value << '\n'
-            
-            << "}\n";
+        switch (component.type) {
+        case ComponentType::ACVoltageSource:
+        case ComponentType::ACCurrentSource:
+            std::cout
+                << "\n  Value:     " << component.expressionString << '\n'
+
+                << "}\n";
+            break;
+        default:
+            std::cout
+                << "\n  Value:     " << component.value << '\n'
+
+                << "}\n";
+            break;
+        }
     }
 
 

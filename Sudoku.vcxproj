@@ -163,6 +163,7 @@
     <ClCompile Include="Controller\SimulationController.cpp" />
     <ClCompile Include="Controller\WireHandler.cpp" />
     <ClCompile Include="Core\ElectricalNode.cpp" />
+    <ClCompile Include="Core\ExpressionEvaluator.cpp" />
     <ClCompile Include="Core\LinearSolver.cpp" />
     <ClCompile Include="Core\MNASystem.cpp" />
     <ClCompile Include="Core\Simulator.cpp" />
@@ -202,8 +203,11 @@
     <ClInclude Include="Controller\SimulationController.h" />
     <ClInclude Include="Controller\WireHandler.h" />
     <ClInclude Include="Core\ElectricalNode.h" />
+    <ClInclude Include="Core\ExpressionEvaluator.h" />
     <ClInclude Include="Core\LinearSolver.h" />
     <ClInclude Include="Core\MNASystem.h" />
+    <ClInclude Include="Core\SimComps\SimACCurrentSource.h" />
+    <ClInclude Include="Core\SimComps\SimACVoltageSource.h" />
     <ClInclude Include="Core\SimComps\SimCapacitor.h" />
     <ClInclude Include="Core\SimComps\SimCurrentControlledCurrentSource.h" />
     <ClInclude Include="Core\SimComps\SimCurrentControlledVoltageSource.h" />

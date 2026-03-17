@@ -6,14 +6,22 @@
 
 
 SchematicComponent::SchematicComponent(const NetlistComponent& comp, const sf::Vector2f canvasPos, sf::Font& font)
-    : componentID(comp.id), position(canvasPos), rotation(0), type(comp.type), value(comp.value), display(font, sf::Vector2f(canvasPos.x, canvasPos.y - 70), sf::Vector2f(100.f, 20.f), 12, false)
+    : componentID(comp.id), position(canvasPos), rotation(0), type(comp.type), value(comp.value), expression_string(comp.expressionString), display(font, sf::Vector2f(canvasPos.x, canvasPos.y - 70), sf::Vector2f(100.f, 20.f), 12, false)
 {
     // initialize display text
     label = Debug::ComponentType_to_String(type);
     display.setLabel(label);
-    std::ostringstream ss;
-    ss << std::fixed << std::setprecision(2) << value;
-    display.setValue(ss.str());
+    switch (type) {
+    case ComponentType::ACVoltageSource:
+    case ComponentType::ACCurrentSource:
+        display.setValue(expression_string);
+        break;
+    default:
+        std::ostringstream ss;
+        ss << std::fixed << std::setprecision(2) << value;
+        display.setValue(ss.str());
+    }
+    
     displayOffset = { 0, -70 };
     display.centerAt(canvasPos + displayOffset);
     sprite.setPosition(position);
@@ -27,6 +35,8 @@ SchematicComponent::SchematicComponent(const NetlistComponent& comp, const sf::V
     case ComponentType::Capacitor:
     case ComponentType::Inductor:
     case ComponentType::Switch:
+    case ComponentType::ACCurrentSource:
+    case ComponentType::ACVoltageSource:
         schematicTerminals.push_back({ 0, sf::Vector2f(-60, 0), {-1, -1} });
         schematicTerminals.push_back({ 1, sf::Vector2f(60, 0), {-1, -1} });
         hitBox.setSize({ 105.f, 70.f });
@@ -94,6 +104,12 @@ void SchematicComponent::setValue(double val) {
     display.setValue(ss.str());
     
 }
+
+void SchematicComponent::setExpression(const std::string exp) {
+    expression_string = exp;
+    display.setValue(expression_string);
+}
+
 
 void SchematicComponent::startDrag(const sf::Vector2f& worldPos) {
     dragging = true;

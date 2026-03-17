@@ -18,7 +18,7 @@ public:
         }
     }
 
-	void stamp(SimulationType type, MNASystem& sys, double deltaT) override {
+	void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
         //std::cout << "SimVoltageSource stamp ran\n";
 
         int iIdx = extraVarIndices[0]; // index for source current

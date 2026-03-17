@@ -18,7 +18,7 @@ public:
         }
     }
 
-	void stamp(SimulationType type, MNASystem& sys, double deltaT) override {
+	void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
         //std::cout << "SimInductor stamp ran\n";
         int extraVarIndex = extraVarIndices[0];
         if (type == SimulationType::DC) {

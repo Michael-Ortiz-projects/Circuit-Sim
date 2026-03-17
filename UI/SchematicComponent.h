@@ -24,6 +24,7 @@ public:
     void setRotation(float rot);
     void setLabel(const std::string string);
     void setValue(double val);
+    void setExpression(const std::string exp);
 
     void startDrag(const sf::Vector2f& worldPos);
     void dragTo(const sf::Vector2f& worldPos);
@@ -50,6 +51,7 @@ private:
     ComponentType type;
     std::string label;
     double value;
+    std::string expression_string;
     sf::Vector2f position;
     float rotation;
 

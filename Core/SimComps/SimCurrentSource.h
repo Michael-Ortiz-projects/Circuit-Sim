@@ -9,7 +9,7 @@ public:
 
 	std::vector<int> getNodes() const override { return { n1, n2 }; }
 
-	void stamp(SimulationType type, MNASystem& sys, double deltaT) override {
+	void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
 		//std::cout << "Current Source Stamp running()\n";
 		if (n1 != 0) sys.addTob(n1, -I);
 

@@ -17,7 +17,7 @@ public:
     }
 
 
-    void stamp(SimulationType type, MNASystem& sys, double deltaT) override {
+    void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
 
         int iIdx = extraVarIndices[0];
 
@@ -45,7 +45,7 @@ public:
         int mna2 = (n2 == 0) ? -1 : n2;
 
         std::string compLabel = label;
-        int extraVarIndex = getExtraVarInfo()[0].index;
+        int extraVarIndex = extraVarIndices[0];
 
         // -------------------------
         // Voltage across source

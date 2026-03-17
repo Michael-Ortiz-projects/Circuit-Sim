@@ -5,7 +5,7 @@
 class TextBox {
 public:
     TextBox(sf::Font& font, const sf::Vector2f& pos, const sf::Vector2f& boxSize, int textSize, const std::string& initialText = "", const bool outline = true);
-    void handleEvent(const sf::Event& event);
+    bool handleEvent(const sf::Event& event);
     void draw(sf::RenderWindow& window);
     void setActive(bool active);
     bool isActive() const;

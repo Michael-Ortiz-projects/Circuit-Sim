@@ -19,6 +19,7 @@ public:
 	std::unordered_map<SimulationUICommand, Button<SimulationUICommand>> button_map;
 	ScrollTextBox resultTextBox;
 	Graph simulationGraph;
+	sf::FloatRect graphRect;
 	std::unique_ptr<Dialog<SimulationUICommand>> activeDialog;
 	int graphDataY_Varidx = -1;
 

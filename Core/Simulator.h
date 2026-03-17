@@ -14,6 +14,9 @@
 #include "SimComps/SimVoltageControlledCurrentSource.h"
 #include "SimComps/SimCurrentControlledCurrentSource.h"
 #include "SimComps/SimCurrentControlledVoltageSource.h"
+#include "SimComps/SimACCurrentSource.h"
+#include "SimComps/SimACVoltageSource.h"
+#include "ExpressionEvaluator.h"
 
 struct Config {
 	//TRANSIENT CONFIG

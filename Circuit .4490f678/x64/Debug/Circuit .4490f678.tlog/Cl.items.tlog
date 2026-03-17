@@ -9,6 +9,7 @@ C:\Users\Mike\source\repos\Circuit Sim - Copy\Controller\SelectionBoxHandler.cpp
 C:\Users\Mike\source\repos\Circuit Sim - Copy\Controller\SimulationController.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\SimulationController.obj
 C:\Users\Mike\source\repos\Circuit Sim - Copy\Controller\WireHandler.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\WireHandler.obj
 C:\Users\Mike\source\repos\Circuit Sim - Copy\Core\ElectricalNode.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\ElectricalNode.obj
+C:\Users\Mike\source\repos\Circuit Sim - Copy\Core\ExpressionEvaluator.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\ExpressionEvaluator.obj
 C:\Users\Mike\source\repos\Circuit Sim - Copy\Core\LinearSolver.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\LinearSolver.obj
 C:\Users\Mike\source\repos\Circuit Sim - Copy\Core\MNASystem.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\MNASystem.obj
 C:\Users\Mike\source\repos\Circuit Sim - Copy\Core\Simulator.cpp;C:\Users\Mike\source\repos\Circuit Sim - Copy\Circuit .4490f678\x64\Debug\Simulator.obj

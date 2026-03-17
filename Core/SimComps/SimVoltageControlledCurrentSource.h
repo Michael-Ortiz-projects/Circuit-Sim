@@ -11,7 +11,7 @@ public:
 
 
 
-    void stamp(SimulationType type, MNASystem& sys, double deltaT) override {
+    void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
 
         if (type == SimulationType::DC || type == SimulationType::Transient) {
 

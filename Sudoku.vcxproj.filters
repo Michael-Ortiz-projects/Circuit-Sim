@@ -38,6 +38,7 @@
     <ClCompile Include="Controller\SimulationController.cpp" />
     <ClCompile Include="Controller\DialogHandler.cpp" />
     <ClCompile Include="UI\Graph.cpp" />
+    <ClCompile Include="Core\ExpressionEvaluator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UI\AssetManager.h">
@@ -185,6 +186,15 @@
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="Core\SimComps\SimVoltageControlledVoltageSource.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ExpressionEvaluator.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\SimComps\SimACCurrentSource.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\SimComps\SimACVoltageSource.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
   </ItemGroup>

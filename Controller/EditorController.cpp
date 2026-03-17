@@ -245,65 +245,79 @@ void EditorController::onKeyRelease(const sf::Event::KeyEvent& event) {
 
 void EditorController::setHandler(InputHandler* handler, EditorUICommand cmd) {
 	command = cmd;
-	if (command != EditorUICommand::None) {
-		switch (command) {
-		case EditorUICommand::PlaceVoltageSource:
-			placeHandler.setComponentType(ComponentType::VoltageSource);
-			break;
 
-		case EditorUICommand::PlaceResistor:
-			placeHandler.setComponentType(ComponentType::Resistor);
-			break;
+	switch (command) {
+	case EditorUICommand::PlaceVoltageSource:
+		placeHandler.setComponentType(ComponentType::VoltageSource);
+		break;
 
-		case EditorUICommand::PlaceCurrentSource:
-			placeHandler.setComponentType(ComponentType::CurrentSource);
-			break;
-		case EditorUICommand::PlaceVCVS:
-			placeHandler.setComponentType(ComponentType::VCVS);
-			break;
+	case EditorUICommand::PlaceResistor:
+		placeHandler.setComponentType(ComponentType::Resistor);
+		break;
 
-		case EditorUICommand::PlaceVCCS:
-			placeHandler.setComponentType(ComponentType::VCCS);
-			break;
+	case EditorUICommand::PlaceCurrentSource:
+		placeHandler.setComponentType(ComponentType::CurrentSource);
+		break;
+	case EditorUICommand::PlaceVCVS:
+		placeHandler.setComponentType(ComponentType::VCVS);
+		break;
 
-		case EditorUICommand::PlaceCCVS:
-			placeHandler.setComponentType(ComponentType::CCVS);
-			break;
+	case EditorUICommand::PlaceVCCS:
+		placeHandler.setComponentType(ComponentType::VCCS);
+		break;
 
-		case EditorUICommand::PlaceCCCS:
-			placeHandler.setComponentType(ComponentType::CCCS);
-			break;
+	case EditorUICommand::PlaceCCVS:
+		placeHandler.setComponentType(ComponentType::CCVS);
+		break;
 
-		case EditorUICommand::PlaceCapacitor:
-			placeHandler.setComponentType(ComponentType::Capacitor);
-			break;
+	case EditorUICommand::PlaceCCCS:
+		placeHandler.setComponentType(ComponentType::CCCS);
+		break;
 
-		case EditorUICommand::PlaceInductor:
-			placeHandler.setComponentType(ComponentType::Inductor);
-			break;
+	case EditorUICommand::PlaceCapacitor:
+		placeHandler.setComponentType(ComponentType::Capacitor);
+		break;
 
-		case EditorUICommand::PlaceSwitch:
-			placeHandler.setComponentType(ComponentType::Switch);
-			break;
+	case EditorUICommand::PlaceInductor:
+		placeHandler.setComponentType(ComponentType::Inductor);
+		break;
 
-		case EditorUICommand::PlaceGround:
-			placeHandler.setComponentType(ComponentType::Ground);
-			break;
+	case EditorUICommand::PlaceSwitch:
+		placeHandler.setComponentType(ComponentType::Switch);
+		break;
 
-		case EditorUICommand::ToggleMenu:
-			break;
+	case EditorUICommand::PlaceGround:
+		placeHandler.setComponentType(ComponentType::Ground);
+		break;
+	case EditorUICommand::PlaceACCurrentSource:
+		placeHandler.setComponentType(ComponentType::ACCurrentSource);
+		break;
+	case EditorUICommand::PlaceACVoltageSource:
+		placeHandler.setComponentType(ComponentType::ACVoltageSource);
+		break;
+	case EditorUICommand::ToggleMenu:
+		break;
 
-		case EditorUICommand::None:
-			break;
-		}
+	case EditorUICommand::None:
+		break;
 	}
+	
 	currentHandler = handler;
 }
 
 void EditorController::rebuildSchematicComponents() {
 	for (const auto& comp : circuit.getNetlistComponents()) {
 		SchematicComponent* c = circuit.getSchematicComponent(comp);
-		c->setValue(comp.value);
+		
+		switch (c->getType()) {
+		case ComponentType::ACCurrentSource:
+		case ComponentType::ACVoltageSource:
+			c->setExpression(comp.expressionString);
+			break;
+		default:
+			c->setValue(comp.value);
+			break;
+		}
 		c->setLabel(comp.label);
 	}
 }

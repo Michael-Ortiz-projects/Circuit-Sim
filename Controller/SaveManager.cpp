@@ -24,7 +24,8 @@ bool SaveManager::saveCircuitToFile(Circuit& circuit, const std::string& filePat
             << comp.id << " "
             << static_cast<int>(comp.type) << " "
             << comp.value << " "
-            << std::quoted(comp.label) << "\n";
+            << std::quoted(comp.label) << " "
+            << std::quoted(comp.expressionString) << "\n";
 
         out << "TERMINALS " << comp.terminals.size() << "\n";
         for (const auto& t : comp.terminals) {
@@ -145,7 +146,7 @@ bool SaveManager::loadCircuitFromFile(CircuitData& circuitData, const std::strin
         int typeInt;
 
 
-        in >> comp.id >> typeInt >> comp.value >> std::quoted(comp.label);
+        in >> comp.id >> typeInt >> comp.value >> std::quoted(comp.label) >> std::quoted(comp.expressionString);
         comp.type = static_cast<ComponentType>(typeInt);
 
         if (!expectToken(in, "TERMINALS")) return false;

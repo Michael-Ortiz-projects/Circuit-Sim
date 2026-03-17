@@ -10,7 +10,7 @@ public:
 
 	std::vector<int> getNodes() const override { return { n1, n2 }; }
 
-	void stamp(SimulationType type, MNASystem& sys, double deltaT) override {
+	void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
 		//std::cout << "SimCapacitor Stamp running()\n";
 		switch (type) {
 		case SimulationType::DC:

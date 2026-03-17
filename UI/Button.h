@@ -14,6 +14,8 @@ enum class EditorUICommand {
 	PlaceVCCS,
 	PlaceCCVS,
 	PlaceCCCS,
+	PlaceACVoltageSource,
+	PlaceACCurrentSource,
 	PlaceCapacitor,
 	PlaceInductor,
 	PlaceSwitch,

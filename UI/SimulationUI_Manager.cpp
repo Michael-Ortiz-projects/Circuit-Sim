@@ -2,7 +2,7 @@
 #include "../Core/Simulator.h"
 
 SimulationUI_Manager::SimulationUI_Manager(Renderer& rend) 
-	: renderer(rend), simulationGraph(rend.getAssets()) { }
+	: renderer(rend), graphRect(sf::FloatRect(50, 75, 1600, 900)), simulationGraph(rend.getAssets(), sf::FloatRect(50, 75, 1600, 900)) { }
 
 void SimulationUI_Manager::initialize() {
 	button_map.try_emplace(SimulationUICommand::NewSimulation, renderer.getAssets().mainFont, "New Simulation", sf::Vector2f(0, 0), sf::Vector2f(120, 25), SimulationUICommand::NewSimulation);
@@ -18,9 +18,8 @@ void SimulationUI_Manager::initialize() {
 	resultTextBox.setPosition({ 1, 1089 });
 	resultTextBox.setSize({ 500, 350 });
 	resultTextBox.clear();
-	
-	simulationGraph.setArea({ 50, 50, 1600, 900 }, renderer.getWindow().getSize());
 
+	simulationGraph.setArea(graphRect, renderer.getWindow().getSize());
 }
 
 bool SimulationUI_Manager::handleEvent(const sf::Event& event) {
@@ -33,7 +32,8 @@ bool SimulationUI_Manager::handleEvent(const sf::Event& event) {
 	}
 
 	resultTextBox.handleEvent(event, renderer.getWindow());
-
+	simulationGraph.handleEvent(event, renderer.getWindow());
+	
 	bool consumed = false;
 
 	switch (event.type) {

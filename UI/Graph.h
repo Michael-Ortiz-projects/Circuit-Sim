@@ -2,6 +2,7 @@
 #include <iostream>
 #include "AssetManager.h"
 #include <sstream>
+#include "TextBox.h"
 struct GraphBounds {
     float minX, maxX, minY, maxY;
 };
@@ -11,7 +12,23 @@ public:
     bool dragging;
     sf::FloatRect drawArea;
 
-    Graph(AssetManager& asset) : font(asset.mainFont) {}
+    float sliderMinX;
+    float sliderMaxX;
+    float sliderY;
+    int currentX_pixel;
+    int currentY_pixel;
+
+    sf::RectangleShape sliderHandle;
+    bool sliderDragging;
+    TextBox cursorXOutputTextBox;
+    TextBox cursorYOutputTextBox;
+
+
+    Graph(AssetManager& asset, const sf::FloatRect& area) 
+        : font(asset.mainFont), 
+        cursorYOutputTextBox(asset.mainFont, area.getPosition() + sf::Vector2f(area.getSize().x + 180, 50), {150, 50}, 16, "Graph initializer text"),
+        cursorXOutputTextBox(asset.mainFont, area.getPosition() + sf::Vector2f(area.getSize().x + 30, 50), { 150, 50 }, 16, "Graph initializer text") {}
+
     void setData(const std::vector<sf::Vector2f>& points);
 
     void setBounds(float minX_, float maxX_, float minY_, float maxY_);
@@ -22,6 +39,7 @@ public:
 
     void setArea(const sf::FloatRect& area, const sf::Vector2u& windowSize);
 
+    void handleEvent(const sf::Event& event, sf::RenderWindow& window);
 
     bool dataEmpty() { return data.empty(); }
 
@@ -44,6 +62,13 @@ private:
 
     float niceFraction(float value);
 
+    float pixelToGraphX(float pixelX);
+
+
+    int graphYtoPixel(float y);
+
+    float getInterpolatedY(float x);
+
     void drawData(sf::RenderTarget& target);
 
     void drawGrid(sf::RenderTarget& target);
@@ -55,4 +80,7 @@ private:
     void drawLabels(sf::RenderTarget& target);
 
     void drawSelectionBox(sf::RenderTarget& target);
+
+    void drawSlider(sf::RenderTarget& target);
+
 };

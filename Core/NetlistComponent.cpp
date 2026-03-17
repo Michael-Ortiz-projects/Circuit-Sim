@@ -1,7 +1,7 @@
 #include "NetlistComponent.h"
 
 NetlistComponent::NetlistComponent(const ComponentType& ty, double val)
-    : type(ty), value(val) { 
+    : type(ty), value(val), expressionString(std::to_string(val)) { 
     switch (type) {
     case ComponentType::VoltageSource:
     case ComponentType::CurrentSource:
@@ -9,6 +9,8 @@ NetlistComponent::NetlistComponent(const ComponentType& ty, double val)
     case ComponentType::Capacitor:
     case ComponentType::Inductor:
     case ComponentType::Switch:
+    case ComponentType::ACCurrentSource:
+    case ComponentType::ACVoltageSource:
         terminals.push_back({ 0, -1, PinRole::Negative });
         terminals.push_back({ 1, -1, PinRole::Positive });
         break;

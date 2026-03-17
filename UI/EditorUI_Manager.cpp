@@ -18,6 +18,9 @@ void EditorUI_Manager::initialize() {
 	menu_map.at(MenuID::Place).addOption("VCCS", EditorUICommand::PlaceVCCS);
 	menu_map.at(MenuID::Place).addOption("CCVS", EditorUICommand::PlaceCCVS);
 	menu_map.at(MenuID::Place).addOption("CCCS", EditorUICommand::PlaceCCCS);
+	menu_map.at(MenuID::Place).addOption("AC Voltage Source", EditorUICommand::PlaceACVoltageSource);
+	menu_map.at(MenuID::Place).addOption("AC Current Source", EditorUICommand::PlaceACCurrentSource);
+
 
 	//menu_map.at(MenuID::Place).addOption("Switch", EditorUICommand::PlaceSwitch);
 	menu_map.at(MenuID::Place).addOption("Ground", EditorUICommand::PlaceGround);

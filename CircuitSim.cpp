@@ -10,27 +10,15 @@
 Grid grid(gridSize);
 std::string currentWorkingFilePath;
 AssetManager assets;
-sf::RenderWindow editorWindow(sf::VideoMode::getDesktopMode(), "Circuit Sim", sf::Style::None);
+sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+sf::RenderWindow editorWindow(desktop, "Circuit Sim", sf::Style::None);
 sf::RenderWindow simulationWindow;
 
 
+
 int main() {   
-    double x = 0;
-    std::string expr = "8*sin(x+3^2)";
-    exprtk::symbol_table<double> symbol_table;
-    symbol_table.add_variable("x", x);
-    symbol_table.add_constants();
-
-    exprtk::expression<double> expression;
-    expression.register_symbol_table(symbol_table);
-
-    exprtk::parser<double> parser;
-    parser.compile(expr, expression);
-    x = 3;
-    std::cout << expression.value() << std::endl;
-    return -123123;
+   
     Circuit circuit(assets);
-
     Renderer editorRenderer(editorWindow, assets);
     Renderer simRenderer(simulationWindow, assets);
     editorWindow.setFramerateLimit(60);
@@ -100,6 +88,8 @@ int main() {
             case EditorUICommand::PlaceInductor:
             case EditorUICommand::PlaceSwitch:
             case EditorUICommand::PlaceGround:
+            case EditorUICommand::PlaceACCurrentSource:
+            case EditorUICommand::PlaceACVoltageSource:
                 Debug::UICommand(cmd);
                 Debug::setHandler("PlaceHandler");
                 editorController.setHandler(&editorController.placeHandler, cmd);
@@ -116,6 +106,7 @@ int main() {
                 if (currentWorkingFilePath.empty())
                     editorController.saveCircuitHandler.saveDialog();
                 else {
+                    std::cout << currentWorkingFilePath << "\n";
                     editorController.saveCircuitHandler.saveCurrentWorkingFile();
                 }
                 break;
@@ -127,8 +118,6 @@ int main() {
                 break;
             case EditorUICommand::OpenSimulationWindow:
                 if (!simulationWindow.isOpen()) {
-
-                    sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
 
                     simulationWindow.create(sf::VideoMode(desktop.width, desktop.height), "Simulation Window", sf::Style::Default);
                     circuit.getSimulator().setSystem(circuit.getNetlistComponents(), circuit.getElectricalNodes());
@@ -169,7 +158,7 @@ int main() {
 /*
 * 
     Create AC Sources
-     - Instead of a double value, they will hold an expression (either string or exprt::expression).
+     - Instead of a double value, they will hold an expression (either string or exprtk::expression).
      - Currently the SchematicComponent class is made for only double values.
      - Make it so that the constructor differentiates between components that need a double or an expression to change the display value text.
      - I need to make a exprtk ExpressionEvaluator class that the simulator uses to evaluate the component expressions.

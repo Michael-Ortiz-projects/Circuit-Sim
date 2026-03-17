@@ -78,7 +78,84 @@ void Graph::setArea(const sf::FloatRect& area, const sf::Vector2u& windowSize) {
         });
 
     updateView();
+
+    sliderMinX = area.left;
+    currentX_pixel = sliderMinX;
+    sliderMaxX = area.left + area.width;
+    sliderY = area.top - 30;
+    sliderHandle.setOrigin(10, 10);
+    sliderHandle.setPosition(sliderMinX, sliderY);
+    sliderHandle.setSize({ 20, 20 });
+    sliderHandle.setFillColor(sf::Color::White);
+
 }
+
+
+
+void Graph::handleEvent(const sf::Event& event, sf::RenderWindow& window) {
+
+
+    
+
+
+    if (cursorXOutputTextBox.handleEvent(event)) {
+        //do reverse lookup to set cursor
+        std::cout << "X text Enter Pressed\n";
+    }
+    if (cursorYOutputTextBox.handleEvent(event)) {
+        //do reverse lookup to set cursor
+        std::cout << "Y text Enter Pressed\n";
+    }
+    if (event.type == sf::Event::MouseButtonPressed &&
+        event.mouseButton.button == sf::Mouse::Left)
+    {
+        sf::Vector2f mouse(
+            (float)event.mouseButton.x,
+            (float)event.mouseButton.y
+        );
+        cursorXOutputTextBox.setActive(cursorXOutputTextBox.contains(mouse));
+        cursorYOutputTextBox.setActive(cursorYOutputTextBox.contains(mouse));
+        if (sliderHandle.getGlobalBounds().contains(mouse))
+        {
+            sliderDragging = true;
+            std::cout << "sliderDragging set true\n";
+        }
+    }
+
+    if (event.type == sf::Event::MouseButtonReleased &&
+        event.mouseButton.button == sf::Mouse::Left)
+    {
+        sliderDragging = false;
+        std::cout << "sliderDragging set false\n";
+
+    }
+
+    if (event.type == sf::Event::MouseMoved && sliderDragging) {
+        sf::Vector2i pixel(
+            event.mouseMove.x,
+            event.mouseMove.y
+        );
+
+
+        currentX_pixel = std::clamp((float)pixel.x, sliderMinX, sliderMaxX);
+        
+        std::cout << "\n";
+        sliderHandle.setPosition(currentX_pixel, sliderY);
+          
+        float X_Val = pixelToGraphX(currentX_pixel);
+        float Y_Val = getInterpolatedY(X_Val);
+        currentY_pixel = graphYtoPixel(Y_Val);
+
+        std::cout << "X = " << X_Val << "    Y = " << Y_Val << "\n";
+        std::cout << "Pixel Y = " << graphYtoPixel(Y_Val) << "\n";
+
+        cursorXOutputTextBox.setText(std::to_string(X_Val));
+        cursorYOutputTextBox.setText(std::to_string(Y_Val));
+        
+    }
+}
+
+
 
 float Graph::niceFraction(float value) {
     float exponent = std::floor(std::log10(value));
@@ -94,6 +171,51 @@ float Graph::niceFraction(float value) {
     return niceFraction * std::pow(10.f, exponent);
 }
 
+float Graph::pixelToGraphX(float pixelX) {
+    float t = (pixelX - sliderMinX) / (sliderMaxX - sliderMinX);
+
+    t = std::clamp(t, 0.f, 1.f);
+
+    return minX + t * (maxX - minX);
+}
+
+int Graph::graphYtoPixel(float y) {
+    float t = (y - minY) / (maxY - minY);
+
+    t = std::clamp(t, 0.f, 1.f);
+    
+
+    return drawArea.top + drawArea.height - t * drawArea.height;
+}
+
+float Graph::getInterpolatedY(float x)
+{
+    if (data.empty())
+        return 0.f;
+
+    auto it = std::lower_bound(
+        data.begin(),
+        data.end(),
+        x,
+        [](const sf::Vector2f& p, float x)
+        {
+            return p.x < x;
+        });
+
+    if (it == data.begin())
+        return it->y;
+
+    if (it == data.end())
+        return data.back().y;
+
+    auto p2 = *it;
+    auto p1 = *(it - 1);
+
+    float t = (x - p1.x) / (p2.x - p1.x);
+
+    return p1.y + t * (p2.y - p1.y);
+}
+
 void Graph::draw(sf::RenderWindow& window) {
     // Save previous view
     sf::View oldView = window.getView();
@@ -105,8 +227,10 @@ void Graph::draw(sf::RenderWindow& window) {
     drawSelectionBox(window);
     window.setView(window.getDefaultView());
     drawLabels(window);
+    drawSlider(window);
 
-
+    cursorXOutputTextBox.draw(window);
+    cursorYOutputTextBox.draw(window);
     window.setView(oldView);
 
 }
@@ -122,6 +246,15 @@ void Graph::updateView() {
         (maxX - minX),
         -(maxY - minY)
     );
+
+    float X_Val = pixelToGraphX(currentX_pixel);
+    float Y_Val = getInterpolatedY(X_Val);
+    currentY_pixel = graphYtoPixel(Y_Val);
+
+    std::cout << "X = " << X_Val << "    Y = " << Y_Val << "\n";
+    std::cout << "Pixel Y = " << graphYtoPixel(Y_Val) << "\n";
+    cursorXOutputTextBox.setText(std::to_string(X_Val));
+    cursorYOutputTextBox.setText(std::to_string(Y_Val));
 }
 
 void Graph::drawData(sf::RenderTarget& target) {
@@ -246,6 +379,23 @@ void Graph::drawLabels(sf::RenderTarget& target) {
         );
         target.draw(label);
     }
+    sf::Text XcursorLabel;
+    XcursorLabel.setFont(font);
+    XcursorLabel.setCharacterSize(16);
+    XcursorLabel.setFillColor(sf::Color::White);
+    XcursorLabel.setString("X Value:");
+    XcursorLabel.setPosition(cursorXOutputTextBox.getBox().getGlobalBounds().getPosition() + sf::Vector2f(0, -30));
+
+
+    sf::Text YcursorLabel;
+    YcursorLabel.setFont(font);
+    YcursorLabel.setCharacterSize(16);
+    YcursorLabel.setFillColor(sf::Color::White);
+    YcursorLabel.setString("Y Value:");
+    YcursorLabel.setPosition(cursorYOutputTextBox.getBox().getGlobalBounds().getPosition() + sf::Vector2f(0, -30));
+
+    target.draw(XcursorLabel);
+    target.draw(YcursorLabel);
 }
 
 void Graph::drawSelectionBox(sf::RenderTarget& target) {
@@ -256,7 +406,29 @@ void Graph::drawSelectionBox(sf::RenderTarget& target) {
     box.setPosition(selectionRect.left, selectionRect.top);
     box.setSize({ selectionRect.width, selectionRect.height });
     box.setFillColor(sf::Color(100, 100, 255, 50));
-    //box.setOutlineThickness(.0001f); // fix this outline, draw the outline in world space because super small outline values cause it not to be drawn OR just dont draw an outline. lowkey better
-    //std::cout << "drawingBox";
     target.draw(box);
+}
+
+void Graph::drawSlider(sf::RenderTarget& target) {
+    
+    sf::RectangleShape sliderTrack;
+    sliderTrack.setPosition({ sliderMinX, sliderY });
+    sliderTrack.setFillColor(sf::Color::Red);
+    sliderTrack.setSize({ sliderMaxX - sliderMinX, 5 });
+    
+    target.draw(sliderTrack);
+    target.draw(sliderHandle);
+
+
+    sf::Vertex cursorYLine[] = {
+        {{(float)currentX_pixel, sliderY}, sf::Color::Blue},
+        {{(float)currentX_pixel, drawArea.top + drawArea.height}, sf::Color::Blue}
+    };
+    sf::Vertex cursorXLine[] = {
+        {{drawArea.left, (float)currentY_pixel}, sf::Color::Blue},
+        {{drawArea.left + drawArea.width, (float)currentY_pixel}, sf::Color::Blue}
+    };
+
+    target.draw(cursorYLine, 2, sf::Lines);
+    target.draw(cursorXLine, 2, sf::Lines);
 }

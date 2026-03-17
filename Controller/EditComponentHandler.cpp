@@ -1,4 +1,5 @@
 #include "EditComponentHandler.h"
+#include "exprtk.hpp"
 
 EditComponentHandler::EditComponentHandler(EditorUI_Manager& ui, Circuit& c)
 	: ui(ui), schematicComponents(c.getSchematicComponents()), wires(c.getWires()), circuit(c) { }
@@ -40,30 +41,54 @@ void EditComponentHandler::openEditDialog() {
 
 void EditComponentHandler::update() {
     EditorUICommand cmd;
+    exprtk::expression<double> expr;
+    exprtk::parser<double> parser;
+    exprtk::symbol_table<double> table;
+
 
     while (ui.pollCommand(cmd)) {
         EditDialogResult EditDialog;
         Debug::UICommand(cmd);
         switch (cmd) {
         case EditorUICommand::ApplyEdit:
-            std::cout << "this ran\n";
             EditDialog = ui.getEditDialogText();
-            std::cout << "got edit dialog\n";
-            double parsedValue;
-            if (!parseValueWithSuffix(EditDialog.valueText, parsedValue)) {
-                std::cout << "[EditComponentHandler] Invalid value: " << EditDialog.valueText << "\n";
+
+
+            switch (component->type) {
+            case ComponentType::ACCurrentSource:
+            case ComponentType::ACVoltageSource:
+                double t;
+                table.add_variable("t", t);
+                table.add_constants();
+                expr.register_symbol_table(table);
+                
+                if (!parser.compile(EditDialog.valueText, expr)) {
+                    std::cout << "[EditComponentHandler] Invalid value: " << EditDialog.valueText << "\n";
+                    break;
+                }
+                component->expressionString = EditDialog.valueText;
+                component->label = EditDialog.labelText;
+                ui.closeEditDialog();
+                finished = true;
+
+                break;
+            default:
+                double parsedValue;
+                if (!parseValueWithSuffix(EditDialog.valueText, parsedValue)) {
+                    std::cout << "[EditComponentHandler] Invalid value: " << EditDialog.valueText << "\n";
+                    break;
+                }
+                component->value = parsedValue;
+                component->expressionString = EditDialog.valueText;
+                component->label = EditDialog.labelText;
+
+                std::cout << "Component Value = " << component->value;
+
+                ui.closeEditDialog();
+                finished = true;
                 break;
             }
-
-            std::cout << "setting values\n";
-            component->value = parsedValue;
-            component->label = EditDialog.labelText;
             
-            std::cout << "Component Value = " << component->value;
-            std::cout << "\nClosing Edit dialog\n";
-
-            ui.closeEditDialog();
-            finished = true;
             break;
 
         case EditorUICommand::CancelEdit:

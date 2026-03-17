@@ -35,7 +35,7 @@ public:
     virtual void setCurrent(double C) { current = C; }
     virtual void setVoltage(double V) { voltage = V; }
 
-    virtual void stamp(SimulationType type, MNASystem& sys, double deltaT = 0) = 0;
+    virtual void stamp(SimulationType type, MNASystem& sys, double deltaT = 0, double t = 0) = 0;
 
     virtual ElementState getState(MNASystem& sys) const { 
         ElementState disp;
