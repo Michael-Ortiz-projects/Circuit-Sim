@@ -18,6 +18,54 @@ public:
         }
     }
 
+    void stampStatic(SimulationType type, MNASystem& sys, double deltaT, double t) {
+        int extraVarIndex = extraVarIndices[0];
+        if (type == SimulationType::DC) {
+            // DC inductor behaves like a 0V voltage source
+
+            // KCL contributions
+            if (n1 != 0) sys.addToAStatic(n1, extraVarIndex, 1);   // +I_L into node n1
+            if (n2 != 0) sys.addToAStatic(n2, extraVarIndex, -1);  // -I_L into node n2
+
+            // Voltage constraint row
+            if (n1 != 0) sys.addToAStatic(extraVarIndex, n1, 1);   // Vn1 - Vn2 = 0
+            if (n2 != 0) sys.addToAStatic(extraVarIndex, n2, -1);
+
+            // RHS = 0
+            sys.addTobStatic(extraVarIndex, 0.0);
+        }
+
+        else if (type == SimulationType::Transient) {
+            if (n1 != 0) {
+                sys.addToAStatic(n1, extraVarIndex, 1);
+                sys.addToAStatic(extraVarIndex, n1, 1);
+            }
+
+            if (n2 != 0) {
+                sys.addToAStatic(n2, extraVarIndex, -1);
+                sys.addToAStatic(extraVarIndex, n2, -1);
+            }
+        }
+    }
+
+    void stampDynamic(SimulationType type, MNASystem& sys, double deltaT, double t) {
+        int extraVarIndex = extraVarIndices[0];
+        if (type == SimulationType::Transient) {
+            if (n1 != 0) {
+                sys.addToA(n1, extraVarIndex, 1);
+                sys.addToA(extraVarIndex, n1, 1);
+            }
+
+            if (n2 != 0) {
+                sys.addToA(n2, extraVarIndex, -1);
+                sys.addToA(extraVarIndex, n2, -1);
+            }
+
+            sys.addToA(extraVarIndex, extraVarIndex, -L / deltaT);
+            sys.addTob(extraVarIndex, -(L / deltaT) * current);
+        }
+    }
+
 	void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
         //std::cout << "SimInductor stamp ran\n";
         int extraVarIndex = extraVarIndices[0];
@@ -51,6 +99,10 @@ public:
             sys.addTob(extraVarIndex, - (L / deltaT) * current);
         }
 	}
+
+    bool isStatic() const override {
+        return false;
+    }
 
 
     void addGraphVariables(std::vector<TransientGraphVariable>& vars, const std::unordered_map<int, int>& eNodeToMNA) const override {
@@ -95,4 +147,5 @@ public:
 private:
 	int n1, n2;
 	double L;
+    
 };

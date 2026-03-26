@@ -9,6 +9,28 @@ public:
 	}
 
 	std::vector<int> getNodes() const override { return { n1, n2 }; }
+    
+    void stampDynamic(SimulationType type, MNASystem& sys, double deltaT, double t) {
+        
+        if (type == SimulationType::Transient) {
+            double G = C / deltaT;
+            double V_prev = sys.getx()(n1) - sys.getx()(n2);
+            //std::cout << "G = " << G << "\nV_prev = " << V_prev << "\n";
+            if (n1 != 0) {
+                sys.addToA(n1, n1, G);
+                sys.addTob(n1, G * V_prev);
+            }
+            if (n2 != 0) {
+                sys.addToA(n2, n2, G);
+                sys.addTob(n2, -G * V_prev);
+            }
+            if (n1 != 0 && n2 != 0) {
+                sys.addToA(n1, n2, -G);
+                sys.addToA(n2, n1, -G);
+            }
+
+        }
+    }
 
 	void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
 		//std::cout << "SimCapacitor Stamp running()\n";
@@ -35,6 +57,9 @@ public:
 		}
 	}
 
+    bool isStatic() const override {
+        return false;
+    }
 
     void addGraphVariables(std::vector<TransientGraphVariable>& vars, const std::unordered_map<int, int>& eNodeToMNA) const override {
         int mna1 = (n1 == 0) ? -1 : n1;

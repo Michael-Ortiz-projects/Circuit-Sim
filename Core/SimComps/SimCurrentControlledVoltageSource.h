@@ -17,6 +17,31 @@ public:
         }
     }
 
+    void stampStatic(SimulationType type, MNASystem& sys, double deltaT, double t) {
+
+        if (type == SimulationType::DC || type == SimulationType::Transient) {
+
+            int I_control = extraVarIndices[0];  // current through sensing source
+            int I_Vs = extraVarIndices[1];
+
+            // sensing voltage source between n4 (+) and n3 (-)
+
+            if (n3 != 0) sys.addToAStatic(n3, I_control, -1);
+            if (n4 != 0) sys.addToAStatic(n4, I_control, 1);
+
+            if (n3 != 0) sys.addToAStatic(I_control, n3, 1);
+            if (n4 != 0) sys.addToAStatic(I_control, n4, -1);
+
+            // voltage source current addition n2 - n1 = k * I_control
+
+            if (n1 != 0) sys.addToAStatic(n1, I_Vs, -1);
+            if (n2 != 0) sys.addToAStatic(n2, I_Vs, 1);
+            if (n1 != 0) sys.addToAStatic(I_Vs, n1, -1);
+            if (n2 != 0) sys.addToAStatic(I_Vs, n2, 1);
+            sys.addToAStatic(I_Vs, I_control, -k);
+        }
+    }
+
     void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
 
         if (type == SimulationType::DC || type == SimulationType::Transient) {

@@ -16,7 +16,6 @@ GraphBounds Graph::getBounds() {
     return { minX, maxX, minY, maxY };
 }
 
-
 void Graph::autoScale() {
     if (data.empty()) return;
 

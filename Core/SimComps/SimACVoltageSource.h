@@ -19,6 +19,27 @@ public:
         }
     }
 
+    void stampStatic(SimulationType type, MNASystem& sys, double deltaT, double t) {
+        int iIdx = extraVarIndices[0]; // index for source current
+
+        if (type == SimulationType::DC || type == SimulationType::Transient) {
+            // KCL contributions
+            if (n1 != 0) sys.addToAStatic(n1, iIdx, 1);  // +I_s into n1
+            if (n2 != 0) sys.addToAStatic(n2, iIdx, -1); // -I_s into n2
+
+            // Voltage constraint row
+            if (n1 != 0) sys.addToAStatic(iIdx, n1, -1);
+            if (n2 != 0) sys.addToAStatic(iIdx, n2, 1);
+        }
+    }
+
+    void stampDynamic(SimulationType type, MNASystem& sys, double deltaT, double t) {
+        int iIdx = extraVarIndices[0];
+        if (type == SimulationType::Transient) {
+            sys.addTob(iIdx, f.evaluate(t));
+        }
+    }
+
     void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
         //std::cout << "SimVoltageSource stamp ran\n";
 
@@ -37,6 +58,10 @@ public:
             //std::cout << "Voltage source at time t = " << t << "\n   f(t) =  " << f.evaluate(t);
             sys.addTob(iIdx, f.evaluate(t));
         }
+    }
+
+    bool isStatic() const override {
+        return false;
     }
 
     void addGraphVariables(std::vector<TransientGraphVariable>& vars, const std::unordered_map<int, int>& eNodeToMNA) const override {

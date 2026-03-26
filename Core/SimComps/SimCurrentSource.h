@@ -9,6 +9,13 @@ public:
 
 	std::vector<int> getNodes() const override { return { n1, n2 }; }
 
+
+    void stampStatic(SimulationType type, MNASystem& sys, double deltaT, double t) {
+        if (n1 != 0) sys.addTobStatic(n1, -I);
+
+        if (n2 != 0) sys.addTobStatic(n2, I);
+    }
+
 	void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
 		//std::cout << "Current Source Stamp running()\n";
 		if (n1 != 0) sys.addTob(n1, -I);

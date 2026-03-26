@@ -174,42 +174,80 @@ std::vector<TransientSimulationState> Simulator::runTransient(Config config) {
 	// the inductor search loop could be done once at the start of the function then stored to reduce the amount of lookups
 	// i can use LU factorization to make solving more efficient
 	// fixing timestep is a must
+
+	// ==========================
+	// INITIALIZE STEPS & RESULTS	
+	// ==========================
 	
 	size_t numSteps = static_cast<size_t>(std::ceil((config.tEnd - config.tStart) / config.timeStep)) + 1;
 	std::cout << "Matrix Size: " <<  system.getA().size() << "\n";
 	size_t step = 0;
 	std::vector<TransientSimulationState> results(numSteps);
-	std::vector<Eigen::VectorXd> resultVector(numSteps);
-	std::vector<double> timeVector(numSteps);
-
 	Eigen::VectorXd previousX = system.getx();
-
-	// Step 0 = initial condition
 	results[0].time = config.tStart;
 	results[0].deltaT = 0.0;
 	results[0].resultsVector = previousX;
 	results[0].previousResultsVector = previousX;
 
-	for (auto& v : resultVector)
-		v = Eigen::VectorXd::Zero(system.getx().size());
+	std::cout << "CLASSIFYING COMPONENTS\n";
+
+	// ==========================
+	// CLASSIFY COMPONENTS
+	// ==========================
+
+	std::vector<SimulationComponent*> staticComponents;
+	std::vector<SimulationComponent*> dynamicComponents;
+	std::vector<SimInductor*> inductors;
+
+	for (auto& comp : simComponents) {
+		if (comp->isStatic())
+			staticComponents.push_back(comp.get());
+		else
+			dynamicComponents.push_back(comp.get());
+
+		if (auto ind = dynamic_cast<SimInductor*>(comp.get()))
+			inductors.push_back(ind);
+	}
+
+	std::cout << "Static components: " << staticComponents.size() << "\n";
+	std::cout << "Dynamic components: " << dynamicComponents.size() << "\n";
+	std::cout << "Inductors Size: " << inductors.size() << "\n";
+
+	std::cout << "SETTING STATIC MATRICES\n";
+
+	// ==========================
+	// SET STATIC MATRICES
+	// ==========================
+	for (auto* static_comp : staticComponents) {
+		static_comp->stampStatic(SimulationType::Transient, system);
+	}
+	
+
+	std::cout << "timestep Solve starting\n";
+	double dt = config.timeStep;
 
 	for (size_t step = 1; step < numSteps; ++step) {
+
 		double t = config.tStart + step * config.timeStep;		
-		double dt = (step == numSteps - 1 && config.tEnd - t > 0) ? config.tEnd - t : config.timeStep;
-		if (step == numSteps - 1) t = config.timeStep * step + dt;
-		if (dt <= 0.0) dt = 1e-12;
 
 
-		for (auto& C : simComponents) C->stamp(SimulationType::Transient, system, dt, t);
+		system.resetStatic();
+
+
+		for (auto* comp : dynamicComponents) {
+			comp->stampDynamic(SimulationType::Transient, system, dt, t);
+		}
+
 		//std::cout << "A = \n" << system.getA() << "\n\n b = \n" << system.getb() << "\n\n";
+
 		solver.solve(system);
+		
+
 		// update inductor currents for the next step
-		for (auto& comp : simComponents) {
-			if (auto ind = dynamic_cast<SimInductor*>(comp.get())) {
-				int idx = ind->getExtraVarInfo()[0].index;  // extraVarIndex in MNASystem
-				double i_new = system.getx()[idx];          // solved current
-				ind->setCurrent(i_new);
-			}
+		for (auto& ind : inductors) {
+			int idx = ind->getExtraVarInfo()[0].index;  // extraVarIndex in MNASystem
+			double i_new = system.getx()[idx];          // solved current
+			ind->setCurrent(i_new);
 		}
 
 		results[step].time = t;
@@ -217,11 +255,10 @@ std::vector<TransientSimulationState> Simulator::runTransient(Config config) {
 		results[step].resultsVector = system.getx();
 		results[step].previousResultsVector = results[step - 1].resultsVector;
 
-		resultVector[step] = system.getx();
-		system.setZero();
 	}
 	
 	transientResults = results;
+	std::cout << "finished simulation\n";
 	return transientResults;
 }
 

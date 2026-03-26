@@ -3,7 +3,7 @@
 #include "SimulationComponent.h"
 #include "../ExpressionEvaluator.h"
 
-class SimACCurrentSource : public SimulationComponent {
+class SimACCurrentSource : public SimulationComponent { //STAMPING BROKEN
 public:
     SimACCurrentSource(int a, int b, ExpressionEvaluator eval, int id, std::string Label)
         : SimulationComponent(id, Label), n1(a), n2(b), f(eval) {
@@ -17,6 +17,10 @@ public:
         if (n1 != 0) sys.addTob(n1, -I);
 
         if (n2 != 0) sys.addTob(n2, I);
+    }
+
+    bool isStatic() const override {
+        return false;
     }
 
     void addGraphVariables(std::vector<TransientGraphVariable>& vars, const std::unordered_map<int, int>& eNodeToMNA) const override {

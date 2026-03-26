@@ -16,6 +16,27 @@ public:
         }
     }
 
+    void stampStatic(SimulationType type, MNASystem& sys, double deltaT, double t) {
+        int iIdx = extraVarIndices[0];
+
+        if (type == SimulationType::DC || type == SimulationType::Transient) {
+
+            // KCL coupling
+            if (n1 != 0) {
+                sys.addToAStatic(n1, iIdx, -1);
+                sys.addToAStatic(iIdx, n1, -1);
+            }
+
+            if (n2 != 0) {
+                sys.addToAStatic(n2, iIdx, 1);
+                sys.addToAStatic(iIdx, n2, 1);
+            }
+
+            // Constraint equation control terms
+            if (n3 != 0) sys.addToAStatic(iIdx, n3, k);
+            if (n4 != 0) sys.addToAStatic(iIdx, n4, -k);
+        }
+    }
 
     void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
 

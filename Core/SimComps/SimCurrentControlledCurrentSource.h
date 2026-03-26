@@ -18,6 +18,27 @@ public:
         }
     }
 
+    void stampStatic(SimulationType type, MNASystem& sys, double deltaT, double t) {
+
+        if (type == SimulationType::DC || type == SimulationType::Transient) {
+
+            int iIdx = extraVarIndices[0];  // current through sensing source
+
+            // sensing voltage source between n4 (+) and n3 (-)
+
+            if (n3 != 0) sys.addToAStatic(n3, iIdx, -1);
+            if (n4 != 0) sys.addToAStatic(n4, iIdx, 1);
+
+            if (n3 != 0) sys.addToAStatic(iIdx, n3, 1);
+            if (n4 != 0) sys.addToAStatic(iIdx, n4, -1);
+
+            // CCCS output current: Iout = k * Ictrl
+
+            if (n1 != 0) sys.addToAStatic(n1, iIdx, k);
+            if (n2 != 0) sys.addToAStatic(n2, iIdx, -k);
+        }
+    }
+
     void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
 
         if (type == SimulationType::DC || type == SimulationType::Transient) {

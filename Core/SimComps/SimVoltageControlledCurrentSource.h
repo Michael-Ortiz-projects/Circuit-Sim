@@ -9,7 +9,16 @@ public:
 
     std::vector<int> getNodes() const override { return { n1, n2, n3, n4 }; }
 
+    void stampStatic(SimulationType type, MNASystem& sys, double deltaT, double t) {
+        if (type == SimulationType::DC || type == SimulationType::Transient) {
 
+            if (n1 != 0 && n4 != 0) sys.addToAStatic(n1, n4, k);
+            if (n1 != 0 && n3 != 0) sys.addToAStatic(n1, n3, -k);
+
+            if (n2 != 0 && n4 != 0) sys.addToAStatic(n2, n4, -k);
+            if (n2 != 0 && n3 != 0) sys.addToAStatic(n2, n3, k);
+        }
+    }
 
     void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
 

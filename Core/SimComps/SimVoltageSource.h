@@ -18,6 +18,23 @@ public:
         }
     }
 
+    void stampStatic(SimulationType type, MNASystem& sys, double deltaT, double t) {
+        int iIdx = extraVarIndices[0]; // index for source current
+
+        if (type == SimulationType::DC || type == SimulationType::Transient) {
+            // KCL contributions
+            if (n1 != 0) sys.addToAStatic(n1, iIdx, 1);  // +I_s into n1
+            if (n2 != 0) sys.addToAStatic(n2, iIdx, -1); // -I_s into n2
+
+            // Voltage constraint row
+            if (n1 != 0) sys.addToAStatic(iIdx, n1, -1);
+            if (n2 != 0) sys.addToAStatic(iIdx, n2, 1);
+
+            // RHS = V_s
+            sys.addTobStatic(iIdx, V);
+        }
+    }
+
 	void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
         //std::cout << "SimVoltageSource stamp ran\n";
 

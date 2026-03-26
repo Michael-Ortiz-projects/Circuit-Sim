@@ -35,7 +35,12 @@ public:
     virtual void setCurrent(double C) { current = C; }
     virtual void setVoltage(double V) { voltage = V; }
 
+    virtual void stampStatic(SimulationType type, MNASystem& sys, double deltaT = 0, double t = 0) { return; };
+    virtual void stampDynamic(SimulationType type, MNASystem& sys, double deltaT = 0, double t = 0) { return; };
+
     virtual void stamp(SimulationType type, MNASystem& sys, double deltaT = 0, double t = 0) = 0;
+
+    virtual bool isStatic() const { return true; }
 
     virtual ElementState getState(MNASystem& sys) const { 
         ElementState disp;

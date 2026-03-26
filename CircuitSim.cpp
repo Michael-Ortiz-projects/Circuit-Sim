@@ -5,7 +5,7 @@
 #include "UI/EditorRenderer.h"
 #include "UI/SimulationRenderer.h"
 #include "exprtk.hpp"
-
+#include <Eigen/Sparse>
 
 Grid grid(gridSize);
 std::string currentWorkingFilePath;
@@ -18,6 +18,32 @@ sf::RenderWindow simulationWindow;
 
 int main() {   
    
+    int n = 3;
+
+    Eigen::SparseMatrix<double> A(n, n);
+    Eigen::VectorXd b(n), x;
+
+    std::vector<Eigen::Triplet<double>> triplets;
+
+    triplets.emplace_back(0, 0, 10);
+    triplets.emplace_back(1, 1, 5);
+    triplets.emplace_back(2, 2, 2);
+    triplets.emplace_back(0, 2, 3);
+
+    A.setFromTriplets(triplets.begin(), triplets.end());
+
+    b << 1, 2, 3;
+
+    Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+    solver.analyzePattern(A);
+    solver.factorize(A);
+
+    x = solver.solve(b);
+    std::cout << A;
+    std::cout << x;
+
+    return -121212;
+    
     Circuit circuit(assets);
     Renderer editorRenderer(editorWindow, assets);
     Renderer simRenderer(simulationWindow, assets);

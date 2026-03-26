@@ -11,12 +11,31 @@ void MNASystem::setSystem(int nodeCount, int extraVars) {
     m = extraVars;
     A = Eigen::MatrixXd::Zero(n + m, n + m);
     b = Eigen::VectorXd::Zero(n + m);
+    A_static = Eigen::MatrixXd::Zero(n + m, n + m);
+    b_static = Eigen::VectorXd::Zero(n + m);
     x = Eigen::VectorXd::Zero(n + m);
 }
 
 void MNASystem::setZero() {
     A.setZero();
     b.setZero();
+}
+
+void MNASystem::resetStatic() {
+    A = A_static;
+    b = b_static;
+}
+
+void MNASystem::addToAStatic(int j, int k, double value) {
+    if (j >= 0 && k >= 0) {
+        A_static(j, k) += value;
+    }
+}
+
+void MNASystem::addTobStatic(int j, double value) {
+    if (j >= 0) {
+        b_static(j) += value;
+    }
 }
 
 void MNASystem::addToA(int j, int k, double value) { 

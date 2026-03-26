@@ -20,7 +20,11 @@ public:
 
 	void setSystem(int nodeCount, int extraVars);
 	void setZero();
+	void resetStatic();
 
+	void addToAStatic(int j, int k, double value);
+	void addTobStatic(int j, double value);
+	
 	void addToA(int j, int k, double value);
 	void addTob(int j, double value);
 
@@ -34,8 +38,10 @@ public:
 
 private:
 	int n, m;
+	Eigen::MatrixXd A_static;
+	Eigen::VectorXd b_static;
+
 	Eigen::MatrixXd A;
 	Eigen::VectorXd b;
 	Eigen::VectorXd x;
-
 };
