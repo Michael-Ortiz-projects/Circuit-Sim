@@ -6,6 +6,8 @@
 #include "UI/SimulationRenderer.h"
 #include "exprtk.hpp"
 #include <Eigen/Sparse>
+#include <iostream>
+#include <chrono>
 
 Grid grid(gridSize);
 std::string currentWorkingFilePath;
@@ -17,7 +19,8 @@ sf::RenderWindow simulationWindow;
 
 
 int main() {   
-   
+    
+
     int n = 3;
 
     Eigen::SparseMatrix<double> A(n, n);
@@ -42,7 +45,6 @@ int main() {
     std::cout << A;
     std::cout << x;
 
-    return -121212;
     
     Circuit circuit(assets);
     Renderer editorRenderer(editorWindow, assets);
@@ -61,14 +63,10 @@ int main() {
     SimulationController simulationController(circuit, simUI);
 
     //initializing circuit data
-    char filename[MAX_PATH] = "SeriesRLCDCCircuit.ckt";
+    //char filename[MAX_PATH] = "SeriesRLCDCCircuit.ckt";
     //CircuitData initializedData = editorController.saveCircuitHandler.loadFromFile(filename);
     //circuit.setCircuitData(initializedData);
 
-    
-
-    ScrollTextBox box(assets.mainFont, 18, { 50, 1000 }, { 400, 200 });
-    box.setString("Long text...\nLine 2...\nLine 3...\nLine 4...\nLine 5...\nLine 6...\nLine 7...\nLine 2...\nLine 3...\nLine 4...\nLine 5...\nLine 6...\nLine 7");
 
 
     while (editorWindow.isOpen()) {
@@ -82,7 +80,6 @@ int main() {
 
             editorController.handleEvent(event);
             editorController.rebuildSchematicComponents();
-            box.handleEvent(event, editorWindow);
 
         }
 
@@ -164,12 +161,10 @@ int main() {
         if (editorWindow.isOpen()) {
             schematicRenderer.drawCanvas(circuit.getSchematicComponents(), circuit.getWires(), editorController.selectionBoxHandler.getRect());
             editorUI.draw();
-            editorWindow.draw(box);
 
             editorWindow.display();
         }
         
-        // ----- Draw simulation window -----
         if (simulationWindow.isOpen()) {
             simulationWindow.clear(simulationWindowBackgroundColor);
             simUI.draw();
@@ -179,23 +174,3 @@ int main() {
     
     return 0;
 }
-
-// TODO
-/*
-* 
-    Create AC Sources
-     - Instead of a double value, they will hold an expression (either string or exprtk::expression).
-     - Currently the SchematicComponent class is made for only double values.
-     - Make it so that the constructor differentiates between components that need a double or an expression to change the display value text.
-     - I need to make a exprtk ExpressionEvaluator class that the simulator uses to evaluate the component expressions.
-     - Sim Components are going to instead of taking a value, take a expression that is evaluated by the above class.
-     - When doing a simulation, the stamp parameters needs to include dt and t to evaluate any expressions
-
-    Create Transistors/Implement Non-Linear Devices
-
-    Create DC Sweep Analysis 
-    - Sweeping a DC voltage source through some interval and step to graph a circuit's DCOP response when subject to several different source values.
-
-    Possibly implement AC Sweep Analyis
-
-*/

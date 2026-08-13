@@ -18,9 +18,9 @@ public:
 
 	void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
 		//std::cout << "Current Source Stamp running()\n";
-		if (n1 != 0) sys.addTob(n1, -I);
+		if (n1 != 0) sys.addTobDynamic(n1, -I);
 
-		if (n2 != 0) sys.addTob(n2, I);
+		if (n2 != 0) sys.addTobDynamic(n2, I);
 	}
 
     void addGraphVariables(std::vector<TransientGraphVariable>& vars, const std::unordered_map<int, int>& eNodeToMNA) const override {

@@ -15,7 +15,7 @@ public:
 
 	void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
 		//std::cout << "stamp ran\n";
-		sys.addToA(0, 0, 1);
+		sys.addToADynamic(0, 0, 1);
 	}
 
 private:

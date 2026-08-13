@@ -10,8 +10,8 @@ void WireHandler::onMousePress(const sf::Vector2f& worldPos) {
 
     case WireState::Null:
         std::cout << "this ran again\n";
-        std::cout << "Terminal is empty == " << circuit.terminalIsEmpty(hit.lead) << "hit.type == HitResult::Type::Lead = ";
         if (hit.type == HitResult::Type::Lead && circuit.terminalIsEmpty(hit.lead)) {
+            std::cout << "Terminal is empty == " << circuit.terminalIsEmpty(hit.lead) << "hit.type == HitResult::Type::Lead = ";
 
             beginWireFromConnection(hit.lead);
             std::cout << "beginWireFromConnection() ran\n";

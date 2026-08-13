@@ -46,18 +46,18 @@ public:
 
             // KCL coupling
             if (n1 != 0) {
-                sys.addToA(n1, iIdx, -1);
-                sys.addToA(iIdx, n1, -1);
+                sys.addToADynamic(n1, iIdx, -1);
+                sys.addToADynamic(iIdx, n1, -1);
             }
 
             if (n2 != 0) {
-                sys.addToA(n2, iIdx, 1);
-                sys.addToA(iIdx, n2, 1);
+                sys.addToADynamic(n2, iIdx, 1);
+                sys.addToADynamic(iIdx, n2, 1);
             }
 
             // Constraint equation control terms
-            if (n3 != 0) sys.addToA(iIdx, n3, k);
-            if (n4 != 0) sys.addToA(iIdx, n4, -k);
+            if (n3 != 0) sys.addToADynamic(iIdx, n3, k);
+            if (n4 != 0) sys.addToADynamic(iIdx, n4, -k);
         }
     }
 

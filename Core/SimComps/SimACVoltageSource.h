@@ -36,7 +36,7 @@ public:
     void stampDynamic(SimulationType type, MNASystem& sys, double deltaT, double t) {
         int iIdx = extraVarIndices[0];
         if (type == SimulationType::Transient) {
-            sys.addTob(iIdx, f.evaluate(t));
+            sys.addTobDynamic(iIdx, f.evaluate(t));
         }
     }
 
@@ -47,16 +47,16 @@ public:
 
         if (type == SimulationType::DC || type == SimulationType::Transient) {
             // KCL contributions
-            if (n1 != 0) sys.addToA(n1, iIdx, 1);  // +I_s into n1
-            if (n2 != 0) sys.addToA(n2, iIdx, -1); // -I_s into n2
+            if (n1 != 0) sys.addToADynamic(n1, iIdx, 1);  // +I_s into n1
+            if (n2 != 0) sys.addToADynamic(n2, iIdx, -1); // -I_s into n2
 
             // Voltage constraint row
-            if (n1 != 0) sys.addToA(iIdx, n1, -1);
-            if (n2 != 0) sys.addToA(iIdx, n2, 1);
+            if (n1 != 0) sys.addToADynamic(iIdx, n1, -1);
+            if (n2 != 0) sys.addToADynamic(iIdx, n2, 1);
 
             // RHS = V_s
             //std::cout << "Voltage source at time t = " << t << "\n   f(t) =  " << f.evaluate(t);
-            sys.addTob(iIdx, f.evaluate(t));
+            sys.addTobDynamic(iIdx, f.evaluate(t));
         }
     }
 

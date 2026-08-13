@@ -21,11 +21,11 @@ public:
 
 	void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
 		//std::cout << "stamp ran\n";
-		if (n1 != 0) sys.addToA(n1, n1, 1 / R);
-		if (n2 != 0) sys.addToA(n2, n2, 1 / R);
+		if (n1 != 0) sys.addToADynamic(n1, n1, 1 / R);
+		if (n2 != 0) sys.addToADynamic(n2, n2, 1 / R);
 		if (n1 != 0 && n2 != 0) {
-			sys.addToA(n1, n2, -1 / R);
-			sys.addToA(n2, n1, -1 / R);
+			sys.addToADynamic(n1, n2, -1 / R);
+			sys.addToADynamic(n2, n1, -1 / R);
 		}
 	}
 

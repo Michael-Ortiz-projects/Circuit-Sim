@@ -9,10 +9,15 @@ MNASystem::MNASystem(int nodeCount, int extraVars) {
 void MNASystem::setSystem(int nodeCount, int extraVars) {
     n = nodeCount;
     m = extraVars;
-    A = Eigen::MatrixXd::Zero(n + m, n + m);
+
+    A.resize(n + m, n + m);
+    A.setZero();          // sparse zero-initialization
     b = Eigen::VectorXd::Zero(n + m);
-    A_static = Eigen::MatrixXd::Zero(n + m, n + m);
+
+    A_static.resize(n + m, n + m);
+    A_static.setZero();
     b_static = Eigen::VectorXd::Zero(n + m);
+
     x = Eigen::VectorXd::Zero(n + m);
 }
 
@@ -26,29 +31,27 @@ void MNASystem::resetStatic() {
     b = b_static;
 }
 
+void MNASystem::setA_static_FromTriplets() {
+    A_static.setFromTriplets(staticTriplets.begin(), staticTriplets.end());
+    A_static.makeCompressed();
+}
+
 void MNASystem::addToAStatic(int j, int k, double value) {
-    if (j >= 0 && k >= 0) {
-        A_static(j, k) += value;
-    }
+    staticTriplets.emplace_back(j, k, value);
 }
 
 void MNASystem::addTobStatic(int j, double value) {
-    if (j >= 0) {
-        b_static(j) += value;
-    }
+    b_static(j) += value;
 }
 
-void MNASystem::addToA(int j, int k, double value) { 
+void MNASystem::addToADynamic(int i, int j, double value) {
+    A.coeffRef(i, j) += value;
+}
 
-    if (j >= 0 && k >= 0) {
-        A(j, k) += value;
-    }
+void MNASystem::addTobDynamic(int i, double value) {
+    b(i) += value;
 }
-void MNASystem::addTob(int j, double value){
-    if (j >= 0) {
-        b(j) = value;
-    }
-}
+
 
 void MNASystem::printA() {
     std::cout << "\nMatrix A print:\n";

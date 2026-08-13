@@ -24,11 +24,11 @@ public:
 
         if (type == SimulationType::DC || type == SimulationType::Transient) {
 
-            if (n1 != 0 && n4 != 0) sys.addToA(n1, n4, k);
-            if (n1 != 0 && n3 != 0) sys.addToA(n1, n3, -k);
+            if (n1 != 0 && n4 != 0) sys.addToADynamic(n1, n4, k);
+            if (n1 != 0 && n3 != 0) sys.addToADynamic(n1, n3, -k);
 
-            if (n2 != 0 && n4 != 0) sys.addToA(n2, n4, -k);
-            if (n2 != 0 && n3 != 0) sys.addToA(n2, n3, k);
+            if (n2 != 0 && n4 != 0) sys.addToADynamic(n2, n4, -k);
+            if (n2 != 0 && n3 != 0) sys.addToADynamic(n2, n3, k);
 
         }
     }

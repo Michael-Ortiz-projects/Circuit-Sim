@@ -47,16 +47,16 @@ public:
 
             // sensing voltage source between n4 (+) and n3 (-)
 
-            if (n3 != 0) sys.addToA(n3, iIdx, -1);
-            if (n4 != 0) sys.addToA(n4, iIdx, 1);
+            if (n3 != 0) sys.addToADynamic(n3, iIdx, -1);
+            if (n4 != 0) sys.addToADynamic(n4, iIdx, 1);
 
-            if (n3 != 0) sys.addToA(iIdx, n3, 1);
-            if (n4 != 0) sys.addToA(iIdx, n4, -1);
+            if (n3 != 0) sys.addToADynamic(iIdx, n3, 1);
+            if (n4 != 0) sys.addToADynamic(iIdx, n4, -1);
 
             // CCCS output current: Iout = k * Ictrl
 
-            if (n1 != 0) sys.addToA(n1, iIdx, k);
-            if (n2 != 0) sys.addToA(n2, iIdx, -k);
+            if (n1 != 0) sys.addToADynamic(n1, iIdx, k);
+            if (n2 != 0) sys.addToADynamic(n2, iIdx, -k);
         }
     }
 

@@ -51,19 +51,19 @@ public:
 
             // sensing voltage source between n4 (+) and n3 (-)
 
-            if (n3 != 0) sys.addToA(n3, I_control, -1);
-            if (n4 != 0) sys.addToA(n4, I_control, 1);
+            if (n3 != 0) sys.addToADynamic(n3, I_control, -1);
+            if (n4 != 0) sys.addToADynamic(n4, I_control, 1);
 
-            if (n3 != 0) sys.addToA(I_control, n3, 1);
-            if (n4 != 0) sys.addToA(I_control, n4, -1);
+            if (n3 != 0) sys.addToADynamic(I_control, n3, 1);
+            if (n4 != 0) sys.addToADynamic(I_control, n4, -1);
 
             // voltage source current addition n2 - n1 = k * I_control
 
-            if (n1 != 0) sys.addToA(n1, I_Vs, -1);
-            if (n2 != 0) sys.addToA(n2, I_Vs, 1);
-            if (n1 != 0) sys.addToA(I_Vs, n1, -1);
-            if (n2 != 0) sys.addToA(I_Vs, n2, 1);
-            sys.addToA(I_Vs, I_control, -k);
+            if (n1 != 0) sys.addToADynamic(n1, I_Vs, -1);
+            if (n2 != 0) sys.addToADynamic(n2, I_Vs, 1);
+            if (n1 != 0) sys.addToADynamic(I_Vs, n1, -1);
+            if (n2 != 0) sys.addToADynamic(I_Vs, n2, 1);
+            sys.addToADynamic(I_Vs, I_control, -k);
 
 
             

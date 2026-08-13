@@ -9,6 +9,25 @@ public:
 	}
 
 	std::vector<int> getNodes() const override { return { n1, n2 }; }
+
+    void stampStatic(SimulationType type, MNASystem& sys, double deltaT, double t) {
+        if (type == SimulationType::Transient) {
+            
+            if (n1 != 0) {
+                sys.addToAStatic(n1, n1, 0);
+                sys.addTobStatic(n1, 0);
+            }
+            if (n2 != 0) {
+                sys.addToAStatic(n2, n2, 0);
+                sys.addTobStatic(n2, 0);
+            }
+            if (n1 != 0 && n2 != 0) {
+                sys.addToAStatic(n1, n2, 0);
+                sys.addToAStatic(n2, n1, 0);
+            }
+
+        }
+    }
     
     void stampDynamic(SimulationType type, MNASystem& sys, double deltaT, double t) {
         
@@ -17,16 +36,16 @@ public:
             double V_prev = sys.getx()(n1) - sys.getx()(n2);
             //std::cout << "G = " << G << "\nV_prev = " << V_prev << "\n";
             if (n1 != 0) {
-                sys.addToA(n1, n1, G);
-                sys.addTob(n1, G * V_prev);
+                sys.addToADynamic(n1, n1, G);
+                sys.addTobDynamic(n1, G * V_prev);
             }
             if (n2 != 0) {
-                sys.addToA(n2, n2, G);
-                sys.addTob(n2, -G * V_prev);
+                sys.addToADynamic(n2, n2, G);
+                sys.addTobDynamic(n2, -G * V_prev);
             }
             if (n1 != 0 && n2 != 0) {
-                sys.addToA(n1, n2, -G);
-                sys.addToA(n2, n1, -G);
+                sys.addToADynamic(n1, n2, -G);
+                sys.addToADynamic(n2, n1, -G);
             }
 
         }
@@ -41,16 +60,16 @@ public:
 			double G = C / deltaT;
 			double V_prev = sys.getx()(n1) - sys.getx()(n2);
 			if (n1 != 0) {
-				sys.addToA(n1, n1, G);
-				sys.addTob(n1, G * V_prev);
+				sys.addToADynamic(n1, n1, G);
+				sys.addTobDynamic(n1, G * V_prev);
 			}
 			if (n2 != 0) {
-				sys.addToA(n2, n2, G);
-				sys.addTob(n2, -G * V_prev);
+				sys.addToADynamic(n2, n2, G);
+				sys.addTobDynamic(n2, -G * V_prev);
 			}
 			if (n1 != 0 && n2 != 0) {
-				sys.addToA(n1, n2, -G);
-				sys.addToA(n2, n1, -G);
+				sys.addToADynamic(n1, n2, -G);
+				sys.addToADynamic(n2, n1, -G);
 			}
 
 			break;
@@ -130,6 +149,6 @@ public:
         
     }
 private:
-	int n1, n2;
-	double C;
+    int n1, n2;
+    double C;
 };

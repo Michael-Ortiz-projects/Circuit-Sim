@@ -45,24 +45,17 @@ public:
                 sys.addToAStatic(n2, extraVarIndex, -1);
                 sys.addToAStatic(extraVarIndex, n2, -1);
             }
+
+            sys.addToAStatic(extraVarIndex, extraVarIndex, 0);
         }
     }
 
     void stampDynamic(SimulationType type, MNASystem& sys, double deltaT, double t) {
         int extraVarIndex = extraVarIndices[0];
         if (type == SimulationType::Transient) {
-            if (n1 != 0) {
-                sys.addToA(n1, extraVarIndex, 1);
-                sys.addToA(extraVarIndex, n1, 1);
-            }
-
-            if (n2 != 0) {
-                sys.addToA(n2, extraVarIndex, -1);
-                sys.addToA(extraVarIndex, n2, -1);
-            }
-
-            sys.addToA(extraVarIndex, extraVarIndex, -L / deltaT);
-            sys.addTob(extraVarIndex, -(L / deltaT) * current);
+            
+            sys.addToADynamic(extraVarIndex, extraVarIndex, -L / deltaT);
+            sys.addTobDynamic(extraVarIndex, -(L / deltaT) * current);
         }
     }
 
@@ -73,30 +66,30 @@ public:
             // DC inductor behaves like a 0V voltage source
 
             // KCL contributions
-            if (n1 != 0) sys.addToA(n1, extraVarIndex, 1);   // +I_L into node n1
-            if (n2 != 0) sys.addToA(n2, extraVarIndex, -1);  // -I_L into node n2
+            if (n1 != 0) sys.addToADynamic(n1, extraVarIndex, 1);   // +I_L into node n1
+            if (n2 != 0) sys.addToADynamic(n2, extraVarIndex, -1);  // -I_L into node n2
 
             // Voltage constraint row
-            if (n1 != 0) sys.addToA(extraVarIndex, n1, 1);   // Vn1 - Vn2 = 0
-            if (n2 != 0) sys.addToA(extraVarIndex, n2, -1);
+            if (n1 != 0) sys.addToADynamic(extraVarIndex, n1, 1);   // Vn1 - Vn2 = 0
+            if (n2 != 0) sys.addToADynamic(extraVarIndex, n2, -1);
 
             // RHS = 0
-            sys.addTob(extraVarIndex, 0.0);
+            sys.addTobDynamic(extraVarIndex, 0.0);
         }
 
         else if (type == SimulationType::Transient) {
             if (n1 != 0) {
-                sys.addToA(n1, extraVarIndex, 1);
-                sys.addToA(extraVarIndex, n1, 1);
+                sys.addToADynamic(n1, extraVarIndex, 1);
+                sys.addToADynamic(extraVarIndex, n1, 1);
             }
 
             if (n2 != 0) {
-                sys.addToA(n2, extraVarIndex, -1);
-                sys.addToA(extraVarIndex, n2, -1);
+                sys.addToADynamic(n2, extraVarIndex, -1);
+                sys.addToADynamic(extraVarIndex, n2, -1);
             }
 
-            sys.addToA(extraVarIndex, extraVarIndex, -L / deltaT);
-            sys.addTob(extraVarIndex, - (L / deltaT) * current);
+            sys.addToADynamic(extraVarIndex, extraVarIndex, -L / deltaT);
+            sys.addTobDynamic(extraVarIndex, - (L / deltaT) * current);
         }
 	}
 

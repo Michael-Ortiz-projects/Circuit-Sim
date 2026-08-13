@@ -1,4 +1,7 @@
 #include "Simulator.h"
+#include <chrono>
+#define TIME_POINT(name) auto name = std::chrono::steady_clock::now();
+#define TIME_DIFF(start,end) std::chrono::duration_cast<std::chrono::microseconds>((end)-(start)).count()
 
 Simulator::Simulator(std::vector<std::unique_ptr<SimulationComponent>>& simComps)
 	: simComponents(simComps) { }
@@ -164,6 +167,8 @@ bool Simulator::runDC(bool printToConsole) {
 		system.printb();
 		system.printx();
 	}
+	solver.analyzeSystem(system);
+	solver.factorize(system);
 	solver.solve(system);
 
 	return true;
@@ -178,22 +183,29 @@ std::vector<TransientSimulationState> Simulator::runTransient(Config config) {
 	// ==========================
 	// INITIALIZE STEPS & RESULTS	
 	// ==========================
-	
+	TIME_POINT(totalStart);
+
 	size_t numSteps = static_cast<size_t>(std::ceil((config.tEnd - config.tStart) / config.timeStep)) + 1;
+	TIME_POINT(initStart);
+
 	std::cout << "Matrix Size: " <<  system.getA().size() << "\n";
+	system.setZero();
 	size_t step = 0;
 	std::vector<TransientSimulationState> results(numSteps);
 	Eigen::VectorXd previousX = system.getx();
-	results[0].time = config.tStart;
-	results[0].deltaT = 0.0;
-	results[0].resultsVector = previousX;
-	results[0].previousResultsVector = previousX;
+	results[0] = { previousX, previousX , config.tStart, 0.0 };
+	
+
+	TIME_POINT(initEnd);
+	std::cout << "Initialization: " << TIME_DIFF(initStart, initEnd) << " us\n";
 
 	std::cout << "CLASSIFYING COMPONENTS\n";
 
 	// ==========================
 	// CLASSIFY COMPONENTS
 	// ==========================
+	TIME_POINT(classifyStart);
+
 
 	std::vector<SimulationComponent*> staticComponents;
 	std::vector<SimulationComponent*> dynamicComponents;
@@ -209,6 +221,9 @@ std::vector<TransientSimulationState> Simulator::runTransient(Config config) {
 			inductors.push_back(ind);
 	}
 
+	TIME_POINT(classifyEnd);
+	std::cout << "Classification: " << TIME_DIFF(classifyStart, classifyEnd) << " us\n";
+
 	std::cout << "Static components: " << staticComponents.size() << "\n";
 	std::cout << "Dynamic components: " << dynamicComponents.size() << "\n";
 	std::cout << "Inductors Size: " << inductors.size() << "\n";
@@ -218,13 +233,24 @@ std::vector<TransientSimulationState> Simulator::runTransient(Config config) {
 	// ==========================
 	// SET STATIC MATRICES
 	// ==========================
-	for (auto* static_comp : staticComponents) {
-		static_comp->stampStatic(SimulationType::Transient, system);
+	TIME_POINT(staticStampStart);
+
+	for (auto& comp : simComponents) {
+		comp->stampStatic(SimulationType::Transient, system);
 	}
-	
+	solver.analyzeSystem(system);
+	solver.factorize(system);
+	TIME_POINT(staticStampEnd);
+	std::cout << "Static stamping: " << TIME_DIFF(staticStampStart, staticStampEnd) << " us\n";
 
 	std::cout << "timestep Solve starting\n";
 	double dt = config.timeStep;
+
+
+	long long dynamicStampTime = 0;
+	long long solveTime = 0;
+	long long inductorUpdateTime = 0;
+
 
 	for (size_t step = 1; step < numSteps; ++step) {
 
@@ -232,16 +258,26 @@ std::vector<TransientSimulationState> Simulator::runTransient(Config config) {
 
 
 		system.resetStatic();
+		TIME_POINT(dynStart);
 
 
 		for (auto* comp : dynamicComponents) {
 			comp->stampDynamic(SimulationType::Transient, system, dt, t);
 		}
 
+		TIME_POINT(dynEnd);
+		dynamicStampTime += TIME_DIFF(dynStart, dynEnd);
+
+		TIME_POINT(solveStart);
+
 		//std::cout << "A = \n" << system.getA() << "\n\n b = \n" << system.getb() << "\n\n";
 
+		solver.factorize(system);
 		solver.solve(system);
-		
+		TIME_POINT(solveEnd);
+		solveTime += TIME_DIFF(solveStart, solveEnd);
+
+		TIME_POINT(indStart);
 
 		// update inductor currents for the next step
 		for (auto& ind : inductors) {
@@ -250,15 +286,23 @@ std::vector<TransientSimulationState> Simulator::runTransient(Config config) {
 			ind->setCurrent(i_new);
 		}
 
-		results[step].time = t;
-		results[step].deltaT = dt;
-		results[step].resultsVector = system.getx();
-		results[step].previousResultsVector = results[step - 1].resultsVector;
+		TIME_POINT(indEnd);
+		inductorUpdateTime += TIME_DIFF(indStart, indEnd);
+
+		results[step] = { system.getx(), results[step - 1].resultsVector, t, dt };
+		
 
 	}
 	
 	transientResults = results;
 	std::cout << "finished simulation\n";
+	std::cout << "Dynamic stamping total: " << dynamicStampTime << " us\n";
+	std::cout << "Solver total: " << solveTime << " us\n";
+	std::cout << "Inductor update total: " << inductorUpdateTime << " us\n";
+
+	TIME_POINT(totalEnd);
+	std::cout << "Total simulation time: "
+		<< TIME_DIFF(totalStart, totalEnd) << " us\n";
 	return transientResults;
 }
 

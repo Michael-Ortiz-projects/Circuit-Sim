@@ -14,9 +14,9 @@ public:
     void stamp(SimulationType type, MNASystem& sys, double deltaT, double t) override {
         //std::cout << "Current Source Stamp running()\n";
         double I = f.evaluate(t);
-        if (n1 != 0) sys.addTob(n1, -I);
+        if (n1 != 0) sys.addTobDynamic(n1, -I);
 
-        if (n2 != 0) sys.addTob(n2, I);
+        if (n2 != 0) sys.addTobDynamic(n2, I);
     }
 
     bool isStatic() const override {
